@@ -109,12 +109,13 @@ npm run dev
   - **Start Command:** `uvicorn api:app --host 0.0.0.0 --port $PORT`
 - **Environment** (вкладка **Environment** в настройках сервиса):
   - Нажмите **Add Environment Variable**.
+  - **Обязательно** (иначе ошибка psycopg2 с Python 3.13): **Key:** `PYTHON_VERSION`, **Value:** `3.12.7`.
   - **Key:** `DATABASE_URL`  
   - **Value:** вставьте скопированный **Internal Database URL** из шага 1 (то, что скопировали из блока Connect у PostgreSQL).
   - Добавьте ещё: `BOT_TOKEN` (токен от BotFather), `ADMINS` (ID админов через запятую, например `123456789`).
 - **Create Web Service**. Дождитесь деплоя и скопируйте URL сервиса, например `https://dating-api.onrender.com`.
 
-**Если при деплое ошибка про psycopg2 и Python 3.13:** в **Environment** добавьте переменную `PYTHON_VERSION` = `3.12.7`. В корне репозитория уже есть файл `.python-version` с `3.12` — Render должен подхватить его и использовать Python 3.12.
+На Render по умолчанию может быть Python 3.13, с которым psycopg2 несовместим. Поэтому **нужно** задать `PYTHON_VERSION` = `3.12.7` в Environment (и для Web Service API, и для Background Worker бота).
 
 ### 3. Frontend (Mini App)
 
