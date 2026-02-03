@@ -42,6 +42,8 @@ venv.bak/
 *.sqlite
 *.sqlite3
 dating.db
+backend/dating.db
+backend/.env
 
 # IDE
 .vscode/
@@ -63,3 +65,7 @@ Thumbs.db
 *.pyc
 __pycache__/
 .cursor/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/

@@ -20,6 +20,10 @@ class UserHandlers:
         # Инициализируем event_handlers для обработки создания событий
         from handlers.event_handlers import EventHandlers
         self.event_handlers = EventHandlers(self.bot)
+    
+    def _remove_keyboard(self):
+        """Вспомогательная функция для скрытия клавиатуры"""
+        return telebot.types.ReplyKeyboardRemove(selective=False)
 
     def handle_start(self, message):
         """Обработка команды /start"""
@@ -88,14 +92,39 @@ class UserHandlers:
                 self.user_state[user_id] = 'waiting_name'
                 return
 
-        # Приветственное сообщение
+        # Скрываем клавиатуру для незарегистрированных пользователей
+        remove_keyboard = self._remove_keyboard()
+        
+        # Приветственное сообщение с фото
         welcome_text = (
             "Хочешь куда-то сходить но не знаешь с кем — создай встречу. Бот покажет её людям рядом.\n\n"
             "Откликнутся — идите. Никакой лишней болтовни.\n\n"
             "👉 *Как тебя зовут?*"
         )
-        self.bot.send_message(
-            chat_id, welcome_text, parse_mode='Markdown')
+        
+        # Отправляем фото из папки images, если оно есть
+        import os
+        image_path = os.path.join('images', 'Spon.png')
+        if os.path.exists(image_path):
+            try:
+                with open(image_path, 'rb') as photo:
+                    self.bot.send_photo(
+                        chat_id, 
+                        photo, 
+                        caption=welcome_text, 
+                        parse_mode='Markdown',
+                        reply_markup=remove_keyboard
+                    )
+            except Exception as e:
+                print(f"Ошибка отправки фото: {e}")
+                # Если не удалось отправить фото, отправляем только текст
+                self.bot.send_message(
+                    chat_id, welcome_text, parse_mode='Markdown', reply_markup=remove_keyboard)
+        else:
+            # Если фото нет, отправляем только текст
+            self.bot.send_message(
+                chat_id, welcome_text, parse_mode='Markdown', reply_markup=remove_keyboard)
+        
         self.user_state[user_id] = 'waiting_name'
 
     def handle_text(self, message):
@@ -104,8 +133,19 @@ class UserHandlers:
         chat_id = message.chat.id
         text = message.text
 
-        # Проверяем блокировку (кроме апелляции)
+        # Проверяем регистрацию в начале (кроме состояний регистрации)
         state = self.user_state.get(user_id)
+        if state and not state.startswith('waiting_') and not state.startswith('edit_') and not state.startswith('appeal_ban_'):
+            user = execute_query(
+                "SELECT * FROM users WHERE user_id = ?", (user_id,), fetchone=True
+            )
+            if not user:
+                # Скрываем клавиатуру для незарегистрированных пользователей
+                self.bot.send_message(
+                    chat_id, "Вы не зарегистрированы. Напишите /start", reply_markup=self._remove_keyboard())
+                return
+
+        # Проверяем блокировку (кроме апелляции)
         if not (state and state.startswith('appeal_ban_')):
             user = execute_query(
                 "SELECT is_banned FROM users WHERE user_id = ?", (user_id,), fetchone=True
@@ -282,8 +322,16 @@ class UserHandlers:
         elif text == '/help':
             self.show_about_bot(message)
         else:
-            self.bot.send_message(
-                chat_id, "Используйте меню для навигации:", reply_markup=get_main_menu())
+            # Проверяем регистрацию перед показом меню
+            user = execute_query(
+                "SELECT * FROM users WHERE user_id = ?", (user_id,), fetchone=True
+            )
+            if not user:
+                self.bot.send_message(
+                    chat_id, "Вы не зарегистрированы. Напишите /start", reply_markup=self._remove_keyboard())
+            else:
+                self.bot.send_message(
+                    chat_id, "Используйте меню для навигации:", reply_markup=get_main_menu())
 
     def show_profile(self, message):
         """Показать профиль пользователя"""
@@ -299,7 +347,7 @@ class UserHandlers:
 
         if not user:
             self.bot.send_message(
-                chat_id, "Вы не зарегистрированы. Напишите /start")
+                chat_id, "Вы не зарегистрированы. Напишите /start", reply_markup=self._remove_keyboard())
             return
 
         # Получаем статистику
@@ -393,7 +441,7 @@ class UserHandlers:
 
         if not user:
             self.bot.send_message(
-                chat_id, "Вы не зарегистрированы. Напишите /start")
+                chat_id, "Вы не зарегистрированы. Напишите /start", reply_markup=self._remove_keyboard())
             return
 
         keyboard = get_filter_keyboard()
@@ -412,7 +460,7 @@ class UserHandlers:
 
         if not user:
             self.bot.send_message(
-                chat_id, "Вы не зарегистрированы. Напишите /start")
+                chat_id, "Вы не зарегистрированы. Напишите /start", reply_markup=self._remove_keyboard())
             return
 
         total_count = execute_query(
@@ -491,7 +539,7 @@ class UserHandlers:
 
         if not user:
             self.bot.send_message(
-                chat_id, "Вы не зарегистрированы. Напишите /start")
+                chat_id, "Вы не зарегистрированы. Напишите /start", reply_markup=self._remove_keyboard())
             return
 
         recommendations = RecommendationService.get_recommendations(user_id)
@@ -548,7 +596,7 @@ class UserHandlers:
 
         if not user:
             self.bot.send_message(
-                chat_id, "Вы не зарегистрированы. Напишите /start")
+                chat_id, "Вы не зарегистрированы. Напишите /start", reply_markup=self._remove_keyboard())
             return
 
         achievements = AchievementService.get_user_achievements(user_id)
@@ -658,10 +706,12 @@ class UserHandlers:
                     reply_markup=get_yes_no_keyboard()
                 )
             else:
+                # Оставляем состояние waiting_city, чтобы пользователь мог ввести город снова
                 self.bot.send_message(
                     chat_id,
-                    "Город не найден в списке. Пожалуйста, введите город из списка.\n"
-                    "Можно посмотреть все города: /cities"
+                    "❌ Такого города нет в нашем списке.\n\n"
+                    "Пожалуйста, введите другой город из доступных. "
+                    "Проверьте правильность написания и попробуйте ещё раз:"
                 )
 
     def _handle_confirm_city(self, user_id, chat_id, text):
@@ -675,7 +725,7 @@ class UserHandlers:
         elif text == '❌ Нет':
             self.user_state[user_id] = 'waiting_city'
             self.bot.send_message(
-                chat_id, "Введите правильное название города:")
+                chat_id, "Введите название города из списка:")
         else:
             if text in config.CITIES:
                 self.user_data[user_id]['city'] = text
@@ -726,7 +776,7 @@ class UserHandlers:
 
         if not user:
             self.bot.send_message(
-                chat_id, "Вы не зарегистрированы. Напишите /start")
+                chat_id, "Вы не зарегистрированы. Напишите /start", reply_markup=self._remove_keyboard())
             return
 
         # Очищаем предыдущие данные
@@ -806,8 +856,12 @@ class UserHandlers:
                     reply_markup=get_yes_no_keyboard()
                 )
             else:
+                # Оставляем состояние edit_city, чтобы пользователь мог ввести город снова
                 self.bot.send_message(
-                    chat_id, "Город не найден. Введите город из списка."
+                    chat_id,
+                    "❌ Такого города нет в нашем списке.\n\n"
+                    "Пожалуйста, введите другой город из доступных. "
+                    "Проверьте правильность написания и попробуйте ещё раз:"
                 )
 
     def _handle_edit_confirm_city(self, user_id, chat_id, text):
@@ -825,7 +879,7 @@ class UserHandlers:
         elif text == '❌ Нет':
             self.user_state[user_id] = 'edit_city'
             self.bot.send_message(
-                chat_id, "Введите правильное название города:")
+                chat_id, "Введите название города из списка:")
 
     def _handle_edit_relationship(self, user_id, chat_id, text):
         """Обработка изменения статуса отношений"""
@@ -925,7 +979,7 @@ class UserHandlers:
 
         if not user:
             self.bot.send_message(
-                chat_id, "Вы не зарегистрированы. Напишите /start")
+                chat_id, "Вы не зарегистрированы. Напишите /start", reply_markup=self._remove_keyboard())
             return
 
         user = execute_query(

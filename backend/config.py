@@ -10,6 +10,11 @@ class Config:
     ADMINS = [int(admin_id) for admin_id in os.getenv(
         'ADMINS', '').split(',') if admin_id]
     BROADCAST_LIMIT = int(os.getenv('BROADCAST_LIMIT', 1000))
+    # PostgreSQL
+    DATABASE_URL = os.getenv(
+        'DATABASE_URL',
+        'postgresql://postgres:postgres@localhost:5432/dating'
+    )
 
     # Города России (топ 200)
     CITIES = [

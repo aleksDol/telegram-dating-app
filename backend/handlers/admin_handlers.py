@@ -378,7 +378,7 @@ class AdminHandlers:
         broadcast_id = execute_query(
             '''INSERT INTO admin_broadcasts 
                (admin_id, content_type, content, caption, filters, created, status) 
-               VALUES (?, ?, ?, ?, ?, ?, ?)''',
+               VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id''',
             (
                 admin_id,
                 data['content_type'],

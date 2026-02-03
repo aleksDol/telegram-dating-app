@@ -1,0 +1,470 @@
+# api.py — REST API для Mini App (FastAPI)
+# Запуск: uvicorn api:app --host 0.0.0.0 --port 8000
+# Для localhost: фронт на :5173, API на :8000. В frontend/.env: VITE_API_URL=http://localhost:8000
+
+import hmac
+import hashlib
+import json
+import os
+from datetime import datetime
+from urllib.parse import parse_qsl
+
+from fastapi import FastAPI, Depends, HTTPException, Header
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
+from config import config
+from database import execute_query
+from utils.helpers import generate_referral_code
+from services.achievements import AchievementService
+from services.recommendations import RecommendationService
+
+
+app = FastAPI(title="Dating Mini App API")
+
+# CORS для localhost (фронт на 5173) и для Mini App в Telegram
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://web.telegram.org",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+def validate_init_data(init_data: str) -> dict | None:
+    """Проверка initData от Telegram Web App. Возвращает распарсенные данные или None."""
+    if not init_data or not config.BOT_TOKEN:
+        return None
+    try:
+        pairs = parse_qsl(init_data, keep_blank_values=True)
+        data = dict(pairs)
+        received_hash = data.pop("hash", None)
+        if not received_hash:
+            return None
+        data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(data.items()))
+        secret_key = hmac.new(
+            config.BOT_TOKEN.encode(),
+            b"WebAppData",
+            hashlib.sha256
+        ).digest()
+        computed_hash = hmac.new(
+            secret_key,
+            data_check_string.encode(),
+            hashlib.sha256
+        ).hexdigest()
+        if computed_hash != received_hash:
+            return None
+        return data
+    except Exception:
+        return None
+
+
+def get_user_id(
+    x_telegram_init_data: str | None = Header(None, alias="X-Telegram-Init-Data"),
+    x_dev_user_id: str | None = Header(None, alias="X-Dev-User-Id"),
+) -> int:
+    """Определение user_id: из initData (Mini App) или из X-Dev-User-Id (localhost)."""
+    if x_dev_user_id and os.getenv("ALLOW_DEV_USER_ID", "1").strip().lower() in ("1", "true", "yes"):
+        try:
+            return int(x_dev_user_id)
+        except ValueError:
+            pass
+    parsed = validate_init_data(x_telegram_init_data or "")
+    if not parsed:
+        raise HTTPException(status_code=401, detail="Invalid or missing Telegram init data")
+    user_json = parsed.get("user")
+    if not user_json:
+        raise HTTPException(status_code=401, detail="No user in init data")
+    try:
+        user = json.loads(user_json)
+        return int(user["id"])
+    except (json.JSONDecodeError, KeyError, TypeError):
+        raise HTTPException(status_code=401, detail="Invalid user in init data")
+
+
+# --- Pydantic models ---
+
+class RegisterBody(BaseModel):
+    name: str
+    age: int
+    gender: str
+    city: str
+    relationship_status: str
+    photo: str | None = None
+    purpose: str | None = None
+    referred_by: int | None = None
+
+
+class UpdateProfileBody(BaseModel):
+    name: str | None = None
+    age: int | None = None
+    gender: str | None = None
+    city: str | None = None
+    relationship_status: str | None = None
+    photo: str | None = None
+    purpose: str | None = None
+
+
+class CreateEventBody(BaseModel):
+    title: str
+    description: str
+    event_date: str
+    target_gender: str
+    city: str
+    category: str | None = None
+
+
+def _row_to_user(row: dict) -> dict:
+    return {
+        "user_id": row["user_id"],
+        "username": row.get("username"),
+        "name": row["name"],
+        "age": row["age"],
+        "gender": row["gender"],
+        "city": row.get("city"),
+        "relationship_status": row.get("relationship_status"),
+        "photo": row.get("photo"),
+        "purpose": row.get("purpose") or "куда-то сходить",
+        "points": row.get("points", 0),
+        "reg_date": row.get("reg_date"),
+        "last_active": row.get("last_active"),
+        "favorite_categories": [],
+        "referral_code": row.get("referral_code"),
+        "referred_by": row.get("referred_by"),
+        "referrals_count": row.get("referrals_count", 0),
+        "is_banned": bool(row.get("is_banned", 0)),
+        "ban_reason": row.get("ban_reason"),
+        "banned_date": row.get("banned_date"),
+    }
+
+
+def _row_to_public_user(row: dict) -> dict:
+    """Публичный профиль пользователя (для просмотра автора события)."""
+    return {
+        "user_id": row["user_id"],
+        "name": row["name"],
+        "age": row["age"],
+        "gender": row["gender"],
+        "city": row.get("city"),
+        "relationship_status": row.get("relationship_status"),
+        "photo": row.get("photo"),
+        "purpose": row.get("purpose") or "куда-то сходить",
+    }
+
+
+def _row_to_event(row: dict) -> dict:
+    return {
+        "id": row["id"],
+        "user_id": row["user_id"],
+        "title": row["title"],
+        "description": row["description"],
+        "event_date": row["event_date"],
+        "target_gender": row.get("target_gender", "Все"),
+        "city": row["city"],
+        "category": row.get("category"),
+        "created": row.get("created"),
+        "is_hidden": bool(row.get("is_hidden", 0)),
+        "name": row.get("name"),
+        "age": row.get("age"),
+        "gender": row.get("gender"),
+        "photo": row.get("photo"),
+        "purpose": row.get("purpose"),
+        "relationship_status": row.get("relationship_status"),
+        "likes_count": row.get("likes_count"),
+    }
+
+
+@app.get("/api/user")
+def api_get_user(user_id: int = Depends(get_user_id)):
+    row = execute_query(
+        "SELECT * FROM users WHERE user_id = ?", (user_id,), fetchone=True
+    )
+    if not row:
+        return {"user": None}
+    if row.get("is_banned", 0):
+        raise HTTPException(status_code=403, detail="Account banned")
+    return {"user": _row_to_user(row)}
+
+
+@app.get("/api/users/{profile_user_id:int}")
+def api_get_user_profile(
+    profile_user_id: int,
+    user_id: int = Depends(get_user_id),
+):
+    """Публичный профиль пользователя по id (для перехода из карточки события)."""
+    row = execute_query(
+        "SELECT user_id, name, age, gender, city, relationship_status, photo, purpose FROM users WHERE user_id = ? AND (is_banned = 0 OR is_banned IS NULL)",
+        (profile_user_id,),
+        fetchone=True,
+    )
+    if not row:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"user": _row_to_public_user(row)}
+
+
+@app.post("/api/register")
+def api_register(body: RegisterBody, user_id: int = Depends(get_user_id)):
+    existing = execute_query(
+        "SELECT user_id FROM users WHERE user_id = ?", (user_id,), fetchone=True
+    )
+    if existing:
+        row = execute_query("SELECT * FROM users WHERE user_id = ?", (user_id,), fetchone=True)
+        return {"user": _row_to_user(row)}
+    referral_code = generate_referral_code()
+    purpose = (body.purpose or "").strip() or "куда-то сходить"
+    execute_query(
+        """INSERT INTO users (user_id, username, name, age, gender, city, relationship_status, photo, purpose, reg_date, last_active, referral_code, referred_by)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (
+            user_id, "", body.name.strip(), body.age, body.gender, body.city,
+            body.relationship_status or "Не в отношениях", body.photo, purpose,
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            datetime.now().strftime("%Y-%m-%d"),
+            referral_code, body.referred_by,
+        ),
+        commit=True,
+    )
+    if body.referred_by:
+        AchievementService.update_user_points(user_id, 50, "за регистрацию по приглашению")
+        AchievementService.update_user_points(body.referred_by, 100, "за приглашение пользователя")
+        execute_query(
+            "UPDATE users SET referrals_count = referrals_count + 1 WHERE user_id = ?",
+            (body.referred_by,), commit=True
+        )
+    row = execute_query("SELECT * FROM users WHERE user_id = ?", (user_id,), fetchone=True)
+    return {"user": _row_to_user(row)}
+
+
+@app.put("/api/profile")
+def api_update_profile(body: UpdateProfileBody, user_id: int = Depends(get_user_id)):
+    row = execute_query("SELECT * FROM users WHERE user_id = ?", (user_id,), fetchone=True)
+    if not row:
+        raise HTTPException(status_code=404, detail="User not found")
+    updates = []
+    params = []
+    if body.name is not None:
+        updates.append("name = ?"); params.append(body.name.strip())
+    if body.age is not None:
+        updates.append("age = ?"); params.append(body.age)
+    if body.gender is not None:
+        updates.append("gender = ?"); params.append(body.gender)
+    if body.city is not None:
+        updates.append("city = ?"); params.append(body.city)
+    if body.relationship_status is not None:
+        updates.append("relationship_status = ?"); params.append(body.relationship_status)
+    if body.photo is not None:
+        updates.append("photo = ?"); params.append(body.photo)
+    if body.purpose is not None:
+        updates.append("purpose = ?"); params.append(body.purpose.strip() or "куда-то сходить")
+    if not updates:
+        return {"user": _row_to_user(row)}
+    params.append(user_id)
+    execute_query(
+        f"UPDATE users SET {', '.join(updates)} WHERE user_id = ?",
+        tuple(params), commit=True
+    )
+    row = execute_query("SELECT * FROM users WHERE user_id = ?", (user_id,), fetchone=True)
+    return {"user": _row_to_user(row)}
+
+
+@app.get("/api/events")
+def api_get_events(
+    filter: str = "new",
+    limit: int = 10,
+    user_id: int = Depends(get_user_id),
+):
+    user = execute_query("SELECT * FROM users WHERE user_id = ?", (user_id,), fetchone=True)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if filter == "interest":
+        events = RecommendationService.get_recommendations(user_id, limit=limit)
+    else:
+        events = RecommendationService.get_events_by_filter(user_id, filter, limit=limit)
+    return {"events": [_row_to_event(e) for e in events]}
+
+
+@app.get("/api/events/{event_id:int}")
+def api_get_event(event_id: int, user_id: int = Depends(get_user_id)):
+    row = execute_query(
+        """SELECT e.*, u.name, u.age, u.gender, u.photo, u.purpose, u.relationship_status
+           FROM events e JOIN users u ON e.user_id = u.user_id
+           WHERE e.id = ? AND e.is_hidden = 0 AND u.is_banned = 0""",
+        (event_id,), fetchone=True
+    )
+    if not row:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return {"event": _row_to_event(row)}
+
+
+@app.post("/api/events")
+def api_create_event(body: CreateEventBody, user_id: int = Depends(get_user_id)):
+    user = execute_query("SELECT city FROM users WHERE user_id = ?", (user_id,), fetchone=True)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    city = body.city or (user.get("city") or "")
+    event_date = body.event_date
+    if "T" in event_date:
+        event_date = event_date.replace("T", " ").rstrip("Z")[:19]
+    event_id = execute_query(
+        """INSERT INTO events (user_id, title, description, event_date, target_gender, city, category, created)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id""",
+        (
+            user_id, body.title.strip(), body.description.strip(), event_date,
+            body.target_gender, city, body.category,
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        ),
+        commit=True,
+    )
+    execute_query(
+        "UPDATE users SET purpose = ? WHERE user_id = ?",
+        (f"🎯 {body.title.strip()}", user_id), commit=True
+    )
+    AchievementService.update_user_points(user_id, 10, "за создание события")
+    events_count = execute_query(
+        "SELECT COUNT(*) as count FROM events WHERE user_id = ? AND is_hidden = 0",
+        (user_id,), fetchone=True
+    )["count"]
+    if events_count == 1:
+        AchievementService.unlock_achievement(user_id, "first_event")
+    row = execute_query(
+        """SELECT e.*, u.name, u.age, u.gender, u.photo, u.purpose, u.relationship_status
+           FROM events e JOIN users u ON e.user_id = u.user_id WHERE e.id = ?""",
+        (event_id,), fetchone=True
+    )
+    return {"event": _row_to_event(row)}
+
+
+@app.put("/api/events/{event_id:int}")
+def api_update_event(event_id: int, body: CreateEventBody, user_id: int = Depends(get_user_id)):
+    row = execute_query("SELECT user_id FROM events WHERE id = ?", (event_id,), fetchone=True)
+    if not row or row["user_id"] != user_id:
+        raise HTTPException(status_code=404, detail="Event not found")
+    event_date = body.event_date
+    if "T" in event_date:
+        event_date = event_date.replace("T", " ").rstrip("Z")[:19]
+    execute_query(
+        """UPDATE events SET title = ?, description = ?, event_date = ?, target_gender = ?, city = ?, category = ?
+           WHERE id = ?""",
+        (body.title.strip(), body.description.strip(), event_date, body.target_gender, body.city, body.category, event_id),
+        commit=True,
+    )
+    row = execute_query(
+        """SELECT e.*, u.name, u.age, u.gender, u.photo, u.purpose, u.relationship_status
+           FROM events e JOIN users u ON e.user_id = u.user_id WHERE e.id = ?""",
+        (event_id,), fetchone=True
+    )
+    return {"event": _row_to_event(row)}
+
+
+@app.delete("/api/events/{event_id:int}")
+def api_delete_event(event_id: int, user_id: int = Depends(get_user_id)):
+    row = execute_query("SELECT user_id FROM events WHERE id = ?", (event_id,), fetchone=True)
+    if not row or row["user_id"] != user_id:
+        raise HTTPException(status_code=404, detail="Event not found")
+    execute_query("UPDATE events SET is_hidden = 1 WHERE id = ?", (event_id,), commit=True)
+    return {"ok": True}
+
+
+@app.get("/api/events/mine")
+def api_my_events(user_id: int = Depends(get_user_id)):
+    rows = execute_query(
+        "SELECT * FROM events WHERE user_id = ? AND is_hidden = 0 ORDER BY created DESC",
+        (user_id,), fetchall=True
+    )
+    events = []
+    for r in rows:
+        u = execute_query("SELECT name, age, gender, photo, purpose, relationship_status FROM users WHERE user_id = ?", (r["user_id"],), fetchone=True)
+        if u:
+            r = dict(r, **u)
+        events.append(_row_to_event(r))
+    return {"events": events}
+
+
+@app.post("/api/events/{event_id:int}/like")
+def api_like_event(event_id: int, user_id: int = Depends(get_user_id)):
+    event = execute_query(
+        "SELECT id, user_id, category FROM events WHERE id = ? AND is_hidden = 0",
+        (event_id,), fetchone=True
+    )
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    creator_id = event["user_id"]
+    if creator_id == user_id:
+        raise HTTPException(status_code=400, detail="Cannot like own event")
+    existing = execute_query(
+        "SELECT id FROM likes WHERE from_user = ? AND event_id = ?",
+        (user_id, event_id), fetchone=True
+    )
+    if existing:
+        return {"mutual": False}
+    like_id = execute_query(
+        """INSERT INTO likes (from_user, to_user, event_id, created) VALUES (?, ?, ?, ?) RETURNING id""",
+        (user_id, creator_id, event_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+        commit=True,
+    )
+    if event.get("category"):
+        prefs = execute_query("SELECT liked_categories FROM user_preferences WHERE user_id = ?", (user_id,), fetchone=True)
+        liked = []
+        if prefs and prefs.get("liked_categories"):
+            try:
+                liked = json.loads(prefs["liked_categories"])
+            except Exception:
+                liked = []
+        if event["category"] not in liked:
+            liked.append(event["category"])
+            if prefs:
+                execute_query("UPDATE user_preferences SET liked_categories = ? WHERE user_id = ?", (json.dumps(liked), user_id), commit=True)
+            else:
+                execute_query("INSERT INTO user_preferences (user_id, liked_categories) VALUES (?, ?)", (user_id, json.dumps(liked)), commit=True)
+    AchievementService.update_user_points(user_id, 5, "за лайк события")
+    mutual_check = execute_query(
+        "SELECT id FROM likes WHERE from_user = ? AND to_user = ? AND event_id = ?",
+        (creator_id, user_id, event_id), fetchone=True
+    )
+    mutual = bool(mutual_check)
+    if mutual:
+        execute_query("UPDATE likes SET mutual = 1 WHERE from_user = ? AND to_user = ? AND event_id = ?", (user_id, creator_id, event_id), commit=True)
+        execute_query("UPDATE likes SET mutual = 1 WHERE from_user = ? AND to_user = ? AND event_id = ?", (creator_id, user_id, event_id), commit=True)
+        AchievementService.update_user_points(user_id, 20, "за взаимную симпатию")
+        AchievementService.update_user_points(creator_id, 20, "за взаимную симпатию")
+        AchievementService.check_achievements(user_id)
+        AchievementService.check_achievements(creator_id)
+    return {"mutual": mutual}
+
+
+@app.post("/api/events/{event_id:int}/skip")
+def api_skip_event(event_id: int, user_id: int = Depends(get_user_id)):
+    return {"ok": True}
+
+
+@app.get("/api/achievements")
+def api_achievements(user_id: int = Depends(get_user_id)):
+    achievements = AchievementService.get_user_achievements(user_id)
+    user = execute_query("SELECT points FROM users WHERE user_id = ?", (user_id,), fetchone=True)
+    points = user["points"] if user else 0
+    return {"achievements": achievements, "points": points}
+
+
+@app.get("/api/referral")
+def api_referral(user_id: int = Depends(get_user_id)):
+    row = execute_query(
+        "SELECT referral_code, referrals_count FROM users WHERE user_id = ?",
+        (user_id,), fetchone=True
+    )
+    if not row:
+        raise HTTPException(status_code=404, detail="User not found")
+    code = row.get("referral_code")
+    if not code:
+        code = generate_referral_code()
+        execute_query("UPDATE users SET referral_code = ? WHERE user_id = ?", (code, user_id), commit=True)
+    return {"referral_code": code, "referrals_count": row.get("referrals_count", 0)}
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}

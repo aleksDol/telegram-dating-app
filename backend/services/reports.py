@@ -13,7 +13,7 @@ class ReportService:
         try:
             report_id = execute_query(
                 '''INSERT INTO reports (reporter_id, reported_user_id, reason, created) 
-                   VALUES (?, ?, ?, ?)''',
+                   VALUES (?, ?, ?, ?) RETURNING id''',
                 (reporter_id, reported_user_id, reason,
                  datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
                 commit=True
@@ -174,7 +174,7 @@ class ReportService:
                 # Служебная запись, чтобы апелляцию можно было хранить и трекать
                 report_id = execute_query(
                     '''INSERT INTO reports (reporter_id, reported_user_id, reason, status, created, appeal_status, appeal_text)
-                       VALUES (?, ?, ?, 'resolved', ?, 'pending', ?)''',
+                       VALUES (?, ?, ?, 'resolved', ?, 'pending', ?) RETURNING id''',
                     (
                         user_id,
                         user_id,

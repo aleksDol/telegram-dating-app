@@ -164,7 +164,7 @@ class EventHandlers:
 
                 event_id = execute_query(
                     '''INSERT INTO events (user_id, title, description, event_date, target_gender, city, category, created) 
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id''',
                     (user_id, title, desc, event_date.strftime("%Y-%m-%d %H:%M:%S"),
                      target_gender, city, category, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
                     commit=True

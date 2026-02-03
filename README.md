@@ -1,166 +1,149 @@
-# 🤖 Бот для знакомств через совместные мероприятия
+# 🤖 Знакомства через встречи — Mini App + бот
 
-## 📋 Описание
-Бот для знакомств, где пользователи создают события и находят друг друга через совместные мероприятия.
-
-## 🔧 Основные функции
-1. 👤 **Регистрация и профиль**
-   - Регистрация с фото, именем, возрастом, полом, городом
-   - Полный профиль с статистикой
-   - Редактирование всех полей профиля
-
-2. 🎉 **События (Events)**
-   - Создание событий с названием, описанием, датой, категорией
-   - Просмотр событий других пользователей (Tinder-подобный интерфейс)
-   - Лайки событий для знакомства
-   - Управление своими событиями
-
-3. 🔍 **Поиск и фильтры**
-   - Поиск по интересам (рекомендации)
-   - Популярные события
-   - События в вашем городе
-   - Новые события
-   - События на сегодня/завтра
-   - Персонализированные подборки
-
-4. 💌 **Система знакомств**
-   - Лайки событий
-   - Уведомления о лайках
-   - Взаимные симпатии
-   - Обмен контактами после взаимного лайка
-
-5. 🏆 **Система достижений и очков**
-   - 8 уникальных достижений
-   - Начисление очков за активность
-   - Рейтинг пользователей
-
-6. 👥 **Реферальная программа**
-   - Уникальные реферальные ссылки
-   - Начисления очков за приглашения
-   - Статистика приглашений
-
-7. ⭐ **Умные рекомендации**
-   - На основе лайкнутых категорий
-   - На основе созданных событий
-   - Персонализированные подборки
-
-8. ⚡ **Админ-панель**
-   - Полная статистика
-   - Сегментированные рассылки
-   - Управление пользователями
-   - Система жалоб и блокировок
-
-## 🚀 Установка
-
-### Требования
-- Python 3.8+
-- pip
-
-### Шаги установки
-
-1. **Клонирование репозитория**
-```bash
-git clone <repository-url>
-cd telegram-dating-app
-```
-
-2. **Создание виртуального окружения (рекомендуется)**
-```bash
-python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# Linux/Mac
-source venv/bin/activate
-```
-
-3. **Установка зависимостей**
-```bash
-pip install -r requirements.txt
-```
-
-4. **Настройка переменных окружения**
-```bash
-# Скопируйте .env.example в .env
-cp .env.example .env
-
-# Отредактируйте .env и укажите:
-# - BOT_TOKEN - токен бота от @BotFather
-# - ADMINS - ID администраторов (через запятую)
-# - BROADCAST_LIMIT - лимит рассылки (по умолчанию 1000)
-```
-
-5. **Запуск бота**
-```bash
-python main.py
-```
+Приложение для знакомств через совместные мероприятия: **Mini App** (React) + **REST API** (FastAPI) + опционально **Telegram-бот**.
 
 ## 📁 Структура проекта
 
 ```
 telegram-dating-app/
-├── main.py                          # Точка входа
-├── bot.py                          # Основной файл бота
-├── config.py                       # Конфигурация
-├── database.py                     # База данных
-├── models.py                       # Модели данных
-├── handlers/                       # Обработчики
-│   ├── user_handlers.py           # Обработка пользователей
-│   ├── admin_handlers.py          # Админ-панель
-│   ├── event_handlers.py          # События
-│   └── callback_handlers.py       # Callback-запросы
-├── keyboards/                      # Клавиатуры
-│   ├── user_keyboards.py          # Пользовательские клавиатуры
-│   └── admin_keyboards.py         # Админ-клавиатуры
-├── services/                       # Сервисы
-│   ├── achievements.py            # Достижения
-│   ├── admin.py                   # Админ-функции
-│   ├── broadcast.py               # Рассылки
-│   ├── notifications.py           # Уведомления
-│   ├── recommendations.py        # Рекомендации
-│   └── reports.py                 # Жалобы и блокировки
-├── utils/                         # Утилиты
-│   └── helpers.py                # Вспомогательные функции
-├── .env                           # Переменные окружения (не коммитится)
-├── .env.example                   # Пример .env
-├── .gitignore                     # Игнорируемые файлы
-├── requirements.txt              # Зависимости
-└── README.md                     # Документация
+├── backend/                 # Python: API, бот, БД, сервисы
+│   ├── api.py              # REST API для Mini App (FastAPI)
+│   ├── bot.py              # Telegram-бот (pyTelegramBotAPI)
+│   ├── main.py             # Точка входа бота
+│   ├── config.py           # Конфигурация
+│   ├── database.py         # PostgreSQL
+│   ├── models.py           # Модели данных
+│   ├── handlers/           # Обработчики бота
+│   ├── keyboards/          # Клавиатуры бота
+│   ├── services/           # Достижения, рекомендации, уведомления и т.д.
+│   ├── utils/              # Вспомогательные функции
+│   ├── images/             # Картинки для бота (например Spon.png)
+│   ├── requirements.txt
+│   └── .env.example        # → скопировать в .env
+├── frontend/               # Mini App (React + TypeScript + Vite)
+│   ├── src/
+│   ├── package.json
+│   └── .env.example        # → скопировать в .env (VITE_API_URL)
+├── .env.example            # Подсказка: настройка в backend/ и frontend/
+├── .gitignore
+└── README.md
 ```
 
-## ⚙️ Конфигурация
+## 🚀 Запуск (localhost)
 
-Все чувствительные данные хранятся в файле `.env`:
+### 1. Бэкенд (REST API + при желании бот)
 
-```env
-BOT_TOKEN=your_bot_token_here
-ADMINS=123456789,987654321
-BROADCAST_LIMIT=1000
+```bash
+cd backend
+cp .env.example .env
+# В .env указать: BOT_TOKEN, ADMINS, DATABASE_URL; для проверки без Telegram — ALLOW_DEV_USER_ID=1
+
+# Создать БД PostgreSQL (один раз):
+# createdb dating
+# или: psql -c "CREATE DATABASE dating;"
+
+pip install -r requirements.txt
 ```
 
-**Важно:** Файл `.env` не должен попадать в репозиторий! Используйте `.env.example` как шаблон.
+**Только API (Mini App):**
+```bash
+uvicorn api:app --host 0.0.0.0 --port 8000
+```
 
-## 🔐 Безопасность
+**Только бот:**
+```bash
+python main.py
+```
 
-- ✅ Все токены и секреты хранятся в `.env`
-- ✅ `.env` добавлен в `.gitignore`
-- ✅ База данных (`dating.db`) не коммитится
-- ✅ `__pycache__` и виртуальные окружения исключены
+Бот и API используют одну БД **PostgreSQL** (строка подключения в `DATABASE_URL`). Таблицы создаются автоматически при первом запуске. Бот и API можно запускать по отдельности.
 
-## 📝 Команды админа
+### 2. Фронтенд (Mini App)
 
-- `/admin` - Открыть админ-панель
-- `/stats` - Показать статистику
-- `/ref` - Информация о реферальной программе
+```bash
+cd frontend
+cp .env.example .env
+# В .env указать: VITE_API_URL=http://localhost:8000
 
-## 🛠️ Разработка
+npm install
+npm run dev
+```
 
-Проект использует:
-- `pyTelegramBotAPI` - для работы с Telegram Bot API
-- `python-dotenv` - для загрузки переменных окружения
-- `sqlite3` - для хранения данных
+Откройте в браузере: **http://localhost:5173**  
+Без Telegram запросы идут с заголовком `X-Dev-User-Id` (по умолчанию 1), если в `backend/.env` задано `ALLOW_DEV_USER_ID=1`.
 
-## 📄 Лицензия
+## 🔧 Основной функционал
 
-Этот проект создан для личного использования.
+- **Mini App:** регистрация, профиль, события (поиск, создание, лайки), достижения, реферальная программа.
+- **Бот:** те же сценарии в Telegram + админ-панель (`/admin`), рассылки, жалобы и блокировки.
+
+Конфигурация и секреты: `backend/.env` и `frontend/.env`. База данных: **PostgreSQL** (URL в `DATABASE_URL`).
+
+---
+
+## 🌐 Деплой на Render (без файлов в репозитории)
+
+Всё настраивается вручную в [dashboard.render.com](https://dashboard.render.com). Репозиторий подключаете один раз, сервисы создаёте через веб-интерфейс.
+
+### 1. PostgreSQL
+
+- **Dashboard** → **New** → **PostgreSQL**.
+- Имя: например `dating-db`, регион — ближайший.
+- **Create Database**. После создания скопируйте **Internal Database URL** (или External, если фронт/бот будут снаружи).
+
+### 2. Backend (REST API)
+
+- **New** → **Web Service**.
+- Подключите репозиторий с проектом.
+- Настройки:
+  - **Name:** например `dating-api`.
+  - **Root Directory:** `backend`.
+  - **Runtime:** Python 3.
+  - **Build Command:** `pip install -r requirements.txt`
+  - **Start Command:** `uvicorn api:app --host 0.0.0.0 --port $PORT`
+- **Environment:**
+  - `DATABASE_URL` — вставьте Internal Database URL из шага 1 (или добавьте через **Connect** к вашей БД).
+  - `BOT_TOKEN` — токен бота от BotFather.
+  - `ADMINS` — ID админов через запятую, например `123456789`.
+- **Create Web Service**. Дождитесь деплоя и скопируйте URL сервиса, например `https://dating-api.onrender.com`.
+
+### 3. Frontend (Mini App)
+
+- **New** → **Static Site**.
+- Тот же репозиторий.
+- Настройки:
+  - **Name:** например `dating-app`.
+  - **Root Directory:** `frontend`.
+  - **Build Command:** `npm install && npm run build`
+  - **Publish Directory:** `dist`
+- **Environment** (обязательно для сборки):
+  - `VITE_API_URL` — URL бэкенда из шага 2, например `https://dating-api.onrender.com`.
+- **Create Static Site**. После деплоя получите URL статики, например `https://dating-app.onrender.com`.
+
+В Telegram Mini App укажите этот URL (или свой домен, если настроите).
+
+### 4. CORS для Mini App
+
+В коде API уже разрешён `https://web.telegram.org`. Если Mini App открывается с другого домена (например `https://dating-app.onrender.com`), добавьте его в `backend/api.py` в `allow_origins` у CORSMiddleware.
+
+### 5. Бот (по желанию)
+
+- **New** → **Background Worker**.
+- Тот же репозиторий.
+- **Root Directory:** `backend`.
+- **Build Command:** `pip install -r requirements.txt`
+  - **Start Command:** `python main.py`
+- **Environment:** те же `DATABASE_URL`, `BOT_TOKEN`, `ADMINS`, что и у API.
+- **Create Background Worker**.
+
+Бот и API могут работать в одном проекте: один Web Service (API), один Worker (бот), одна БД.
+
+### Кратко
+
+| Сервис      | Тип             | Root    | Start / Publish                    |
+|------------|------------------|---------|------------------------------------|
+| PostgreSQL | PostgreSQL       | —       | создаётся автоматически           |
+| API        | Web Service      | `backend` | `uvicorn api:app --host 0.0.0.0 --port $PORT` |
+| Frontend   | Static Site      | `frontend` | Publish: `dist`                    |
+| Бот        | Background Worker| `backend` | `python main.py`                   |
+
+Файлы `render.yaml` в репозитории не нужны — всё настраивается в дашборде Render.

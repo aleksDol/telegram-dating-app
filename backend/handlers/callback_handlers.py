@@ -152,7 +152,7 @@ class CallbackHandler:
             # Сохраняем лайк
             like_id = execute_query(
                 '''INSERT INTO likes (from_user, to_user, event_id, created) 
-                   VALUES (?, ?, ?, ?)''',
+                   VALUES (?, ?, ?, ?) RETURNING id''',
                 (user_id, creator_id, event_id,
                  datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
                 commit=True
@@ -946,7 +946,7 @@ class CallbackHandler:
             # Создаем лайк
             like_id = execute_query(
                 '''INSERT INTO likes (from_user, to_user, created) 
-                   VALUES (?, ?, ?)''',
+                   VALUES (?, ?, ?) RETURNING id''',
                 (user_id, liked_user_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
                 commit=True
             )
@@ -1496,7 +1496,7 @@ class CallbackHandler:
         broadcast_id = execute_query(
             '''INSERT INTO admin_broadcasts 
                (admin_id, content_type, content, caption, filters, created, status) 
-               VALUES (?, ?, ?, ?, ?, ?, ?)''',
+               VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id''',
             (
                 admin_id,
                 data['content_type'],
