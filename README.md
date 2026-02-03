@@ -88,7 +88,14 @@ npm run dev
 
 - **Dashboard** → **New** → **PostgreSQL**.
 - Имя: например `dating-db`, регион — ближайший.
-- **Create Database**. После создания скопируйте **Internal Database URL** (или External, если фронт/бот будут снаружи).
+- **Create Database**.
+
+**Откуда взять DATABASE_URL:**
+- Откройте созданную БД в списке сервисов.
+- В карточке БД найдите блок **Connect** (или **Info**). Там будут строки:
+  - **Internal Database URL** — для сервисов, которые работают на Render (API, бот). Именно её используйте как `DATABASE_URL`.
+  - **External Database URL** — для подключения с вашего компьютера (например, для миграций с локальной машины).
+- Скопируйте **Internal Database URL** целиком (строка вида `postgresql://user:pass@hostname/dbname?...`). Это и есть значение для `DATABASE_URL`.
 
 ### 2. Backend (REST API)
 
@@ -100,10 +107,11 @@ npm run dev
   - **Runtime:** Python 3.
   - **Build Command:** `pip install -r requirements.txt`
   - **Start Command:** `uvicorn api:app --host 0.0.0.0 --port $PORT`
-- **Environment:**
-  - `DATABASE_URL` — вставьте Internal Database URL из шага 1 (или добавьте через **Connect** к вашей БД).
-  - `BOT_TOKEN` — токен бота от BotFather.
-  - `ADMINS` — ID админов через запятую, например `123456789`.
+- **Environment** (вкладка **Environment** в настройках сервиса):
+  - Нажмите **Add Environment Variable**.
+  - **Key:** `DATABASE_URL`  
+  - **Value:** вставьте скопированный **Internal Database URL** из шага 1 (то, что скопировали из блока Connect у PostgreSQL).
+  - Добавьте ещё: `BOT_TOKEN` (токен от BotFather), `ADMINS` (ID админов через запятую, например `123456789`).
 - **Create Web Service**. Дождитесь деплоя и скопируйте URL сервиса, например `https://dating-api.onrender.com`.
 
 ### 3. Frontend (Mini App)
@@ -131,8 +139,8 @@ npm run dev
 - Тот же репозиторий.
 - **Root Directory:** `backend`.
 - **Build Command:** `pip install -r requirements.txt`
-  - **Start Command:** `python main.py`
-- **Environment:** те же `DATABASE_URL`, `BOT_TOKEN`, `ADMINS`, что и у API.
+- **Start Command:** `python main.py`
+- **Environment:** на вкладке **Environment** добавьте те же переменные, что и у API: `DATABASE_URL` (тот же Internal Database URL), `BOT_TOKEN`, `ADMINS`.
 - **Create Background Worker**.
 
 Бот и API могут работать в одном проекте: один Web Service (API), один Worker (бот), одна БД.

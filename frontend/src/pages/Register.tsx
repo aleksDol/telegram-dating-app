@@ -11,7 +11,7 @@ const STEPS = ['name', 'age', 'gender', 'city', 'relationship', 'purpose', 'phot
 export default function Register() {
   const navigate = useNavigate()
   const { setUser } = useApp()
-  const { user: tgUser } = useTelegram()
+  useTelegram()
   const [stepIndex, setStepIndex] = useState(0)
   const step = STEPS[stepIndex]
 
@@ -26,17 +26,6 @@ export default function Register() {
   const [error, setError] = useState('')
 
   const next = () => setStepIndex((i) => Math.min(i + 1, STEPS.length - 1))
-  const canNext = () => {
-    if (step === 'name') return name.trim().length > 0
-    if (step === 'age') {
-      const n = parseInt(age, 10)
-      return !isNaN(n) && n >= 18 && n <= 100
-    }
-    if (step === 'gender') return gender.length > 0
-    if (step === 'city') return CITIES.includes(city)
-    if (step === 'relationship') return relationship.length > 0
-    return true
-  }
 
   const enterDemoWithForm = () => {
     const ageNum = parseInt(age, 10) || 25
