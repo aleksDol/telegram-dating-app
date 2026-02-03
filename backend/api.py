@@ -22,14 +22,18 @@ from services.recommendations import RecommendationService
 
 app = FastAPI(title="Dating Mini App API")
 
-# CORS для localhost (фронт на 5173) и для Mini App в Telegram
+# CORS: localhost, Telegram Mini App, и доп. origins из env (например Static Site на Render)
+_cors_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://web.telegram.org",
+]
+_extra = os.getenv("ADDITIONAL_CORS_ORIGINS", "").strip()
+if _extra:
+    _cors_origins.extend(o.strip() for o in _extra.split(",") if o.strip())
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "https://web.telegram.org",
-    ],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

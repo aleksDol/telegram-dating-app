@@ -36,8 +36,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     setLoading(true)
     setError(null)
+    const timeoutMs = 12000
     try {
-      const { user: u } = await api.getUser()
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Сервер не отвечает')), timeoutMs)
+      )
+      const { user: u } = await Promise.race([api.getUser(), timeoutPromise])
       setUser(u ?? null)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Ошибка загрузки')
