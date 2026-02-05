@@ -31,16 +31,18 @@ class Database:
             cursor_factory=extras.RealDictCursor,
         )
         self.conn.autocommit = False
+        self._conn_lock = threading.Lock()
         self.create_tables()
 
     @contextmanager
     def get_connection(self):
-        try:
-            yield self.conn
-            self.conn.commit()
-        except Exception:
-            self.conn.rollback()
-            raise
+        with self._conn_lock:
+            try:
+                yield self.conn
+                self.conn.commit()
+            except Exception:
+                self.conn.rollback()
+                raise
 
     def create_tables(self):
         """Создание всех таблиц (PostgreSQL)."""

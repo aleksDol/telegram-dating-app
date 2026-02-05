@@ -105,8 +105,12 @@ class ReportService:
             )
 
             execute_query(
-                '''INSERT OR REPLACE INTO bans (user_id, reason, banned_by, banned_date) 
-                   VALUES (?, ?, ?, ?)''',
+                '''INSERT INTO bans (user_id, reason, banned_by, banned_date) 
+                   VALUES (?, ?, ?, ?)
+                   ON CONFLICT (user_id) DO UPDATE SET
+                     reason = EXCLUDED.reason,
+                     banned_by = EXCLUDED.banned_by,
+                     banned_date = EXCLUDED.banned_date''',
                 (user_id, reason, banned_by,
                  datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
                 commit=True
