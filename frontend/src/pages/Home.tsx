@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { DEMO_USER_ID } from '../context/AppContext'
+import { isApiConfigured } from '../api/client'
 import Logo from '../components/Logo'
 import type { User } from '../types'
 
@@ -34,8 +35,17 @@ export default function Home() {
     )
   }
 
-  // Не залогинен — показываем приветствие и выбор
+  // Не залогинен: при подключённом API — сразу на регистрацию, иначе — приветствие и выбор
   if (!user) {
+    if (isApiConfigured()) {
+      navigate('/register', { replace: true })
+      return (
+        <div className="screen-center">
+          <div className="loader" />
+          <p className="text-muted">Переход к регистрации...</p>
+        </div>
+      )
+    }
     return (
       <div className="hero">
         <div className="hero-bg" />

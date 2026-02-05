@@ -214,9 +214,11 @@ def api_get_user_profile(
 @app.post("/api/register")
 def api_register(body: RegisterBody, user_id: int = Depends(get_user_id)):
     existing = execute_query(
-        "SELECT user_id FROM users WHERE user_id = ?", (user_id,), fetchone=True
+        "SELECT user_id, is_banned FROM users WHERE user_id = ?", (user_id,), fetchone=True
     )
     if existing:
+        if existing.get("is_banned"):
+            raise HTTPException(status_code=403, detail="Account banned")
         row = execute_query("SELECT * FROM users WHERE user_id = ?", (user_id,), fetchone=True)
         return {"user": _row_to_user(row)}
     referral_code = generate_referral_code()

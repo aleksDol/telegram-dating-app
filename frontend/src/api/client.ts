@@ -40,8 +40,15 @@ async function request<T>(
   }
   const res = await fetch(url, { ...options, headers })
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error((err as { detail?: string }).detail || res.statusText)
+    const err = await res.json().catch(() => ({})) as { detail?: string | { msg?: string }[] }
+    const detail = err.detail
+    const message =
+      typeof detail === 'string'
+        ? detail
+        : Array.isArray(detail) && detail.length > 0
+          ? (detail[0]?.msg ?? detail[0]) ?? res.statusText
+          : res.statusText
+    throw new Error(message)
   }
   return res.json() as Promise<T>
 }

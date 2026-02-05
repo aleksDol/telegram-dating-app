@@ -47,6 +47,27 @@ export default function Register() {
 
   const handleRegister = async () => {
     const ageNum = parseInt(age, 10)
+    if (!name.trim()) {
+      setError('Введите имя')
+      return
+    }
+    if (!age || isNaN(ageNum) || ageNum < 18 || ageNum > 100) {
+      setError('Укажите возраст от 18 до 100')
+      return
+    }
+    if (!gender) {
+      setError('Выберите пол')
+      return
+    }
+    if (!city || !CITIES.includes(city)) {
+      setError('Выберите город из списка')
+      return
+    }
+    if (!relationship) {
+      setError('Укажите статус отношений')
+      return
+    }
+
     setLoading(true)
     setError('')
     try {
@@ -58,7 +79,7 @@ export default function Register() {
           city,
           relationship_status: relationship,
           purpose: purpose.trim() || 'куда-то сходить',
-          photo: photo || undefined,
+          photo: photo.trim() || undefined,
         })
         setUser(user)
         navigate('/', { replace: true })
@@ -66,8 +87,8 @@ export default function Register() {
         enterDemoWithForm()
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Ошибка регистрации')
-      // Показать возможность войти в режим просмотра с введёнными данными
+      const msg = e instanceof Error ? e.message : 'Ошибка регистрации'
+      setError(msg)
     } finally {
       setLoading(false)
     }
@@ -75,12 +96,14 @@ export default function Register() {
 
   return (
     <>
-      <div className="register-demo-bar">
-        <span>Нет бэкенда или не работает?</span>
-        <button type="button" className="btn-demo-inline" onClick={enterDemoWithForm}>
-          Посмотреть приложение →
-        </button>
-      </div>
+      {isApiConfigured() ? null : (
+        <div className="register-demo-bar">
+          <span>Нет бэкенда или не работает?</span>
+          <button type="button" className="btn-demo-inline" onClick={enterDemoWithForm}>
+            Посмотреть приложение →
+          </button>
+        </div>
+      )}
       <h1 className="page-title">Регистрация</h1>
 
       {step === 'name' && (
@@ -213,9 +236,15 @@ export default function Register() {
           {error && (
             <div className="card card-error" style={{ marginTop: 12 }}>
               <p className="text-error">{error}</p>
-              <button type="button" className="btn btn-ghost" style={{ marginTop: 8 }} onClick={enterDemoWithForm}>
-                Войти в режиме просмотра с моими данными
-              </button>
+              {isApiConfigured() ? (
+                <p className="text-muted" style={{ marginTop: 8, fontSize: 14 }}>
+                  Откройте приложение из Telegram (кнопка «Открыть» в боте) или проверьте, что бэкенд запущен и в .env указан VITE_API_URL. Для локальной проверки без Telegram задайте ALLOW_DEV_USER_ID=1 на бэкенде и при необходимости VITE_DEV_USER_ID на фронте.
+                </p>
+              ) : (
+                <button type="button" className="btn btn-ghost" style={{ marginTop: 8 }} onClick={enterDemoWithForm}>
+                  Войти в режиме просмотра с моими данными
+                </button>
+              )}
             </div>
           )}
         </>
