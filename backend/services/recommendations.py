@@ -25,7 +25,7 @@ class RecommendationService:
         # Получаем категории созданных пользователем событий
         user_events = execute_query(
             '''SELECT category FROM events 
-               WHERE user_id = ? AND category IS NOT NULL AND is_hidden = 0''',
+               WHERE user_id = ? AND category IS NOT NULL AND is_hidden = FALSE''',
             (user_id,), fetchall=True
         )
 
@@ -41,10 +41,10 @@ class RecommendationService:
                 '''SELECT e.*, u.name, u.age, u.gender, u.photo
                     FROM events e 
                     JOIN users u ON e.user_id = u.user_id 
-                    WHERE e.event_date > datetime('now') 
+                    WHERE e.event_date > NOW() 
                     AND e.user_id != ?
-                    AND e.is_hidden = 0
-                    AND u.is_banned = 0
+                    AND e.is_hidden = FALSE
+                    AND u.is_banned = FALSE
                     ORDER BY RANDOM() 
                     LIMIT ?''',
                 (user_id, limit), fetchall=True
@@ -55,11 +55,11 @@ class RecommendationService:
             query = f'''SELECT e.*, u.name, u.age, u.gender, u.photo
                     FROM events e 
                     JOIN users u ON e.user_id = u.user_id 
-                    WHERE e.event_date > datetime('now') 
+                    WHERE e.event_date > NOW() 
                     AND e.user_id != ?
                     AND e.category IN ({placeholders})
-                    AND e.is_hidden = 0
-                    AND u.is_banned = 0
+                    AND e.is_hidden = FALSE
+                    AND u.is_banned = FALSE
                     ORDER BY e.created DESC 
                     LIMIT ?'''
 
@@ -86,20 +86,20 @@ class RecommendationService:
                    u.name, u.age, u.gender, u.relationship_status, u.photo, u.purpose
             FROM events e 
             JOIN users u ON e.user_id = u.user_id 
-            WHERE e.event_date > datetime('now') 
+            WHERE e.event_date > NOW() 
             AND e.user_id != ?
             AND e.id NOT IN (SELECT event_id FROM likes WHERE from_user = ?)
-            AND e.is_hidden = 0
-            AND u.is_banned = 0
+            AND e.is_hidden = FALSE
+            AND u.is_banned = FALSE
         '''
 
         params = [user_id, user_id]
 
         if filter_type == 'today':
-            query = base_query + " AND date(e.event_date) = date('now') "
+            query = base_query + " AND (e.event_date::date) = CURRENT_DATE "
         elif filter_type == 'tomorrow':
             query = base_query + \
-                " AND date(e.event_date) = date('now', '+1 day') "
+                " AND (e.event_date::date) = CURRENT_DATE + INTERVAL '1 day' "
         elif filter_type == 'for_me':
             query = base_query + '''
                 AND (e.target_gender = 'Все' OR 
@@ -116,11 +116,11 @@ class RecommendationService:
                 FROM events e 
                 JOIN users u ON e.user_id = u.user_id 
                 LEFT JOIN likes l ON e.id = l.event_id
-                WHERE e.event_date > datetime('now') 
+                WHERE e.event_date > NOW() 
                 AND e.user_id != ?
                 AND e.id NOT IN (SELECT event_id FROM likes WHERE from_user = ?)
-                AND e.is_hidden = 0
-                AND u.is_banned = 0
+                AND e.is_hidden = FALSE
+                AND u.is_banned = FALSE
                 GROUP BY e.id
                 ORDER BY likes_count DESC
             '''

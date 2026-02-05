@@ -49,7 +49,7 @@ class AchievementService:
 
         # Получаем статистику пользователя
         events_count = execute_query(
-            "SELECT COUNT(*) as count FROM events WHERE user_id = ? AND is_hidden = 0",
+            "SELECT COUNT(*) as count FROM events WHERE user_id = ? AND is_hidden = FALSE",
             (user_id,), fetchone=True
         )['count']
 
@@ -59,7 +59,7 @@ class AchievementService:
         )['count']
 
         mutual_count = execute_query(
-            "SELECT COUNT(*) as count FROM likes WHERE to_user = ? AND mutual = 1",
+            "SELECT COUNT(*) as count FROM likes WHERE to_user = ? AND mutual = TRUE",
             (user_id,), fetchone=True
         )['count']
 

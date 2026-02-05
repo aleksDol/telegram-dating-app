@@ -15,7 +15,7 @@ class BroadcastService:
         query = "SELECT user_id FROM users WHERE 1=1"
         params = []
 
-        query += " AND is_banned = 0"
+        query += " AND is_banned = FALSE"
 
         if filters.get('gender') and filters['gender'] != 'all':
             query += " AND gender = ?"

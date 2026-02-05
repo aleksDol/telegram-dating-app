@@ -181,7 +181,7 @@ class EventHandlers:
 
                 # Проверяем достижения
                 events_count = execute_query(
-                    "SELECT COUNT(*) as count FROM events WHERE user_id=? AND is_hidden = 0",
+                    "SELECT COUNT(*) as count FROM events WHERE user_id=? AND is_hidden = FALSE",
                     (user_id,), fetchone=True
                 )['count']
 

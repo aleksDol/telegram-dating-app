@@ -208,7 +208,7 @@ def api_get_user_profile(
 ):
     """Публичный профиль пользователя по id (для перехода из карточки события)."""
     row = execute_query(
-        "SELECT user_id, name, age, gender, city, relationship_status, photo, purpose FROM users WHERE user_id = ? AND (is_banned = 0 OR is_banned IS NULL)",
+        "SELECT user_id, name, age, gender, city, relationship_status, photo, purpose FROM users WHERE user_id = ? AND (is_banned = FALSE OR is_banned IS NULL)",
         (profile_user_id,),
         fetchone=True,
     )
@@ -305,7 +305,7 @@ def api_get_event(event_id: int, user_id: int = Depends(get_user_id)):
     row = execute_query(
         """SELECT e.*, u.name, u.age, u.gender, u.photo, u.purpose, u.relationship_status
            FROM events e JOIN users u ON e.user_id = u.user_id
-           WHERE e.id = ? AND e.is_hidden = 0 AND u.is_banned = 0""",
+           WHERE e.id = ? AND e.is_hidden = FALSE AND u.is_banned = FALSE""",
         (event_id,), fetchone=True
     )
     if not row:
@@ -338,7 +338,7 @@ def api_create_event(body: CreateEventBody, user_id: int = Depends(get_user_id))
     )
     AchievementService.update_user_points(user_id, 10, "за создание события")
     events_count = execute_query(
-        "SELECT COUNT(*) as count FROM events WHERE user_id = ? AND is_hidden = 0",
+        "SELECT COUNT(*) as count FROM events WHERE user_id = ? AND is_hidden = FALSE",
         (user_id,), fetchone=True
     )["count"]
     if events_count == 1:
@@ -378,14 +378,14 @@ def api_delete_event(event_id: int, user_id: int = Depends(get_user_id)):
     row = execute_query("SELECT user_id FROM events WHERE id = ?", (event_id,), fetchone=True)
     if not row or row["user_id"] != user_id:
         raise HTTPException(status_code=404, detail="Event not found")
-    execute_query("UPDATE events SET is_hidden = 1 WHERE id = ?", (event_id,), commit=True)
+    execute_query("UPDATE events SET is_hidden = TRUE WHERE id = ?", (event_id,), commit=True)
     return {"ok": True}
 
 
 @app.get("/api/events/mine")
 def api_my_events(user_id: int = Depends(get_user_id)):
     rows = execute_query(
-        "SELECT * FROM events WHERE user_id = ? AND is_hidden = 0 ORDER BY created DESC",
+        "SELECT * FROM events WHERE user_id = ? AND is_hidden = FALSE ORDER BY created DESC",
         (user_id,), fetchall=True
     )
     events = []
@@ -400,7 +400,7 @@ def api_my_events(user_id: int = Depends(get_user_id)):
 @app.post("/api/events/{event_id:int}/like")
 def api_like_event(event_id: int, user_id: int = Depends(get_user_id)):
     event = execute_query(
-        "SELECT id, user_id, category FROM events WHERE id = ? AND is_hidden = 0",
+        "SELECT id, user_id, category FROM events WHERE id = ? AND is_hidden = FALSE",
         (event_id,), fetchone=True
     )
     if not event:
@@ -440,8 +440,8 @@ def api_like_event(event_id: int, user_id: int = Depends(get_user_id)):
     )
     mutual = bool(mutual_check)
     if mutual:
-        execute_query("UPDATE likes SET mutual = 1 WHERE from_user = ? AND to_user = ? AND event_id = ?", (user_id, creator_id, event_id), commit=True)
-        execute_query("UPDATE likes SET mutual = 1 WHERE from_user = ? AND to_user = ? AND event_id = ?", (creator_id, user_id, event_id), commit=True)
+        execute_query("UPDATE likes SET mutual = TRUE WHERE from_user = ? AND to_user = ? AND event_id = ?", (user_id, creator_id, event_id), commit=True)
+        execute_query("UPDATE likes SET mutual = TRUE WHERE from_user = ? AND to_user = ? AND event_id = ?", (creator_id, user_id, event_id), commit=True)
         AchievementService.update_user_points(user_id, 20, "за взаимную симпатию")
         AchievementService.update_user_points(creator_id, 20, "за взаимную симпатию")
         AchievementService.check_achievements(user_id)

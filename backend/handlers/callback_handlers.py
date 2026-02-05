@@ -122,7 +122,7 @@ class CallbackHandler:
 
             # Получаем информацию о событии (включая id)
             event = execute_query(
-                "SELECT id, user_id, title, description, event_date, category FROM events WHERE id=? AND is_hidden = 0",
+                "SELECT id, user_id, title, description, event_date, category FROM events WHERE id=? AND is_hidden = FALSE",
                 (event_id,), fetchone=True
             )
 
@@ -266,13 +266,13 @@ class CallbackHandler:
 
             # Обновляем лайк как взаимный
             execute_query(
-                "UPDATE likes SET mutual = 1 WHERE id = ?",
+                "UPDATE likes SET mutual = TRUE WHERE id = ?",
                 (like_id,), commit=True
             )
 
             # Проверяем, есть ли обратный лайк
             mutual_check = execute_query(
-                "SELECT id FROM likes WHERE from_user = ? AND to_user = ? AND mutual = 1",
+                "SELECT id FROM likes WHERE from_user = ? AND to_user = ? AND mutual = TRUE",
                 (user_id, like['from_user']), fetchone=True
             )
 
@@ -964,7 +964,7 @@ class CallbackHandler:
             if mutual_check:
                 # Делаем оба лайка взаимными
                 execute_query(
-                    "UPDATE likes SET mutual = 1 WHERE id IN (?, ?)",
+                    "UPDATE likes SET mutual = TRUE WHERE id IN (?, ?)",
                     (like_id, mutual_check['id']), commit=True
                 )
 

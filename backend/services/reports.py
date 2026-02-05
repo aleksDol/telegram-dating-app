@@ -98,7 +98,7 @@ class ReportService:
         """Блокирует пользователя"""
         try:
             execute_query(
-                '''UPDATE users SET is_banned = 1, ban_reason = ?, banned_date = ? 
+                '''UPDATE users SET is_banned = TRUE, ban_reason = ?, banned_date = ? 
                    WHERE user_id = ?''',
                 (reason, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), user_id),
                 commit=True
@@ -117,7 +117,7 @@ class ReportService:
             )
 
             execute_query(
-                "UPDATE events SET is_hidden = 1 WHERE user_id = ?",
+                "UPDATE events SET is_hidden = TRUE WHERE user_id = ?",
                 (user_id,), commit=True
             )
 
@@ -131,7 +131,7 @@ class ReportService:
         """Разблокирует пользователя"""
         try:
             execute_query(
-                '''UPDATE users SET is_banned = 0, ban_reason = NULL, banned_date = NULL 
+                '''UPDATE users SET is_banned = FALSE, ban_reason = NULL, banned_date = NULL 
                    WHERE user_id = ?''',
                 (user_id,), commit=True
             )
@@ -142,7 +142,7 @@ class ReportService:
             )
 
             execute_query(
-                "UPDATE events SET is_hidden = 0 WHERE user_id = ?",
+                "UPDATE events SET is_hidden = FALSE WHERE user_id = ?",
                 (user_id,), commit=True
             )
 

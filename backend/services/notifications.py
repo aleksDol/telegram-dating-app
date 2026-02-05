@@ -28,7 +28,7 @@ class NotificationService:
 
         # Получаем информацию о пользователе, который лайкнул
         liker = execute_query(
-            "SELECT name, age, gender, city, relationship_status, photo, purpose, username FROM users WHERE user_id=? AND is_banned = 0",
+            "SELECT name, age, gender, city, relationship_status, photo, purpose, username FROM users WHERE user_id=? AND is_banned = FALSE",
             (liker_id,), fetchone=True
         )
 
@@ -94,12 +94,12 @@ class NotificationService:
             event = None
 
         user1 = execute_query(
-            "SELECT name, username FROM users WHERE user_id = ? AND is_banned = 0",
+            "SELECT name, username FROM users WHERE user_id = ? AND is_banned = FALSE",
             (user1_id,), fetchone=True
         )
 
         user2 = execute_query(
-            "SELECT name, username FROM users WHERE user_id = ? AND is_banned = 0",
+            "SELECT name, username FROM users WHERE user_id = ? AND is_banned = FALSE",
             (user2_id,), fetchone=True
         )
 

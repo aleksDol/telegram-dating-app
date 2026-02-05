@@ -26,61 +26,61 @@ class AdminService:
         stats = {}
 
         stats['total_users'] = execute_query(
-            "SELECT COUNT(*) as count FROM users WHERE is_banned = 0", fetchone=True
+            "SELECT COUNT(*) as count FROM users WHERE is_banned = FALSE", fetchone=True
         )['count']
 
         stats['banned_users'] = execute_query(
-            "SELECT COUNT(*) as count FROM users WHERE is_banned = 1", fetchone=True
+            "SELECT COUNT(*) as count FROM users WHERE is_banned = TRUE", fetchone=True
         )['count']
 
         stats['gender_stats'] = execute_query(
-            "SELECT gender, COUNT(*) as count FROM users WHERE is_banned = 0 GROUP BY gender",
+            "SELECT gender, COUNT(*) as count FROM users WHERE is_banned = FALSE GROUP BY gender",
             fetchall=True
         )
 
         today = datetime.now().strftime("%Y-%m-%d")
         stats['new_users_today'] = execute_query(
-            "SELECT COUNT(*) as count FROM users WHERE DATE(reg_date) = ? AND is_banned = 0",
+            "SELECT COUNT(*) as count FROM users WHERE DATE(reg_date::timestamp) = ? AND is_banned = FALSE",
             (today,), fetchone=True
         )['count']
 
         week_ago = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
         stats['active_users_week'] = execute_query(
-            "SELECT COUNT(*) as count FROM users WHERE last_active >= ? AND is_banned = 0",
+            "SELECT COUNT(*) as count FROM users WHERE last_active >= ? AND is_banned = FALSE",
             (week_ago,), fetchone=True
         )['count']
 
         stats['total_events'] = execute_query(
-            "SELECT COUNT(*) as count FROM events WHERE is_hidden = 0", fetchone=True
+            "SELECT COUNT(*) as count FROM events WHERE is_hidden = FALSE", fetchone=True
         )['count']
 
         stats['active_events'] = execute_query(
-            "SELECT COUNT(*) as count FROM events WHERE event_date > datetime('now') AND is_hidden = 0",
+            "SELECT COUNT(*) as count FROM events WHERE event_date > NOW() AND is_hidden = FALSE",
             fetchone=True
         )['count']
 
         stats['hidden_events'] = execute_query(
-            "SELECT COUNT(*) as count FROM events WHERE is_hidden = 1",
+            "SELECT COUNT(*) as count FROM events WHERE is_hidden = TRUE",
             fetchone=True
         )['count']
 
         stats['referral_users'] = execute_query(
-            "SELECT COUNT(*) as count FROM users WHERE referred_by IS NOT NULL AND is_banned = 0",
+            "SELECT COUNT(*) as count FROM users WHERE referred_by IS NOT NULL AND is_banned = FALSE",
             fetchone=True
         )['count']
 
         stats['total_referrals'] = execute_query(
-            "SELECT SUM(referrals_count) as total FROM users WHERE is_banned = 0",
+            "SELECT SUM(referrals_count) as total FROM users WHERE is_banned = FALSE",
             fetchone=True
         )['total'] or 0
 
         stats['top_referrers'] = execute_query(
-            "SELECT name, referrals_count FROM users WHERE referrals_count > 0 AND is_banned = 0 ORDER BY referrals_count DESC LIMIT 5",
+            "SELECT name, referrals_count FROM users WHERE referrals_count > 0 AND is_banned = FALSE ORDER BY referrals_count DESC LIMIT 5",
             fetchall=True
         )
 
         stats['top_cities'] = execute_query(
-            "SELECT city, COUNT(*) as count FROM users WHERE city IS NOT NULL AND city != '' AND is_banned = 0 GROUP BY city ORDER BY count DESC LIMIT 5",
+            "SELECT city, COUNT(*) as count FROM users WHERE city IS NOT NULL AND city != '' AND is_banned = FALSE GROUP BY city ORDER BY count DESC LIMIT 5",
             fetchall=True
         )
 
@@ -89,17 +89,17 @@ class AdminService:
         )['count']
 
         stats['mutual_likes'] = execute_query(
-            "SELECT COUNT(*) as count FROM likes WHERE mutual = 1", fetchone=True
+            "SELECT COUNT(*) as count FROM likes WHERE mutual = TRUE", fetchone=True
         )['count']
 
         stats['total_points'] = execute_query(
-            "SELECT SUM(points) as total FROM users WHERE is_banned = 0", fetchone=True
+            "SELECT SUM(points) as total FROM users WHERE is_banned = FALSE", fetchone=True
         )['total'] or 0
 
         hour_ago = (datetime.now() - timedelta(hours=1)
                     ).strftime("%Y-%m-%d %H:%M:%S")
         stats['online_now'] = execute_query(
-            "SELECT COUNT(*) as count FROM users WHERE last_active >= ? AND is_banned = 0",
+            "SELECT COUNT(*) as count FROM users WHERE last_active >= ? AND is_banned = FALSE",
             (hour_ago,), fetchone=True
         )['count']
 
@@ -200,10 +200,10 @@ class AdminService:
                                   COUNT(DISTINCT l3.id) as mutual_likes,
                                   COUNT(DISTINCT a.id) as achievements_count
                            FROM users u
-                           LEFT JOIN events e ON u.user_id = e.user_id AND e.is_hidden = 0
+                           LEFT JOIN events e ON u.user_id = e.user_id AND e.is_hidden = FALSE
                            LEFT JOIN likes l1 ON u.user_id = l1.to_user
                            LEFT JOIN likes l2 ON u.user_id = l2.from_user
-                           LEFT JOIN likes l3 ON u.user_id = l3.to_user AND l3.mutual = 1
+                           LEFT JOIN likes l3 ON u.user_id = l3.to_user AND l3.mutual = TRUE
                            LEFT JOIN achievements a ON u.user_id = a.user_id
                            WHERE u.user_id = ?
                            GROUP BY u.user_id"""
@@ -221,10 +221,10 @@ class AdminService:
                                   COUNT(DISTINCT l3.id) as mutual_likes,
                                   COUNT(DISTINCT a.id) as achievements_count
                            FROM users u
-                           LEFT JOIN events e ON u.user_id = e.user_id AND e.is_hidden = 0
+                           LEFT JOIN events e ON u.user_id = e.user_id AND e.is_hidden = FALSE
                            LEFT JOIN likes l1 ON u.user_id = l1.to_user
                            LEFT JOIN likes l2 ON u.user_id = l2.from_user
-                           LEFT JOIN likes l3 ON u.user_id = l3.to_user AND l3.mutual = 1
+                           LEFT JOIN likes l3 ON u.user_id = l3.to_user AND l3.mutual = TRUE
                            LEFT JOIN achievements a ON u.user_id = a.user_id
                            WHERE u.username = ?
                            GROUP BY u.user_id"""

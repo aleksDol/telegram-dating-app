@@ -89,7 +89,7 @@ class UserHandlers:
 
         if referral_code_param and referral_code_param.startswith('REF_'):
             referrer = execute_query(
-                "SELECT user_id, name, referral_code FROM users WHERE referral_code = ? AND is_banned = 0",
+                "SELECT user_id, name, referral_code FROM users WHERE referral_code = ? AND is_banned = FALSE",
                 (referral_code_param,), fetchone=True
             )
 
@@ -370,7 +370,7 @@ class UserHandlers:
 
         # Получаем статистику
         events_count = execute_query(
-            "SELECT COUNT(*) as count FROM events WHERE user_id=? AND is_hidden = 0",
+            "SELECT COUNT(*) as count FROM events WHERE user_id=? AND is_hidden = FALSE",
             (user_id,), fetchone=True
         )['count']
 
@@ -380,7 +380,7 @@ class UserHandlers:
         )['count']
 
         mutual_likes = execute_query(
-            "SELECT COUNT(*) as count FROM likes WHERE to_user=? AND mutual=1",
+            "SELECT COUNT(*) as count FROM likes WHERE to_user=? AND mutual=TRUE",
             (user_id,), fetchone=True
         )['count']
 
@@ -482,7 +482,7 @@ class UserHandlers:
             return
 
         total_count = execute_query(
-            "SELECT COUNT(*) as count FROM events WHERE user_id=? AND is_hidden = 0",
+            "SELECT COUNT(*) as count FROM events WHERE user_id=? AND is_hidden = FALSE",
             (user_id,), fetchone=True
         )['count']
 
@@ -493,7 +493,7 @@ class UserHandlers:
 
         events = execute_query(
             """SELECT id, title, description, event_date, target_gender, city, category 
-               FROM events WHERE user_id=? AND is_hidden = 0
+               FROM events WHERE user_id=? AND is_hidden = FALSE
                ORDER BY event_date 
                LIMIT ? OFFSET ?""",
             (user_id, page_size, page * page_size), fetchall=True
@@ -1164,7 +1164,7 @@ class UserHandlers:
 
         # Проверяем, есть ли уже события
         events_count = execute_query(
-            "SELECT COUNT(*) as count FROM events WHERE user_id=? AND is_hidden = 0",
+            "SELECT COUNT(*) as count FROM events WHERE user_id=? AND is_hidden = FALSE",
             (user_id,), fetchone=True
         )
 
