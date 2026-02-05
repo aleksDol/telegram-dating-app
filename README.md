@@ -143,6 +143,8 @@ npm run dev
 
 При **Start Command** `python run_all.py` бот запускается вместе с API в одном Web Service — **отдельный Background Worker для бота не нужен**.
 
+**Важно:** если появится ошибка Telegram `409 Conflict: terminated by other getUpdates request` — значит с одним токеном бота запущено два процесса (например Web Service + старый Background Worker). Удалите или остановите **Background Worker** с командой `python main.py`; должен остаться только один сервис с `python run_all.py`.
+
 Если по какой-то причине хотите запускать бота отдельно:
 - **New** → **Background Worker**, Root: `backend`, Build: `pip install -r requirements.txt`, Start: `python main.py`, те же переменные окружения (DATABASE_URL, BOT_TOKEN, ADMINS).
 

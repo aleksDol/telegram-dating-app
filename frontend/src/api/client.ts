@@ -5,9 +5,29 @@
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
 
-function getInitData(): string {
+function getTelegramWebApp(): { initData: string } | null {
   const tg = (window as unknown as { Telegram?: { WebApp?: { initData: string } } }).Telegram
-  return tg?.WebApp?.initData || ''
+  return tg?.WebApp ?? null
+}
+
+function getInitData(): string {
+  return getTelegramWebApp()?.initData ?? ''
+}
+
+/** В Telegram WebView initData иногда появляется с задержкой. Ждём до maxMs. */
+async function waitForInitDataIfInTelegram(maxMs = 2500): Promise<string> {
+  const webApp = getTelegramWebApp()
+  if (!webApp) return getInitData()
+  let data = webApp.initData || ''
+  if (data) return data
+  const step = 150
+  const deadline = Date.now() + maxMs
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, step))
+    data = webApp.initData || ''
+    if (data) return data
+  }
+  return ''
 }
 
 /** Для проверки на localhost без Telegram: передаём dev user id в заголовке */
@@ -29,7 +49,8 @@ async function request<T>(
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
   }
-  const initData = getInitData()
+  // В Mini App initData может появиться с задержкой — подождать перед первым запросом
+  const initData = getInitData() || (await waitForInitDataIfInTelegram())
   if (initData) {
     (headers as Record<string, string>)['X-Telegram-Init-Data'] = initData
   } else {
