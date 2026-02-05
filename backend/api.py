@@ -42,7 +42,8 @@ app.add_middleware(
 
 def validate_init_data(init_data: str) -> dict | None:
     """Проверка initData от Telegram Web App. Возвращает распарсенные данные или None."""
-    if not init_data or not config.BOT_TOKEN:
+    token = (config.BOT_TOKEN or "").strip()
+    if not init_data or not token:
         return None
     try:
         pairs = parse_qsl(init_data, keep_blank_values=True)
@@ -51,15 +52,16 @@ def validate_init_data(init_data: str) -> dict | None:
         if not received_hash:
             return None
         data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(data.items()))
+        # По документации Telegram: secret_key = HMAC_SHA256(key="WebAppData", message=bot_token)
         secret_key = hmac.new(
-            config.BOT_TOKEN.encode(),
             b"WebAppData",
-            hashlib.sha256
+            token.encode("utf-8"),
+            hashlib.sha256,
         ).digest()
         computed_hash = hmac.new(
             secret_key,
-            data_check_string.encode(),
-            hashlib.sha256
+            data_check_string.encode("utf-8"),
+            hashlib.sha256,
         ).hexdigest()
         if computed_hash != received_hash:
             return None
