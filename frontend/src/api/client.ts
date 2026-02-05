@@ -113,7 +113,7 @@ export const api = {
     gender: string
     city: string
     relationship_status: string
-    photo?: string
+    photo: string
     purpose?: string
     referred_by?: number
   }) => request<{ user: import('../types').User }>('/api/register', { method: 'POST', body: JSON.stringify(data) }),

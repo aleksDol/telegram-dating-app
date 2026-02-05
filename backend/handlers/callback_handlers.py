@@ -728,15 +728,13 @@ class CallbackHandler:
                     call.id, "❌ Вы не можете удалить это событие")
                 return
 
-            # Удаляем событие
-            execute_query(
-                "DELETE FROM events WHERE id = ?",
-                (event_id,), commit=True
-            )
-
-            # Удаляем связанные лайки
+            # Сначала удаляем связанные лайки, затем событие (из-за FK)
             execute_query(
                 "DELETE FROM likes WHERE event_id = ?",
+                (event_id,), commit=True
+            )
+            execute_query(
+                "DELETE FROM events WHERE id = ?",
                 (event_id,), commit=True
             )
 

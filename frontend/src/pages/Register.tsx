@@ -22,6 +22,7 @@ export default function Register() {
   const [relationship, setRelationship] = useState('')
   const [purpose, setPurpose] = useState('куда-то сходить')
   const [photo, setPhoto] = useState('')
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -67,6 +68,10 @@ export default function Register() {
       setError('Укажите статус отношений')
       return
     }
+    if (!photo.trim()) {
+      setError('Добавьте фото для регистрации')
+      return
+    }
 
     setLoading(true)
     setError('')
@@ -79,7 +84,7 @@ export default function Register() {
           city,
           relationship_status: relationship,
           purpose: purpose.trim() || 'куда-то сходить',
-          photo: photo.trim() || undefined,
+          photo: photo.trim(),
         })
         setUser(user)
         navigate('/', { replace: true })
@@ -223,14 +228,54 @@ export default function Register() {
 
       {step === 'photo' && (
         <>
-          <label className="label">Фото (URL, необязательно)</label>
+          <label className="label">Фото (обязательно)</label>
+          <p className="text-muted" style={{ marginBottom: 8, fontSize: 14 }}>
+            Загрузите фото или вставьте ссылку на изображение. Без фото регистрация невозможна.
+          </p>
           <input
             className="input"
-            value={photo}
-            onChange={(e) => setPhoto(e.target.value)}
-            placeholder="https://..."
+            type="file"
+            accept="image/*"
+            capture="user"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) {
+                setPhotoFile(file)
+                const reader = new FileReader()
+                reader.onload = () => {
+                  const dataUrl = reader.result as string
+                  setPhoto(dataUrl)
+                }
+                reader.readAsDataURL(file)
+              }
+            }}
+            style={{ marginBottom: 8 }}
           />
-          <button className="btn btn-primary btn-lg block-btn" onClick={handleRegister} disabled={loading}>
+          <input
+            className="input"
+            value={photo.startsWith('data:') ? '' : photo}
+            onChange={(e) => {
+              setPhotoFile(null)
+              setPhoto(e.target.value.trim())
+            }}
+            placeholder="Или вставьте URL фото"
+            style={{ marginBottom: 8 }}
+          />
+          {photo && (
+            <div style={{ marginBottom: 12, textAlign: 'center' }}>
+              <img
+                src={photo}
+                alt="Ваше фото"
+                style={{ maxWidth: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 8 }}
+                onError={() => setPhoto('')}
+              />
+            </div>
+          )}
+          <button
+            className="btn btn-primary btn-lg block-btn"
+            onClick={handleRegister}
+            disabled={loading || !photo.trim()}
+          >
             {loading ? 'Регистрация...' : 'Готово'}
           </button>
           {error && (

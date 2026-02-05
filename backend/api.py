@@ -105,7 +105,7 @@ class RegisterBody(BaseModel):
     gender: str
     city: str
     relationship_status: str
-    photo: str | None = None
+    photo: str  # обязательно: data URL (base64) или URL фото
     purpose: str | None = None
     referred_by: int | None = None
 
@@ -227,6 +227,8 @@ def api_register(body: RegisterBody, user_id: int = Depends(get_user_id)):
             raise HTTPException(status_code=403, detail="Account banned")
         row = execute_query("SELECT * FROM users WHERE user_id = ?", (user_id,), fetchone=True)
         return {"user": _row_to_user(row)}
+    if not (body.photo and body.photo.strip()):
+        raise HTTPException(status_code=400, detail="Фото обязательно для регистрации")
     referral_code = generate_referral_code()
     purpose = (body.purpose or "").strip() or "куда-то сходить"
     execute_query(
@@ -234,7 +236,7 @@ def api_register(body: RegisterBody, user_id: int = Depends(get_user_id)):
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             user_id, "", body.name.strip(), body.age, body.gender, body.city,
-            body.relationship_status or "Не в отношениях", body.photo, purpose,
+            body.relationship_status or "Не в отношениях", body.photo.strip(), purpose,
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             datetime.now().strftime("%Y-%m-%d"),
             referral_code, body.referred_by,
@@ -378,7 +380,8 @@ def api_delete_event(event_id: int, user_id: int = Depends(get_user_id)):
     row = execute_query("SELECT user_id FROM events WHERE id = ?", (event_id,), fetchone=True)
     if not row or row["user_id"] != user_id:
         raise HTTPException(status_code=404, detail="Event not found")
-    execute_query("UPDATE events SET is_hidden = TRUE WHERE id = ?", (event_id,), commit=True)
+    execute_query("DELETE FROM likes WHERE event_id = ?", (event_id,), commit=True)
+    execute_query("DELETE FROM events WHERE id = ?", (event_id,), commit=True)
     return {"ok": True}
 
 
