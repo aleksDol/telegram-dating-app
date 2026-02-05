@@ -14,12 +14,22 @@ pip install -r requirements.txt
 
 ## Запуск
 
-**REST API (для Mini App):**
+**Всё одной командой (API + бот):**
+```bash
+python run_all.py
+```
+API будет на `http://0.0.0.0:8000`, бот — в режиме polling. Остановка: Ctrl+C.
+
+Опционально в `.env` можно задать `API_HOST` и `API_PORT`.
+
+**По отдельности:**
+
+REST API (для Mini App):
 ```bash
 uvicorn api:app --host 0.0.0.0 --port 8000
 ```
 
-**Telegram-бот:**
+Telegram-бот:
 ```bash
 python main.py
 ```

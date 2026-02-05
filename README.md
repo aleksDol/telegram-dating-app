@@ -97,7 +97,7 @@ npm run dev
   - **External Database URL** — для подключения с вашего компьютера (например, для миграций с локальной машины).
 - Скопируйте **Internal Database URL** целиком (строка вида `postgresql://user:pass@hostname/dbname?...`). Это и есть значение для `DATABASE_URL`.
 
-### 2. Backend (REST API)
+### 2. Backend (REST API + бот одной командой)
 
 - **New** → **Web Service**.
 - Подключите репозиторий с проектом.
@@ -106,7 +106,8 @@ npm run dev
   - **Root Directory:** `backend`.
   - **Runtime:** Python 3.
   - **Build Command:** `pip install -r requirements.txt`
-  - **Start Command:** `uvicorn api:app --host 0.0.0.0 --port $PORT`
+  - **Start Command:** `python run_all.py`  
+    (запускает и API, и Telegram-бота; Render сам подставляет `PORT`, менять ничего не нужно)
 - **Environment** (вкладка **Environment** в настройках сервиса):
   - Нажмите **Add Environment Variable**.
   - **Обязательно** (иначе ошибка psycopg2 с Python 3.13): **Key:** `PYTHON_VERSION`, **Value:** `3.12.7`.
@@ -115,7 +116,7 @@ npm run dev
   - Добавьте ещё: `BOT_TOKEN` (токен от BotFather), `ADMINS` (ID админов через запятую, например `123456789`).
 - **Create Web Service**. Дождитесь деплоя и скопируйте URL сервиса, например `https://dating-api.onrender.com`.
 
-На Render по умолчанию может быть Python 3.13, с которым psycopg2 несовместим. Поэтому **нужно** задать `PYTHON_VERSION` = `3.12.7` в Environment (и для Web Service API, и для Background Worker бота).
+На Render по умолчанию может быть Python 3.13, с которым psycopg2 несовместим. Поэтому **нужно** задать `PYTHON_VERSION` = `3.12.7` в Environment Web Service (backend).
 
 ### 3. Frontend (Mini App)
 
@@ -138,25 +139,19 @@ npm run dev
 - На фронте добавлен **таймаут 12 секунд** на запрос к API: если сервер не отвечает (например, «засыпает» на бесплатном тарифе Render), загрузка прервётся и появится сообщение об ошибке. Можно нажать «Посмотреть все страницы» и пользоваться демо без API.
 - Если открываете приложение **в браузере** (не в Telegram), авторизации не будет — нажмите «Посмотреть все страницы», чтобы войти в демо-режим.
 
-### 5. Бот (по желанию)
+### 5. Бот (уже в одном сервисе с API)
 
-- **New** → **Background Worker**.
-- Тот же репозиторий.
-- **Root Directory:** `backend`.
-- **Build Command:** `pip install -r requirements.txt`
-- **Start Command:** `python main.py`
-- **Environment:** на вкладке **Environment** добавьте те же переменные, что и у API: `DATABASE_URL` (тот же Internal Database URL), `BOT_TOKEN`, `ADMINS`.
-- **Create Background Worker**.
+При **Start Command** `python run_all.py` бот запускается вместе с API в одном Web Service — **отдельный Background Worker для бота не нужен**.
 
-Бот и API могут работать в одном проекте: один Web Service (API), один Worker (бот), одна БД.
+Если по какой-то причине хотите запускать бота отдельно:
+- **New** → **Background Worker**, Root: `backend`, Build: `pip install -r requirements.txt`, Start: `python main.py`, те же переменные окружения (DATABASE_URL, BOT_TOKEN, ADMINS).
 
 ### Кратко
 
 | Сервис      | Тип             | Root    | Start / Publish                    |
 |------------|------------------|---------|------------------------------------|
 | PostgreSQL | PostgreSQL       | —       | создаётся автоматически           |
-| API        | Web Service      | `backend` | `uvicorn api:app --host 0.0.0.0 --port $PORT` |
+| API + бот  | Web Service      | `backend` | `python run_all.py`               |
 | Frontend   | Static Site      | `frontend` | Publish: `dist`                    |
-| Бот        | Background Worker| `backend` | `python main.py`                   |
 
 Файлы `render.yaml` в репозитории не нужны — всё настраивается в дашборде Render.

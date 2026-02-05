@@ -4,7 +4,17 @@ from datetime import datetime
 import json
 from database import execute_query
 from config import config
-from keyboards.user_keyboards import *
+from keyboards.user_keyboards import (
+    get_start_webapp_keyboard,
+    get_main_menu,
+    get_gender_keyboard,
+    get_relationship_keyboard,
+    get_user_profile_keyboard,
+    get_filter_keyboard,
+    get_event_action_keyboard,
+    get_yes_no_keyboard,
+    get_ban_notification_keyboard,
+)
 from utils.helpers import escape_markdown, find_similar_city
 from services.achievements import AchievementService
 from services.recommendations import RecommendationService
@@ -62,9 +72,13 @@ class UserHandlers:
                 "UPDATE users SET last_active = ? WHERE user_id = ?",
                 (datetime.now().strftime("%Y-%m-%d"), user_id), commit=True
             )
-            # Можно добавить кнопку "О боте" для возвращающихся пользователей
             self.bot.send_message(
                 chat_id, "С возвращением! 👋", reply_markup=get_main_menu())
+            self.bot.send_message(
+                chat_id,
+                "📱 Открыть приложение в браузере:",
+                reply_markup=get_start_webapp_keyboard(),
+            )
             AchievementService.check_achievements(user_id)
             return
 
@@ -102,6 +116,8 @@ class UserHandlers:
             "👉 *Как тебя зовут?*"
         )
         
+        # Кнопка открытия Mini App
+        webapp_markup = get_start_webapp_keyboard()
         # Отправляем фото из папки images, если оно есть
         import os
         image_path = os.path.join('images', 'Spon.png')
@@ -109,22 +125,24 @@ class UserHandlers:
             try:
                 with open(image_path, 'rb') as photo:
                     self.bot.send_photo(
-                        chat_id, 
-                        photo, 
-                        caption=welcome_text, 
+                        chat_id,
+                        photo,
+                        caption=welcome_text,
                         parse_mode='Markdown',
-                        reply_markup=remove_keyboard
+                        reply_markup=remove_keyboard,
                     )
             except Exception as e:
                 print(f"Ошибка отправки фото: {e}")
-                # Если не удалось отправить фото, отправляем только текст
                 self.bot.send_message(
                     chat_id, welcome_text, parse_mode='Markdown', reply_markup=remove_keyboard)
         else:
-            # Если фото нет, отправляем только текст
             self.bot.send_message(
                 chat_id, welcome_text, parse_mode='Markdown', reply_markup=remove_keyboard)
-        
+        self.bot.send_message(
+            chat_id,
+            "📱 Или откройте приложение:",
+            reply_markup=webapp_markup,
+        )
         self.user_state[user_id] = 'waiting_name'
 
     def handle_text(self, message):

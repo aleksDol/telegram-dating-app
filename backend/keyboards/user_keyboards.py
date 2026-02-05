@@ -1,6 +1,30 @@
 # keyboards/user_keyboards.py
+import os
 import telebot
 from config import config
+
+# URL Mini App (можно переопределить через env MINI_APP_URL)
+MINI_APP_URL = os.getenv("MINI_APP_URL", "https://telegram-dating-app1.onrender.com")
+
+
+def get_start_webapp_keyboard():
+    """Кнопка для открытия Mini App при /start"""
+    markup = telebot.types.InlineKeyboardMarkup()
+    try:
+        # Web App (Mini App) — открывается внутри Telegram
+        web_app = telebot.types.WebAppInfo(url=MINI_APP_URL)
+        btn = telebot.types.InlineKeyboardButton(
+            text="📱 Открыть приложение",
+            web_app=web_app,
+        )
+    except AttributeError:
+        # Fallback: обычная ссылка (откроется в браузере)
+        btn = telebot.types.InlineKeyboardButton(
+            text="📱 Открыть приложение",
+            url=MINI_APP_URL,
+        )
+    markup.add(btn)
+    return markup
 
 
 def get_main_menu():
