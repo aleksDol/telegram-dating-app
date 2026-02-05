@@ -78,8 +78,12 @@ def get_user_id(
             return int(x_dev_user_id)
         except ValueError:
             pass
-    parsed = validate_init_data(x_telegram_init_data or "")
+    raw = (x_telegram_init_data or "").strip()
+    parsed = validate_init_data(raw)
     if not parsed:
+        if raw:
+            import logging
+            logging.getLogger("api").warning("Telegram init_data received but validation failed (check BOT_TOKEN matches the bot that opened the Mini App)")
         raise HTTPException(status_code=401, detail="Invalid or missing Telegram init data")
     user_json = parsed.get("user")
     if not user_json:

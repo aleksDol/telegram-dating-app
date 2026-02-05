@@ -10,21 +10,49 @@ function getTelegramWebApp(): { initData: string } | null {
   return tg?.WebApp ?? null
 }
 
-function getInitData(): string {
-  return getTelegramWebApp()?.initData ?? ''
+/** Кэш initData из URL: после навигации SPA hash/query могут измениться, сохраняем при первом чтении. */
+let cachedInitDataFromUrl = ''
+
+/** Telegram может передать initData в URL: tgWebAppData в hash или в query (зависит от клиента). */
+function getInitDataFromUrl(): string {
+  if (cachedInitDataFromUrl) return cachedInitDataFromUrl
+  if (typeof window === 'undefined') return ''
+  try {
+    const hash = window.location.hash.slice(1)
+    if (hash) {
+      const fromHash = new URLSearchParams(hash).get('tgWebAppData')
+      if (fromHash) {
+        cachedInitDataFromUrl = fromHash
+        return fromHash
+      }
+    }
+    const fromSearch = new URLSearchParams(window.location.search).get('tgWebAppData')
+    if (fromSearch) {
+      cachedInitDataFromUrl = fromSearch
+      return fromSearch
+    }
+  } catch {
+    // ignore
+  }
+  return ''
 }
 
-/** В Telegram WebView initData иногда появляется с задержкой. Ждём до maxMs. */
-async function waitForInitDataIfInTelegram(maxMs = 2500): Promise<string> {
-  const webApp = getTelegramWebApp()
-  if (!webApp) return getInitData()
-  let data = webApp.initData || ''
+function getInitData(): string {
+  const fromWebApp = getTelegramWebApp()?.initData ?? ''
+  if (fromWebApp) return fromWebApp
+  return getInitDataFromUrl()
+}
+
+/** В Telegram WebView initData иногда только в URL или появляется с задержкой. Ждём до maxMs. */
+async function waitForInitDataIfInTelegram(maxMs = 3000): Promise<string> {
+  let data = getInitData()
   if (data) return data
-  const step = 150
+  const webApp = getTelegramWebApp()
+  const step = 200
   const deadline = Date.now() + maxMs
   while (Date.now() < deadline) {
     await new Promise((r) => setTimeout(r, step))
-    data = webApp.initData || ''
+    data = webApp?.initData || getInitDataFromUrl() || (webApp ? '' : getInitData())
     if (data) return data
   }
   return ''
