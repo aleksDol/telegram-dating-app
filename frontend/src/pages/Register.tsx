@@ -22,7 +22,6 @@ export default function Register() {
   const [relationship, setRelationship] = useState('')
   const [purpose, setPurpose] = useState('куда-то сходить')
   const [photo, setPhoto] = useState('')
-  const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -240,7 +239,6 @@ export default function Register() {
             onChange={(e) => {
               const file = e.target.files?.[0]
               if (file) {
-                setPhotoFile(file)
                 const reader = new FileReader()
                 reader.onload = () => {
                   const dataUrl = reader.result as string
@@ -254,10 +252,7 @@ export default function Register() {
           <input
             className="input"
             value={photo.startsWith('data:') ? '' : photo}
-            onChange={(e) => {
-              setPhotoFile(null)
-              setPhoto(e.target.value.trim())
-            }}
+            onChange={(e) => setPhoto(e.target.value.trim())}
             placeholder="Или вставьте URL фото"
             style={{ marginBottom: 8 }}
           />
