@@ -42,12 +42,13 @@ async function request<T>(
   if (!res.ok) {
     const err = await res.json().catch(() => ({})) as { detail?: string | { msg?: string }[] }
     const detail = err.detail
-    const message =
-      typeof detail === 'string'
-        ? detail
-        : Array.isArray(detail) && detail.length > 0
-          ? (detail[0]?.msg ?? detail[0]) ?? res.statusText
-          : res.statusText
+    let message = res.statusText
+    if (typeof detail === 'string') {
+      message = detail
+    } else if (Array.isArray(detail) && detail.length > 0) {
+      const first = detail[0]
+      message = typeof first?.msg === 'string' ? first.msg : res.statusText
+    }
     throw new Error(message)
   }
   return res.json() as Promise<T>
