@@ -18,6 +18,8 @@
   --accent-blue-soft: rgba(108, 99, 255, 0.12);
   --accent-orange: #FF8E53;
   --gradient-main: linear-gradient(135deg, #FF6B8B 0%, #FF8E53 100%);
+  /* Градиент как в логотипе: фуксия → лаванда → фиолетовый */
+  --gradient-logo: linear-gradient(135deg, #e879f9 0%, #c084fc 40%, #818cf8 100%);
   --gradient-warm: linear-gradient(135deg, #FF8E53 0%, #FF6B8B 100%);
   --gradient-cool: linear-gradient(135deg, #6C63FF 0%, #8b7cf8 100%);
   --gradient-card: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
@@ -1360,11 +1362,11 @@ select.input {
   height: 4px;
 }
 
-/* ===== Home: градиентный хедер с волной ===== */
+/* ===== Home: градиент как в логотипе (фиолетовый), волна ===== */
 .home-hero {
   position: relative;
   padding: 1.5rem var(--page-padding) 2.5rem;
-  background: var(--gradient-main);
+  background: var(--gradient-logo);
   color: #fff;
   margin: calc(-1 * var(--page-padding)) calc(-1 * var(--page-padding)) 0;
   overflow: hidden;
@@ -1390,7 +1392,7 @@ select.input {
 }
 
 .home-hero .app-logo {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0;
 }
 
 .home-hero .app-logo-circle {
@@ -1403,18 +1405,21 @@ select.input {
   background: none;
 }
 
+/* Приветствие: влево, ниже логотипа */
+.home-greeting-wrap {
+  align-self: stretch;
+  text-align: left;
+  margin-top: 1.25rem;
+  padding-left: 0;
+}
+
 .home-greeting {
   font-family: var(--font-heading);
   font-size: 24px;
   font-weight: 600;
-  margin: 0 0 0.25rem;
+  margin: 0;
   color: #fff;
   animation: fadeInUp 0.5s var(--ease-out-expo) backwards;
-}
-
-.home-greeting-emoji {
-  display: inline-block;
-  animation: pulse-soft 2s ease-in-out infinite;
 }
 
 /* Быстрые действия — 2 кнопки */

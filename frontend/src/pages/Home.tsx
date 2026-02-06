@@ -96,9 +96,11 @@ export default function Home() {
         <WaveSvg />
         <div className="home-hero-inner">
           <Logo size="md" showText link />
-          <h1 className="home-greeting animate-in stagger-1">
-            <span className="home-greeting-emoji">👤</span> {user.name}
-          </h1>
+          <div className="home-greeting-wrap">
+            <h1 className="home-greeting animate-in stagger-1">
+              Привет, {user.name}
+            </h1>
+          </div>
         </div>
       </header>
 
