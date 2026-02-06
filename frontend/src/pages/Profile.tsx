@@ -24,23 +24,16 @@ export default function Profile() {
         <h1 className="page-title animate-in">Мой профиль</h1>
       </div>
 
-      {/* Верх: фото слева в квадрате со скруглёнными углами */}
-      <div className="profile-top animate-in stagger-1">
-        <div className="profile-photo-wrap">
+      {/* Обо мне */}
+      <section className="profile-about card animate-in stagger-1">
+        <h2 className="profile-about-title">Обо мне</h2>
+        <div className="profile-about-avatar" aria-hidden>
           {user.photo ? (
-            <img src={user.photo} alt="" className="profile-photo" />
+            <img src={user.photo} alt="" className="profile-about-avatar-img" />
           ) : (
-            <div className="profile-photo-placeholder">{user.name.slice(0, 1)}</div>
+            <div className="profile-about-avatar-placeholder">{user.name.slice(0, 1)}</div>
           )}
         </div>
-        <Link to="/profile/edit" className="btn btn-ghost btn-sm profile-edit-btn">
-          ✏️ Редактировать
-        </Link>
-      </div>
-
-      {/* Обо мне */}
-      <section className="profile-about card animate-in stagger-2">
-        <h2 className="profile-about-title">Обо мне</h2>
         <h3 className="profile-name">{user.name}</h3>
         <p className="profile-meta">{user.age} лет · {user.gender}{user.city ? ` · ${user.city}` : ''}</p>
         {user.relationship_status && <p className="profile-meta">{user.relationship_status}</p>}
@@ -48,19 +41,44 @@ export default function Profile() {
         <div className="profile-points">🏆 {user.points} очков</div>
       </section>
 
+      <div className="profile-main-actions animate-in stagger-2">
+        <Link to="/my-events" className="btn btn-secondary btn-lg">
+          📅 Мои встречи
+        </Link>
+        <Link to="/profile/edit" className="btn btn-ghost btn-lg">
+          ✏️ Редактировать
+        </Link>
+      </div>
+
       {/* Блок с фото */}
       <section className="profile-photo-block card animate-in stagger-3">
-        <h2 className="profile-block-title">Фото</h2>
-        <div className="profile-photo-main">
-          {user.photo ? (
-            <img src={user.photo} alt="" className="profile-photo-main-img" />
-          ) : (
-            <div className="profile-photo-main-placeholder">
-              <span className="profile-photo-main-emoji">📷</span>
-              <span>Фото можно добавить в редактировании профиля</span>
+        <h2 className="profile-block-title">Мои фото</h2>
+        <div className="profile-photos-grid">
+          <div className="profile-photo-slot">
+            {user.photo ? (
+              <img src={user.photo} alt="" className="profile-photo-slot-img" />
+            ) : (
+              <div className="profile-photo-slot-empty">
+                <span className="profile-photo-slot-emoji">📷</span>
+              </div>
+            )}
+          </div>
+          <div className="profile-photo-slot profile-photo-slot-empty-wrap">
+            <div className="profile-photo-slot-empty">
+              <span className="profile-photo-slot-emoji">＋</span>
             </div>
-          )}
+          </div>
+          <div className="profile-photo-slot profile-photo-slot-empty-wrap">
+            <div className="profile-photo-slot-empty">
+              <span className="profile-photo-slot-emoji">＋</span>
+            </div>
+          </div>
         </div>
+        {!user.photo && (
+          <p className="text-muted" style={{ margin: '10px 0 0' }}>
+            Фото можно добавить в редактировании профиля
+          </p>
+        )}
       </section>
 
       {/* Реферальная программа и Достижения — в один ряд: слева и справа */}

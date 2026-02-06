@@ -572,9 +572,41 @@ button {
 
 /* Обо мне */
 .profile-about {
+  position: relative;
   padding: 1.25rem 1.25rem 1.5rem;
   margin-bottom: 1rem;
   text-align: left;
+}
+
+.profile-about-avatar {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid rgba(232, 121, 249, 0.22);
+  box-shadow: var(--shadow-card), 0 0 18px rgba(232, 121, 249, 0.08);
+  background: var(--bg-elevated);
+}
+
+.profile-about-avatar-img,
+.profile-about-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.profile-about-avatar-placeholder {
+  background: var(--gradient-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
 }
 
 .profile-about-title {
@@ -616,6 +648,13 @@ button {
   color: var(--accent);
   font-weight: 600;
   font-size: 0.9rem;
+}
+
+.profile-main-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 /* Блок с фото */
@@ -666,6 +705,51 @@ button {
 .profile-photo-main-emoji {
   font-size: 2.5rem;
   opacity: 0.7;
+}
+
+.profile-photos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.profile-photo-slot {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  border: 1px solid rgba(45, 55, 72, 0.1);
+  box-shadow: 0 1px 6px rgba(45, 55, 72, 0.06);
+}
+
+.profile-photo-slot-empty-wrap {
+  border-style: dashed;
+  border-color: rgba(45, 55, 72, 0.16);
+  background: rgba(45, 55, 72, 0.02);
+}
+
+.profile-photo-slot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-photo-slot-empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: linear-gradient(180deg, rgba(45,55,72,0.02) 0%, rgba(45,55,72,0.01) 100%);
+}
+
+.profile-photo-slot-emoji {
+  font-size: 1.8rem;
+  opacity: 0.7;
+  user-select: none;
 }
 
 /* Реферальная программа и Достижения — два блока в ряд */
