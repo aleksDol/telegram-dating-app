@@ -76,14 +76,14 @@ def validate_init_data(init_data: str) -> dict | None:
         return None
 
 
-def get_user_id(
+def get_telegram_user_from_init_data(
     x_telegram_init_data: str | None = Header(None, alias="X-Telegram-Init-Data"),
     x_dev_user_id: str | None = Header(None, alias="X-Dev-User-Id"),
-) -> int:
-    """Определение user_id: из initData (Mini App) или из X-Dev-User-Id (localhost)."""
+) -> dict:
+    """Парсит initData и возвращает dict с id и username (для Mini App). При X-Dev-User-Id возвращает только id."""
     if x_dev_user_id and os.getenv("ALLOW_DEV_USER_ID", "1").strip().lower() in ("1", "true", "yes"):
         try:
-            return int(x_dev_user_id)
+            return {"id": int(x_dev_user_id), "username": ""}
         except ValueError:
             pass
     raw = (x_telegram_init_data or "").strip()
@@ -98,9 +98,21 @@ def get_user_id(
         raise HTTPException(status_code=401, detail="No user in init data")
     try:
         user = json.loads(user_json)
-        return int(user["id"])
+        return {"id": int(user["id"]), "username": (user.get("username") or "").strip()}
     except (json.JSONDecodeError, KeyError, TypeError):
         raise HTTPException(status_code=401, detail="Invalid user in init data")
+
+
+def get_user_id(telegram_user: dict = Depends(get_telegram_user_from_init_data)) -> int:
+    """Определение user_id: из initData (Mini App) или из X-Dev-User-Id (localhost)."""
+    user_id = telegram_user["id"]
+    username = telegram_user.get("username") or ""
+    # Обновляем username при каждом запросе из Mini App (чтобы контакт в уведомлениях был актуальным)
+    execute_query(
+        "UPDATE users SET username = ? WHERE user_id = ?",
+        (username, user_id), commit=True
+    )
+    return user_id
 
 
 def _upload_photo_to_telegram(chat_id: int, data_url: str) -> str | None:
@@ -303,7 +315,11 @@ def api_get_user_photo(profile_user_id: int):
 
 
 @app.post("/api/register")
-def api_register(body: RegisterBody, user_id: int = Depends(get_user_id)):
+def api_register(
+    body: RegisterBody,
+    user_id: int = Depends(get_user_id),
+    telegram_user: dict = Depends(get_telegram_user_from_init_data),
+):
     existing = execute_query(
         "SELECT user_id, is_banned FROM users WHERE user_id = ?", (user_id,), fetchone=True
     )
@@ -320,11 +336,12 @@ def api_register(body: RegisterBody, user_id: int = Depends(get_user_id)):
     if photo_value.lower().startswith("data:"):
         file_id = _upload_photo_to_telegram(user_id, photo_value)
         photo_value = file_id or photo_value
+    username = (telegram_user.get("username") or "").strip()
     execute_query(
         """INSERT INTO users (user_id, username, name, age, gender, city, relationship_status, photo, purpose, reg_date, last_active, referral_code, referred_by)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
-            user_id, "", body.name.strip(), body.age, body.gender, body.city,
+            user_id, username, body.name.strip(), body.age, body.gender, body.city,
             body.relationship_status or "Не в отношениях", photo_value, purpose,
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             datetime.now().strftime("%Y-%m-%d"),

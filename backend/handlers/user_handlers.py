@@ -69,8 +69,9 @@ class UserHandlers:
 
         if existing_user:
             execute_query(
-                "UPDATE users SET last_active = ? WHERE user_id = ?",
-                (datetime.now().strftime("%Y-%m-%d"), user_id), commit=True
+                "UPDATE users SET last_active = ?, username = ? WHERE user_id = ?",
+                (datetime.now().strftime("%Y-%m-%d"), (message.from_user.username or "").strip(), user_id),
+                commit=True
             )
             self.bot.send_message(
                 chat_id, "С возвращением! 👋", reply_markup=get_main_menu())

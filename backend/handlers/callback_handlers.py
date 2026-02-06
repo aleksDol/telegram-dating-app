@@ -39,6 +39,14 @@ class CallbackHandler:
 
         print(f"DEBUG: callback_data = {data}, user_id = {user_id}")
 
+        # Обновляем username при каждом взаимодействии с ботом (для контакта в уведомлениях)
+        try:
+            execute_query(
+                "UPDATE users SET username = ? WHERE user_id = ?",
+                ((call.from_user.username or "").strip(), user_id), commit=True
+            )
+        except Exception:
+            pass
         # Если пользователь заблокирован — при нажатии любой кнопки показываем сообщение о блокировке
         # (кроме кнопки апелляции и админов).
         if user_id not in config.ADMINS and not data.startswith("appeal_ban_"):
