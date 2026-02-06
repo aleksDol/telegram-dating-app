@@ -41,7 +41,7 @@ class RecommendationService:
                 '''SELECT e.*, u.name, u.age, u.gender, u.photo
                     FROM events e 
                     JOIN users u ON e.user_id = u.user_id 
-                    WHERE e.event_date > NOW() 
+                    WHERE (e.event_date::timestamp) > NOW()
                     AND e.user_id != ?
                     AND e.is_hidden = FALSE
                     AND u.is_banned = FALSE
@@ -55,7 +55,7 @@ class RecommendationService:
             query = f'''SELECT e.*, u.name, u.age, u.gender, u.photo
                     FROM events e 
                     JOIN users u ON e.user_id = u.user_id 
-                    WHERE e.event_date > NOW() 
+                    WHERE (e.event_date::timestamp) > NOW()
                     AND e.user_id != ?
                     AND e.category IN ({placeholders})
                     AND e.is_hidden = FALSE
@@ -86,7 +86,7 @@ class RecommendationService:
                    u.name, u.age, u.gender, u.relationship_status, u.photo, u.purpose
             FROM events e 
             JOIN users u ON e.user_id = u.user_id 
-            WHERE e.event_date > NOW() 
+            WHERE (e.event_date::timestamp) > NOW()
             AND e.user_id != ?
             AND e.id NOT IN (SELECT event_id FROM likes WHERE from_user = ?)
             AND e.is_hidden = FALSE
@@ -116,12 +116,12 @@ class RecommendationService:
                 FROM events e 
                 JOIN users u ON e.user_id = u.user_id 
                 LEFT JOIN likes l ON e.id = l.event_id
-                WHERE e.event_date > NOW() 
+                WHERE (e.event_date::timestamp) > NOW()
                 AND e.user_id != ?
                 AND e.id NOT IN (SELECT event_id FROM likes WHERE from_user = ?)
                 AND e.is_hidden = FALSE
                 AND u.is_banned = FALSE
-                GROUP BY e.id
+                GROUP BY e.id, u.user_id, u.name, u.age, u.gender, u.relationship_status, u.photo, u.purpose
                 ORDER BY likes_count DESC
             '''
         elif filter_type == 'nearby':
