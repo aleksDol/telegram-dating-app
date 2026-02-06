@@ -2,15 +2,20 @@
 # Запуск: uvicorn api:app --host 0.0.0.0 --port 8000
 # Для localhost: фронт на :5173, API на :8000. В frontend/.env: VITE_API_URL=http://localhost:8000
 
+import base64
 import hmac
 import hashlib
 import json
 import os
+import re
 from datetime import datetime
+from io import BytesIO
 from urllib.parse import parse_qsl
 
+import requests
 from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel
 
 from config import config
@@ -97,6 +102,47 @@ def get_user_id(
         raise HTTPException(status_code=401, detail="Invalid user in init data")
 
 
+def _upload_photo_to_telegram(chat_id: int, data_url: str) -> str | None:
+    """Загружает фото из data URL в Telegram и возвращает file_id (короткая строка для БД)."""
+    token = (config.BOT_TOKEN or "").strip()
+    if not token or not data_url.strip().lower().startswith("data:"):
+        return None
+    try:
+        match = re.match(r"data:([^;]+);base64,(.+)", data_url.strip(), re.DOTALL | re.IGNORECASE)
+        if not match:
+            return None
+        content_type = match.group(1).strip().lower()
+        b64 = match.group(2)
+        raw = base64.b64decode(b64)
+        ext = "jpg" if "jpeg" in content_type or "jpg" in content_type else "png"
+        url = f"https://api.telegram.org/bot{token}/sendPhoto"
+        with requests.post(
+            url,
+            data={"chat_id": chat_id},
+            files={"photo": (f"photo.{ext}", BytesIO(raw), content_type)},
+            timeout=30,
+        ) as r:
+            r.raise_for_status()
+            data = r.json()
+            if not data.get("ok"):
+                return None
+            photos = data.get("result", {}).get("photo", [])
+            if not photos:
+                return None
+            return photos[-1].get("file_id")
+    except Exception:
+        return None
+
+
+def _photo_for_response(user_id: int, photo: str | None) -> str | None:
+    """Для ответа API: если photo — file_id, возвращаем URL нашего endpoint; иначе как есть."""
+    if not photo:
+        return None
+    if photo.startswith("data:") or photo.startswith("http://") or photo.startswith("https://"):
+        return photo
+    return f"/api/photo/user/{user_id}"
+
+
 # --- Pydantic models ---
 
 class RegisterBody(BaseModel):
@@ -138,7 +184,7 @@ def _row_to_user(row: dict) -> dict:
         "gender": row["gender"],
         "city": row.get("city"),
         "relationship_status": row.get("relationship_status"),
-        "photo": row.get("photo"),
+        "photo": _photo_for_response(row["user_id"], row.get("photo")),
         "purpose": row.get("purpose") or "куда-то сходить",
         "points": row.get("points", 0),
         "reg_date": row.get("reg_date"),
@@ -162,7 +208,7 @@ def _row_to_public_user(row: dict) -> dict:
         "gender": row["gender"],
         "city": row.get("city"),
         "relationship_status": row.get("relationship_status"),
-        "photo": row.get("photo"),
+        "photo": _photo_for_response(row["user_id"], row.get("photo")),
         "purpose": row.get("purpose") or "куда-то сходить",
     }
 
@@ -182,7 +228,7 @@ def _row_to_event(row: dict) -> dict:
         "name": row.get("name"),
         "age": row.get("age"),
         "gender": row.get("gender"),
-        "photo": row.get("photo"),
+        "photo": _photo_for_response(row["user_id"], row.get("photo")),
         "purpose": row.get("purpose"),
         "relationship_status": row.get("relationship_status"),
         "likes_count": row.get("likes_count"),
@@ -217,6 +263,44 @@ def api_get_user_profile(
     return {"user": _row_to_public_user(row)}
 
 
+@app.get("/api/photo/user/{profile_user_id:int}")
+def api_get_user_photo(profile_user_id: int):
+    """Отдаёт фото пользователя по user_id (из БД хранится file_id, проксируем из Telegram)."""
+    row = execute_query(
+        "SELECT photo FROM users WHERE user_id = ?", (profile_user_id,), fetchone=True
+    )
+    if not row or not row.get("photo"):
+        raise HTTPException(status_code=404, detail="Photo not found")
+    photo = row["photo"].strip()
+    if photo.startswith("data:") or photo.startswith("http"):
+        raise HTTPException(status_code=400, detail="Legacy photo format, use file_id")
+    token = (config.BOT_TOKEN or "").strip()
+    if not token:
+        raise HTTPException(status_code=503, detail="Bot not configured")
+    try:
+        r = requests.get(
+            f"https://api.telegram.org/bot{token}/getFile",
+            params={"file_id": photo},
+            timeout=10,
+        )
+        r.raise_for_status()
+        data = r.json()
+        if not data.get("ok"):
+            raise HTTPException(status_code=404, detail="File not found")
+        file_path = data.get("result", {}).get("file_path")
+        if not file_path:
+            raise HTTPException(status_code=404, detail="File path not found")
+        file_url = f"https://api.telegram.org/file/bot{token}/{file_path}"
+        resp = requests.get(file_url, timeout=15, stream=True)
+        resp.raise_for_status()
+        return StreamingResponse(
+            resp.iter_content(chunk_size=8192),
+            media_type=resp.headers.get("content-type", "image/jpeg"),
+        )
+    except requests.RequestException:
+        raise HTTPException(status_code=502, detail="Failed to fetch photo")
+
+
 @app.post("/api/register")
 def api_register(body: RegisterBody, user_id: int = Depends(get_user_id)):
     existing = execute_query(
@@ -231,12 +315,16 @@ def api_register(body: RegisterBody, user_id: int = Depends(get_user_id)):
         raise HTTPException(status_code=400, detail="Фото обязательно для регистрации")
     referral_code = generate_referral_code()
     purpose = (body.purpose or "").strip() or "куда-то сходить"
+    photo_value = body.photo.strip()
+    if photo_value.lower().startswith("data:"):
+        file_id = _upload_photo_to_telegram(user_id, photo_value)
+        photo_value = file_id or photo_value
     execute_query(
         """INSERT INTO users (user_id, username, name, age, gender, city, relationship_status, photo, purpose, reg_date, last_active, referral_code, referred_by)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             user_id, "", body.name.strip(), body.age, body.gender, body.city,
-            body.relationship_status or "Не в отношениях", body.photo.strip(), purpose,
+            body.relationship_status or "Не в отношениях", photo_value, purpose,
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             datetime.now().strftime("%Y-%m-%d"),
             referral_code, body.referred_by,
@@ -272,7 +360,15 @@ def api_update_profile(body: UpdateProfileBody, user_id: int = Depends(get_user_
     if body.relationship_status is not None:
         updates.append("relationship_status = ?"); params.append(body.relationship_status)
     if body.photo is not None:
-        updates.append("photo = ?"); params.append(body.photo)
+        photo_value = body.photo.strip()
+        if photo_value.startswith("/api/photo/"):
+            photo_value = None
+        if photo_value is not None:
+            if photo_value.lower().startswith("data:"):
+                file_id = _upload_photo_to_telegram(user_id, photo_value)
+                if file_id:
+                    photo_value = file_id
+            updates.append("photo = ?"); params.append(photo_value)
     if body.purpose is not None:
         updates.append("purpose = ?"); params.append(body.purpose.strip() or "куда-то сходить")
     if not updates:
