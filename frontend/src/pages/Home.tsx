@@ -96,26 +96,8 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="card-grid">
-        <Link to="/events" className="card card-action animate-in stagger-1">
-          <span className="card-icon">🔍</span>
-          <span className="card-title">Найти события</span>
-          <span className="card-desc">Популярные, рядом, сегодня</span>
-        </Link>
-        <Link to="/create" className="card card-action animate-in stagger-2">
-          <span className="card-icon">🎉</span>
-          <span className="card-title">Создать событие</span>
-          <span className="card-desc">Кино, кафе, прогулка</span>
-        </Link>
-        <Link to="/my-events" className="card card-action animate-in stagger-3">
-          <span className="card-icon">📅</span>
-          <span className="card-title">Мои события</span>
-          <span className="card-desc">Управление встречами</span>
-        </Link>
-      </div>
-
       <section className="section home-stats-section">
-        <div className="home-stats-row animate-in stagger-4">
+        <div className="home-stats-row animate-in stagger-1">
           <Link to="/my-events" className="card home-stat-card home-stat-events">
             <span className="home-stat-icon">📅</span>
             <span className="home-stat-value">Мои события</span>
@@ -127,7 +109,7 @@ export default function Home() {
             <span className="home-stat-label">Рефералов</span>
           </Link>
         </div>
-        <div className="home-stats-row animate-in stagger-5">
+        <div className="home-stats-row animate-in stagger-2">
           <div className="card home-stat-card home-stat-rating">
             <span className="home-stat-icon">⭐</span>
             <span className="home-stat-value">{user.points}</span>

@@ -1,32 +1,36 @@
-/* ===== Design system: bright gradients, dating app wow ===== */
+/* ===== Design system: палитра логотипа SponTime ===== */
 :root {
   --font: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-heading: 'Outfit', var(--font);
-  --bg: #0f0b14;
-  --bg-card: rgba(255, 255, 255, 0.06);
-  --bg-elevated: rgba(255, 255, 255, 0.1);
-  --text: #faf8fc;
-  --text-muted: #a89cc4;
-  --accent: #ff6b9d;
-  --accent-hover: #ff8fb3;
-  --accent-soft: rgba(255, 107, 157, 0.22);
-  --accent-blue: #7c9cff;
-  --accent-blue-soft: rgba(124, 156, 255, 0.2);
-  --accent-orange: #ffb347;
-  --gradient-main: linear-gradient(135deg, #ff6b9d 0%, #c44569 45%, #8b5cf6 100%);
-  --gradient-warm: linear-gradient(135deg, #ffb347 0%, #ff6b9d 100%);
-  --gradient-cool: linear-gradient(135deg, #7c9cff 0%, #a78bfa 100%);
-  --gradient-card: linear-gradient(165deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%);
+  --font-logo: 'Dancing Script', cursive;
+  /* Тёмный индиго/синий как в лого */
+  --bg: #0f0e1a;
+  --bg-card: rgba(255, 255, 255, 0.05);
+  --bg-elevated: rgba(255, 255, 255, 0.08);
+  /* Кремовый/бежевый и лавандовый как в лого */
+  --text: #f5f0e8;
+  --text-muted: #b8a9d4;
+  /* Фуксия/маджента и электрический фиолетовый из лого */
+  --accent: #e879f9;
+  --accent-hover: #f0abfc;
+  --accent-soft: rgba(232, 121, 249, 0.2);
+  --accent-blue: #818cf8;
+  --accent-blue-soft: rgba(129, 140, 248, 0.2);
+  --accent-orange: #fbbf24;
+  --gradient-main: linear-gradient(135deg, #e879f9 0%, #c084fc 40%, #818cf8 100%);
+  --gradient-warm: linear-gradient(135deg, #fbbf24 0%, #e879f9 100%);
+  --gradient-cool: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+  --gradient-card: linear-gradient(165deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
   --success: #34d399;
   --error: #f87171;
   --radius: 20px;
   --radius-sm: 14px;
   --radius-xl: 28px;
   --radius-2xl: 32px;
-  --shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
-  --shadow-card: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255,255,255,0.06);
-  --glow-pink: 0 0 60px rgba(255, 107, 157, 0.3);
-  --glow-blue: 0 0 48px rgba(124, 156, 255, 0.22);
+  --shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+  --shadow-card: 0 10px 40px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255,255,255,0.05);
+  --glow-pink: 0 0 60px rgba(232, 121, 249, 0.25);
+  --glow-blue: 0 0 48px rgba(129, 140, 248, 0.2);
   --page-padding: 20px;
   --nav-height: 72px;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -93,10 +97,10 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0);
   padding-top: env(safe-area-inset-top, 0);
   background:
-    radial-gradient(ellipse 140% 80% at 70% -30%, rgba(255, 107, 157, 0.22) 0%, transparent 50%),
-    radial-gradient(ellipse 100% 70% at 10% 80%, rgba(124, 156, 255, 0.2) 0%, transparent 45%),
-    radial-gradient(ellipse 80% 60% at 50% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 55%),
-    linear-gradient(180deg, #0f0b14 0%, #1a1225 35%, #15101f 100%);
+    radial-gradient(ellipse 140% 80% at 70% -30%, rgba(232, 121, 249, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse 100% 70% at 10% 80%, rgba(129, 140, 248, 0.18) 0%, transparent 45%),
+    radial-gradient(ellipse 80% 60% at 50% 50%, rgba(167, 139, 250, 0.12) 0%, transparent 55%),
+    linear-gradient(180deg, #0f0e1a 0%, #1a1625 35%, #12101a 100%);
   background-attachment: fixed;
 }
 
@@ -121,37 +125,52 @@ button {
   padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
 }
 
-/* ===== Logo ===== */
+/* ===== Logo: круг с картинкой + «Знакомься по-новому» ===== */
 .app-logo {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 .app-logo-link {
   text-decoration: none;
   color: inherit;
   display: inline-flex;
 }
-.app-logo-icon {
-  font-size: var(--logo-icon-size, 40px);
-  line-height: 1;
-  filter: drop-shadow(0 0 12px rgba(255, 107, 157, 0.4));
+.app-logo-circle {
+  width: var(--logo-circle-size, 44px);
+  height: var(--logo-circle-size, 44px);
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid rgba(232, 121, 249, 0.35);
+  box-shadow: 0 0 20px rgba(232, 121, 249, 0.2), var(--shadow-card);
+  background: var(--bg-elevated);
+  transition: border-color 0.25s ease, box-shadow 0.3s ease;
+}
+.app-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .app-logo-text {
-  font-family: var(--font-heading);
-  font-size: var(--logo-text-size, 1.6rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  background: var(--gradient-main);
+  font-family: var(--font-logo);
+  font-size: var(--logo-text-size, 1.2rem);
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, var(--text) 0%, #c4b5fd 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  background-size: 200% 100%;
-  transition: background-position 0.4s ease, filter 0.3s ease;
+  transition: filter 0.3s ease, opacity 0.3s ease;
 }
 .app-logo-link:hover .app-logo-text {
-  background-size: 100% 100%;
-  filter: drop-shadow(0 0 16px rgba(255, 107, 157, 0.4));
+  filter: drop-shadow(0 0 12px rgba(196, 181, 253, 0.5));
+}
+.app-logo-link:hover .app-logo-circle {
+  border-color: rgba(232, 121, 249, 0.6);
+  box-shadow: 0 0 28px rgba(232, 121, 249, 0.25);
 }
 
 /* ===== Hero (landing) ===== */
@@ -169,10 +188,10 @@ button {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 130% 100% at 50% -20%, rgba(255, 107, 157, 0.28) 0%, transparent 50%),
-    radial-gradient(ellipse 80% 70% at 90% 50%, rgba(124, 156, 255, 0.22) 0%, transparent 45%),
-    radial-gradient(ellipse 70% 60% at 10% 70%, rgba(139, 92, 246, 0.18) 0%, transparent 50%),
-    linear-gradient(180deg, transparent 0%, rgba(15, 11, 20, 0.92) 75%);
+    radial-gradient(ellipse 130% 100% at 50% -20%, rgba(232, 121, 249, 0.25) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 70% at 90% 50%, rgba(129, 140, 248, 0.2) 0%, transparent 45%),
+    radial-gradient(ellipse 70% 60% at 10% 70%, rgba(167, 139, 250, 0.16) 0%, transparent 50%),
+    linear-gradient(180deg, transparent 0%, rgba(15, 14, 26, 0.92) 75%);
   pointer-events: none;
 }
 
@@ -184,9 +203,9 @@ button {
   pointer-events: none;
   animation: float 8s ease-in-out infinite;
 }
-.hero-orb-1 { width: 200px; height: 200px; background: rgba(255, 107, 157, 0.35); top: 15%; right: -20%; animation-delay: 0s; }
-.hero-orb-2 { width: 160px; height: 160px; background: rgba(124, 156, 255, 0.3); bottom: 25%; left: -10%; animation-delay: -3s; }
-.hero-orb-3 { width: 120px; height: 120px; background: rgba(167, 139, 250, 0.25); top: 50%; left: 30%; animation-delay: -5s; }
+.hero-orb-1 { width: 200px; height: 200px; background: rgba(232, 121, 249, 0.3); top: 15%; right: -20%; animation-delay: 0s; }
+.hero-orb-2 { width: 160px; height: 160px; background: rgba(129, 140, 248, 0.28); bottom: 25%; left: -10%; animation-delay: -3s; }
+.hero-orb-3 { width: 120px; height: 120px; background: rgba(196, 181, 253, 0.22); top: 50%; left: 30%; animation-delay: -5s; }
 
 .hero-content {
   position: relative;
@@ -206,7 +225,7 @@ button {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 32px rgba(255, 107, 157, 0.25));
+  filter: drop-shadow(0 0 32px rgba(232, 121, 249, 0.25));
 }
 .hero-title-sub {
   font-family: var(--font-heading);
@@ -355,13 +374,13 @@ button {
   background: var(--gradient-main);
   background-size: 200% 200%;
   color: #fff;
-  box-shadow: 0 8px 32px rgba(255, 107, 157, 0.4), 0 0 0 1px rgba(255,255,255,0.1);
+  box-shadow: 0 8px 32px rgba(232, 121, 249, 0.4), 0 0 0 1px rgba(255,255,255,0.1);
   transition: transform 0.2s var(--ease-spring), box-shadow 0.3s ease, background-position 0.5s ease;
 }
 
 .btn-primary:hover {
   background-position: 100% 50%;
-  box-shadow: 0 12px 40px rgba(255, 107, 157, 0.5), 0 0 48px rgba(255, 107, 157, 0.2);
+  box-shadow: 0 12px 40px rgba(232, 121, 249, 0.5), 0 0 48px rgba(232, 121, 249, 0.2);
   transform: translateY(-2px);
 }
 
@@ -379,8 +398,8 @@ button {
 
 .btn-ghost:hover {
   background: var(--gradient-card);
-  border-color: rgba(255, 107, 157, 0.3);
-  box-shadow: 0 0 24px rgba(255, 107, 157, 0.1);
+  border-color: rgba(232, 121, 249, 0.3);
+  box-shadow: 0 0 24px rgba(232, 121, 249, 0.1);
 }
 
 .btn-lg {
@@ -396,11 +415,11 @@ button {
 .btn-secondary {
   background: var(--bg-elevated);
   color: var(--text);
-  border: 1px solid rgba(124, 156, 255, 0.3);
+  border: 1px solid rgba(129, 140, 248, 0.3);
 }
 
 .btn-secondary:hover {
-  border-color: rgba(124, 156, 255, 0.5);
+  border-color: rgba(129, 140, 248, 0.5);
   box-shadow: var(--glow-blue);
 }
 
@@ -417,8 +436,8 @@ button {
 }
 
 .card:hover {
-  border-color: rgba(255, 107, 157, 0.25);
-  box-shadow: var(--shadow-card), 0 0 40px rgba(255, 107, 157, 0.12), 0 12px 40px rgba(0,0,0,0.2);
+  border-color: rgba(232, 121, 249, 0.25);
+  box-shadow: var(--shadow-card), 0 0 40px rgba(232, 121, 249, 0.12), 0 12px 40px rgba(0,0,0,0.2);
   transform: translateY(-3px);
 }
 
@@ -446,15 +465,15 @@ button {
   border-radius: var(--radius);
 }
 .card-action:hover {
-  border-color: rgba(255, 107, 157, 0.3) !important;
-  box-shadow: 0 0 40px rgba(255, 107, 157, 0.12), 0 12px 40px rgba(0,0,0,0.15) !important;
+  border-color: rgba(232, 121, 249, 0.3) !important;
+  box-shadow: 0 0 40px rgba(232, 121, 249, 0.12), 0 12px 40px rgba(0,0,0,0.15) !important;
   transform: translateY(-3px) !important;
 }
 
 .card-action .card-icon {
   font-size: 2rem;
   margin-bottom: 10px;
-  filter: drop-shadow(0 0 12px rgba(255, 107, 157, 0.2));
+  filter: drop-shadow(0 0 12px rgba(232, 121, 249, 0.2));
 }
 
 .card-action .card-title {
@@ -532,8 +551,8 @@ button {
   height: 96px;
   border-radius: var(--radius);
   overflow: hidden;
-  border: 2px solid rgba(255, 107, 157, 0.25);
-  box-shadow: var(--shadow-card), 0 0 24px rgba(255, 107, 157, 0.1);
+  border: 2px solid rgba(232, 121, 249, 0.25);
+  box-shadow: var(--shadow-card), 0 0 24px rgba(232, 121, 249, 0.1);
 }
 
 .profile-photo,
@@ -677,7 +696,7 @@ button {
 }
 
 .profile-action-card:hover {
-  border-color: rgba(255, 107, 157, 0.3) !important;
+  border-color: rgba(232, 121, 249, 0.3) !important;
   transform: translateY(-2px) !important;
 }
 
@@ -709,8 +728,8 @@ button {
   font-size: 1.1rem;
 }
 
-.profile-action-referral:hover .profile-action-icon { filter: drop-shadow(0 0 8px rgba(124, 156, 255, 0.4)); }
-.profile-action-achievements:hover .profile-action-icon { filter: drop-shadow(0 0 8px rgba(255, 107, 157, 0.4)); }
+.profile-action-referral:hover .profile-action-icon { filter: drop-shadow(0 0 8px rgba(129, 140, 248, 0.4)); }
+.profile-action-achievements:hover .profile-action-icon { filter: drop-shadow(0 0 8px rgba(232, 121, 249, 0.4)); }
 
 /* Legacy: круглый аватар (если используется на других страницах) */
 .profile-avatar,
@@ -746,8 +765,8 @@ button {
   padding: 1.25rem;
   margin-bottom: 1.25rem;
   background: linear-gradient(135deg, var(--accent-soft) 0%, var(--accent-blue-soft) 100%);
-  border: 1px solid rgba(255, 107, 157, 0.25);
-  box-shadow: 0 0 30px rgba(255, 107, 157, 0.12);
+  border: 1px solid rgba(232, 121, 249, 0.25);
+  box-shadow: 0 0 30px rgba(232, 121, 249, 0.12);
 }
 
 .card-points-emoji {
@@ -788,8 +807,8 @@ button {
 }
 
 .achievement-card.achievement-unlocked {
-  border-color: rgba(255, 107, 157, 0.25);
-  box-shadow: 0 0 24px rgba(255, 107, 157, 0.08);
+  border-color: rgba(232, 121, 249, 0.25);
+  box-shadow: 0 0 24px rgba(232, 121, 249, 0.08);
 }
 
 .achievement-card:not(.achievement-unlocked) {
@@ -908,12 +927,12 @@ button {
 
 .chip-active,
 .chip:hover {
-  background: linear-gradient(135deg, rgba(255, 107, 157, 0.28) 0%, rgba(124, 156, 255, 0.22) 100%);
+  background: linear-gradient(135deg, rgba(232, 121, 249, 0.28) 0%, rgba(129, 140, 248, 0.22) 100%);
   color: var(--accent);
-  border-color: rgba(255, 107, 157, 0.45);
+  border-color: rgba(232, 121, 249, 0.45);
 }
 .chip-active {
-  box-shadow: 0 0 20px rgba(255, 107, 157, 0.15);
+  box-shadow: 0 0 20px rgba(232, 121, 249, 0.15);
 }
 
 /* ===== Event cards (Tinder-style) ===== */
@@ -934,8 +953,8 @@ button {
 }
 .event-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 107, 157, 0.2), 0 0 40px rgba(255, 107, 157, 0.08);
-  border-color: rgba(255, 107, 157, 0.2);
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(232, 121, 249, 0.2), 0 0 40px rgba(232, 121, 249, 0.08);
+  border-color: rgba(232, 121, 249, 0.2);
 }
 
 /* Tinder: big image block on top */
@@ -1005,7 +1024,7 @@ button {
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  border: 2px solid rgba(255, 107, 157, 0.4);
+  border: 2px solid rgba(232, 121, 249, 0.4);
 }
 .event-author-avatar-placeholder {
   background: var(--gradient-warm);
@@ -1086,13 +1105,13 @@ button {
   transition: background 0.2s;
   margin-bottom: 12px;
   background: var(--gradient-card) !important;
-  border: 1px solid rgba(255, 107, 157, 0.15);
+  border: 1px solid rgba(232, 121, 249, 0.15);
   border-radius: var(--radius);
 }
 .event-detail-author:hover,
 .event-detail-author:focus {
   background: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 100%) !important;
-  border-color: rgba(255, 107, 157, 0.3);
+  border-color: rgba(232, 121, 249, 0.3);
   outline: none;
 }
 
@@ -1147,7 +1166,7 @@ button {
   object-fit: cover;
   border-radius: var(--radius-sm);
   margin-bottom: 1rem;
-  border: 1px solid rgba(255, 107, 157, 0.15);
+  border: 1px solid rgba(232, 121, 249, 0.15);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
@@ -1256,7 +1275,7 @@ button {
 .input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft), 0 0 24px rgba(255, 107, 157, 0.12);
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 0 24px rgba(232, 121, 249, 0.12);
 }
 
 textarea.input {
@@ -1288,7 +1307,7 @@ select.input {
   background: rgba(15, 11, 20, 0.88);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border-top: 1px solid rgba(255, 107, 157, 0.15);
+  border-top: 1px solid rgba(232, 121, 249, 0.15);
   box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.04);
   z-index: 100;
 }
@@ -1326,7 +1345,7 @@ select.input {
   height: 3px;
   border-radius: 999px;
   background: var(--gradient-main);
-  box-shadow: 0 0 12px rgba(255, 107, 157, 0.5);
+  box-shadow: 0 0 12px rgba(232, 121, 249, 0.5);
 }
 
 .nav-item span:first-child {
@@ -1355,7 +1374,7 @@ select.input {
 .nav-item-center.active::before {
   width: 28px;
   height: 4px;
-  box-shadow: 0 0 16px rgba(255, 107, 157, 0.6);
+  box-shadow: 0 0 16px rgba(232, 121, 249, 0.6);
 }
 
 /* ===== Home stats (главный экран) ===== */
@@ -1384,8 +1403,8 @@ select.input {
 
 .home-stat-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(255, 107, 157, 0.3) !important;
-  box-shadow: var(--shadow-card), 0 0 36px rgba(255, 107, 157, 0.1) !important;
+  border-color: rgba(232, 121, 249, 0.3) !important;
+  box-shadow: var(--shadow-card), 0 0 36px rgba(232, 121, 249, 0.1) !important;
 }
 
 .home-stat-icon {
@@ -1417,8 +1436,8 @@ select.input {
   background-clip: text;
 }
 
-.home-stat-events:hover .home-stat-icon { filter: drop-shadow(0 0 10px rgba(255, 107, 157, 0.35)); }
-.home-stat-referrals:hover .home-stat-icon { filter: drop-shadow(0 0 10px rgba(124, 156, 255, 0.35)); }
+.home-stat-events:hover .home-stat-icon { filter: drop-shadow(0 0 10px rgba(232, 121, 249, 0.35)); }
+.home-stat-referrals:hover .home-stat-icon { filter: drop-shadow(0 0 10px rgba(129, 140, 248, 0.35)); }
 .home-stat-rating:hover .home-stat-icon { filter: drop-shadow(0 0 10px rgba(255, 179, 71, 0.35)); }
 .home-stat-about:hover .home-stat-icon { filter: drop-shadow(0 0 10px rgba(167, 139, 250, 0.35)); }
 
