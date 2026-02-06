@@ -22,6 +22,7 @@ from config import config
 from database import execute_query
 from utils.helpers import generate_referral_code
 from services.achievements import AchievementService
+from services.notifications import NotificationService
 from services.recommendations import RecommendationService
 
 
@@ -518,6 +519,13 @@ def api_like_event(event_id: int, user_id: int = Depends(get_user_id)):
         (user_id, creator_id, event_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
         commit=True,
     )
+    # Уведомление создателю события: кто лайкнул и ссылка на профиль (в Telegram)
+    try:
+        NotificationService.send_like_notification(
+            creator_id, user_id, {"id": event_id}, like_id, bot=None
+        )
+    except Exception:
+        pass  # не ломаем ответ API при сбое отправки в Telegram
     if event.get("category"):
         prefs = execute_query("SELECT liked_categories FROM user_preferences WHERE user_id = ?", (user_id,), fetchone=True)
         liked = []
@@ -545,6 +553,10 @@ def api_like_event(event_id: int, user_id: int = Depends(get_user_id)):
         AchievementService.update_user_points(creator_id, 20, "за взаимную симпатию")
         AchievementService.check_achievements(user_id)
         AchievementService.check_achievements(creator_id)
+        try:
+            NotificationService.send_match_notification(user_id, creator_id, event_id, bot=None)
+        except Exception:
+            pass
     return {"mutual": mutual}
 
 

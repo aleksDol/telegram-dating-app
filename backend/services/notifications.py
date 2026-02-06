@@ -9,8 +9,16 @@ from utils.helpers import escape_markdown
 
 class NotificationService:
     @staticmethod
-    def send_like_notification(creator_id, liker_id, event, like_id, bot):
-        """Отправить уведомление о лайке создателю события"""
+    def _get_bot(bot=None):
+        """Единый экземпляр бота для отправки (из бота передаётся bot, из API создаётся новый)."""
+        if bot is not None:
+            return bot
+        return telebot.TeleBot(config.BOT_TOKEN)
+
+    @staticmethod
+    def send_like_notification(creator_id, liker_id, event, like_id, bot=None):
+        """Отправить уведомление о лайке создателю события (bot опционален — из API не передаётся)."""
+        bot = NotificationService._get_bot(bot)
         # Проверяем блокировку
         user = execute_query(
             "SELECT is_banned FROM users WHERE user_id = ?",
@@ -83,8 +91,9 @@ class NotificationService:
                 print(f"❌ Ошибка отправки уведомления: {e}")
 
     @staticmethod
-    def send_match_notification(user1_id, user2_id, event_id, bot):
-        """Отправить уведомление о матчинге обоим пользователям"""
+    def send_match_notification(user1_id, user2_id, event_id, bot=None):
+        """Отправить уведомление о матчинге обоим пользователям (bot опционален)."""
+        bot = NotificationService._get_bot(bot)
         if event_id:
             event = execute_query(
                 "SELECT title, description, event_date FROM events WHERE id = ?",
