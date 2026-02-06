@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { api, isApiConfigured } from '../api/client'
 import { getDemoUserByUserId } from '../demoData'
 import type { User } from '../types'
 
+type LocationState = { fromEventId?: number } | null
+
 export default function UserProfile() {
   const { userId } = useParams<{ userId: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
+  const fromEventId = (location.state as LocationState)?.fromEventId
   const { user: currentUser, fetchUser, isDemo, useDemoEvents } = useApp()
   const [profile, setProfile] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -84,6 +88,18 @@ export default function UserProfile() {
   return (
     <>
       <DemoBanner />
+      {fromEventId != null && (
+        <div className="page-header" style={{ marginBottom: 8 }}>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => navigate(`/event/${fromEventId}`)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+          >
+            ← Вернуться к встрече
+          </button>
+        </div>
+      )}
       <div className="page-header">
         <h1 className="page-title">{isMyProfile ? 'Мой профиль' : 'Профиль'}</h1>
       </div>

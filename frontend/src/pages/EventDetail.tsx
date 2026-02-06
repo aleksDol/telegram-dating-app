@@ -102,8 +102,8 @@ export default function EventDetail() {
         className="event-detail-author card"
         role="button"
         tabIndex={0}
-        onClick={() => navigate(`/profile/${event.user_id}`)}
-        onKeyDown={(e) => e.key === 'Enter' && navigate(`/profile/${event.user_id}`)}
+        onClick={() => navigate(`/profile/${event.user_id}`, { state: { fromEventId: event.id } })}
+        onKeyDown={(e) => e.key === 'Enter' && navigate(`/profile/${event.user_id}`, { state: { fromEventId: event.id } })}
       >
         {event.photo ? (
           <img src={event.photo} alt="" className="event-detail-author-avatar" />

@@ -946,12 +946,13 @@ button {
   border-color: rgba(232, 121, 249, 0.2);
 }
 
-/* Tinder: big image block on top */
+/* Tinder: image block on top (уменьшенная высота) */
 .event-card-image-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 5;
-  min-height: 280px;
+  aspect-ratio: 16 / 10;
+  min-height: 160px;
+  max-height: 200px;
   overflow: hidden;
   background: var(--gradient-main);
 }
@@ -996,14 +997,31 @@ button {
   gap: 10px;
   margin-bottom: 10px;
   cursor: pointer;
-  padding: 4px 0;
+  padding: 10px 12px;
+  margin: 0 -12px 10px -12px;
   border-radius: var(--radius-sm);
-  transition: background 0.2s;
+  transition: background 0.2s, border-color 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 .event-card-author:hover,
 .event-card-author:focus {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(232, 121, 249, 0.4);
   outline: none;
+}
+.event-card-author:active {
+  background: rgba(255, 255, 255, 0.08);
+}
+.event-card-author-hint {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--accent);
+  margin-top: 2px;
+  opacity: 0.9;
+}
+.event-card-author:hover .event-card-author-hint,
+.event-card-author:focus .event-card-author-hint {
+  text-decoration: underline;
 }
 
 .event-author-avatar,
@@ -1041,8 +1059,9 @@ button {
   margin: 2px 0 0;
 }
 .event-author-arrow {
-  color: var(--text-muted);
-  font-size: 1rem;
+  color: var(--accent);
+  font-size: 1.1rem;
+  flex-shrink: 0;
 }
 
 .event-card-body {
@@ -1082,6 +1101,91 @@ button {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* ===== Events Tinder (одна карточка, свайп) ===== */
+.events-tinder {
+  margin-top: 12px;
+}
+.events-tinder-card-wrap {
+  position: relative;
+  touch-action: pan-y;
+  user-select: none;
+}
+.events-tinder-card-wrap .event-card {
+  margin-bottom: 0;
+}
+.events-tinder-badge {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 700;
+  font-size: 1.5rem;
+  padding: 8px 20px;
+  border-radius: var(--radius);
+  border: 3px solid;
+  z-index: 2;
+  pointer-events: none;
+}
+.events-tinder-badge-like {
+  left: 24px;
+  color: var(--success);
+  border-color: var(--success);
+  background: rgba(52, 211, 153, 0.2);
+}
+.events-tinder-badge-skip {
+  right: 24px;
+  color: var(--text-muted);
+  border-color: var(--text-muted);
+  background: rgba(45, 55, 72, 0.15);
+}
+.events-tinder-actions {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 20px;
+  padding-bottom: 8px;
+}
+.events-tinder-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
+}
+.events-tinder-btn:disabled {
+  opacity: 0.6;
+}
+.events-tinder-btn-skip {
+  background: var(--bg-elevated);
+  border: 2px solid rgba(45, 55, 72, 0.2);
+  color: var(--text-muted);
+}
+.events-tinder-btn-skip:hover:not(:disabled) {
+  transform: scale(1.08);
+  border-color: var(--error);
+  color: var(--error);
+  box-shadow: 0 4px 20px rgba(229, 62, 62, 0.25);
+}
+.events-tinder-btn-like {
+  background: var(--gradient-main);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 20px rgba(255, 107, 139, 0.4);
+}
+.events-tinder-btn-like:hover:not(:disabled) {
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(255, 107, 139, 0.5);
+}
+.events-tinder-hint {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 8px 0 0;
 }
 
 /* ===== Event detail ===== */
