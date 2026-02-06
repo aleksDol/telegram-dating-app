@@ -144,11 +144,15 @@ export default function Likes() {
         </section>
       )}
 
-      {!loading && likes.length > 0 && (
+      {!loading && (() => {
+        const matchUserIds = new Set(matches.map((m) => m.user_id))
+        const pendingOnly = likes.filter((item) => !item.liker?.user_id || !matchUserIds.has(item.liker.user_id))
+        if (pendingOnly.length === 0) return null
+        return (
         <section>
           <h2 className="page-subtitle" style={{ marginBottom: 12 }}>Новые лайки</h2>
           <div className="event-list">
-            {likes.map((item) => (
+            {pendingOnly.map((item) => (
               <div key={item.like_id} className="card event-card">
                 <div className="event-card-footer" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
                   <div
@@ -216,7 +220,8 @@ export default function Likes() {
             ))}
           </div>
         </section>
-      )}
+        )
+      })()}
     </>
   )
 }
