@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { api, isApiConfigured } from '../api/client'
 import Logo from '../components/Logo'
@@ -7,6 +7,7 @@ import type { PendingLike as PendingLikeType, LikeMatch as LikeMatchType } from 
 
 export default function Likes() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, loading: userLoading, fetchUser } = useApp()
   const [likes, setLikes] = useState<PendingLikeType[]>([])
   const [matches, setMatches] = useState<LikeMatchType[]>([])
@@ -42,6 +43,7 @@ export default function Likes() {
       return
     }
     if (!user) return
+    if (location.pathname !== '/likes') return
     if (!isApiConfigured()) {
       setLikes([])
       setMatches([])
@@ -49,7 +51,7 @@ export default function Likes() {
       return
     }
     loadLikesAndMatches()
-  }, [user, userLoading, navigate])
+  }, [user, userLoading, navigate, location.pathname])
 
   const handleRespond = async (likeId: number, action: 'mutual' | 'ignore') => {
     setRespondingId(likeId)
@@ -71,7 +73,18 @@ export default function Likes() {
       <div className="page-header page-header-with-logo">
         <Logo size="sm" showText link />
         <h1 className="page-title">Лайки</h1>
-        <p className="page-subtitle">Ответьте взаимностью или пропустите</p>
+        <p className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          Ответьте взаимностью или пропустите
+          <button
+            type="button"
+            className="btn btn-secondary"
+            style={{ fontSize: 13 }}
+            disabled={loading}
+            onClick={() => loadLikesAndMatches()}
+          >
+            {loading ? '...' : '🔄 Обновить'}
+          </button>
+        </p>
       </div>
       {loading && (
         <div className="screen-center">

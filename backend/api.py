@@ -590,19 +590,13 @@ class RespondToLikeBody(BaseModel):
 @app.get("/api/likes/pending")
 def api_get_pending_likes(user_id: int = Depends(get_user_id)):
     """Лайки, на которые ещё не ответили (взаимностью или пропуском).
-    Исключаем лайки от пользователей, с которыми уже есть взаимность (матчинг)."""
+    Фронт исключает из «Новые лайки» тех, кто уже в матчинге."""
     rows = execute_query(
         """SELECT l.id AS like_id, l.from_user, l.event_id
            FROM likes l
            WHERE l.to_user = ? AND (l.response IS NULL OR l.response = '')
-           AND NOT EXISTS (
-             SELECT 1 FROM likes m
-             WHERE m.mutual = TRUE
-             AND ((m.from_user = ? AND m.to_user = l.from_user)
-                  OR (m.from_user = l.from_user AND m.to_user = ?))
-           )
            ORDER BY l.created DESC""",
-        (user_id, user_id, user_id), fetchall=True
+        (user_id,), fetchall=True
     )
     result = []
     for r in rows:
