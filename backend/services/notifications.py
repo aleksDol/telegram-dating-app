@@ -16,20 +16,26 @@ class NotificationService:
         return telebot.TeleBot(config.BOT_TOKEN)
 
     @staticmethod
+    def _get_mini_app_likes_url():
+        url = (config.MINI_APP_URL or "").strip()
+        if not url:
+            url = "https://telegram-dating-app1.onrender.com"
+        return f"{url.rstrip('/')}/likes"
+
+    @staticmethod
     def send_like_notification(creator_id, liker_id, event, like_id, bot=None):
         """Короткое уведомление о лайке + кнопка «Открыть приложение» (обработка лайков в Mini App)."""
+        if not config.BOT_TOKEN:
+            print("❌ BOT_TOKEN не задан — уведомление о лайке не отправлено")
+            return
         bot = NotificationService._get_bot(bot)
         user = execute_query(
             "SELECT is_banned FROM users WHERE user_id = ?",
             (creator_id,), fetchone=True
         )
-        if user and user['is_banned'] == 1:
+        if user and user.get('is_banned'):
             return
-        import os
-        mini_app_url = (os.getenv("MINI_APP_URL") or "").rstrip("/")
-        if not mini_app_url:
-            mini_app_url = "https://telegram-dating-app1.onrender.com"
-        open_likes_url = f"{mini_app_url}/likes"
+        open_likes_url = NotificationService._get_mini_app_likes_url()
         keyboard = telebot.types.InlineKeyboardMarkup()
         keyboard.add(
             telebot.types.InlineKeyboardButton(
@@ -45,61 +51,37 @@ class NotificationService:
                 reply_markup=keyboard,
             )
         except Exception as e:
-            print(f"❌ Ошибка отправки уведомления: {e}")
+            print(f"❌ Ошибка отправки уведомления о лайке (creator_id={creator_id}): {e}")
 
     @staticmethod
     def send_mutual_response_to_liker(liker_id, creator_id, event_id, bot=None):
-        """Отправить тому, кто поставил лайк: уведомление о взаимности + полный профиль ответившего + событие + username."""
-        bot = NotificationService._get_bot(bot)
-        creator = execute_query(
-            "SELECT name, age, gender, city, relationship_status, photo, purpose, username FROM users WHERE user_id = ? AND is_banned = FALSE",
-            (creator_id,), fetchone=True
-        )
-        if not creator:
+        """Короткое уведомление о взаимной симпатии + кнопка «Открыть приложение» (профиль смотреть в приложении)."""
+        if not config.BOT_TOKEN:
             return
-        username_display = f"@{creator['username']}" if creator.get('username') else "не указан"
-        profile_block = f"""👤 *Профиль пользователя:*
-
-📛 *Имя:* {escape_markdown(creator['name'])}
-🎂 *Возраст:* {escape_markdown(str(creator['age']))}
-⚧️ *Пол:* {escape_markdown(creator['gender'])}
-🏙️ *Город:* {escape_markdown(creator['city']) if creator['city'] else 'Не указан'}
-💖 *Статус:* {escape_markdown(creator['relationship_status']) if creator['relationship_status'] else 'Не указан'}
-🎯 *Цель:* {escape_markdown(creator['purpose']) if creator['purpose'] else 'куда\\-то сходить'}
-📱 *Контакт в Telegram:* {escape_markdown(username_display)}"""
-        event_block = ""
-        if event_id:
-            event_row = execute_query(
-                "SELECT title, description, event_date, category FROM events WHERE id = ?",
-                (event_id,), fetchone=True
+        bot = NotificationService._get_bot(bot)
+        user = execute_query(
+            "SELECT is_banned FROM users WHERE user_id = ?",
+            (liker_id,), fetchone=True
+        )
+        if user and user.get('is_banned'):
+            return
+        open_likes_url = NotificationService._get_mini_app_likes_url()
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        keyboard.add(
+            telebot.types.InlineKeyboardButton(
+                "📱 Открыть приложение",
+                web_app=telebot.types.WebAppInfo(url=open_likes_url),
             )
-            if event_row:
-                event_block = f"""
-
-*Ответ на лайк к вашему событию:*
-🎉 *{escape_markdown(event_row['title'])}*
-🏷️ *Категория:* {escape_markdown(event_row.get('category') or '🎯 Разное')}
-📅 *Дата:* {escape_markdown(event_row['event_date'])}
-📝 *Описание:* {escape_markdown(event_row['description'][:100])}{'...' if len(event_row['description']) > 100 else ''}"""
-        text = f"""💞 *Взаимная симпатия!*
-
-Пользователь ответил взаимностью на ваш лайк.
-
-{profile_block}{event_block}
-
-💬 *Можете написать в Telegram:* {escape_markdown(username_display)}"""
+        )
         try:
-            if creator.get('photo'):
-                bot.send_photo(
-                    liker_id,
-                    creator['photo'],
-                    caption=text,
-                    parse_mode='Markdown',
-                )
-            else:
-                bot.send_message(liker_id, text + "\n\n📸 *Фото не загружено*", parse_mode='Markdown')
+            bot.send_message(
+                liker_id,
+                "💞 *Взаимная симпатия!*\n\nПользователь ответил на ваш лайк. Откройте приложение, чтобы посмотреть профиль и связаться.",
+                parse_mode='Markdown',
+                reply_markup=keyboard,
+            )
         except Exception as e:
-            print(f"❌ Ошибка отправки уведомления о взаимности (liker): {e}")
+            print(f"❌ Ошибка отправки уведомления о взаимности (liker_id={liker_id}): {e}")
 
     @staticmethod
     def send_match_notification(user1_id, user2_id, event_id, bot=None):

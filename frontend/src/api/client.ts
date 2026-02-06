@@ -145,6 +145,8 @@ export const api = {
 
   getPendingLikes: () =>
     request<{ likes: import('../types').PendingLike[] }>('/api/likes/pending'),
+  getLikesMatches: () =>
+    request<{ matches: import('../types').LikeMatch[] }>('/api/likes/matches'),
   respondToLike: (likeId: number, action: 'mutual' | 'ignore') =>
     request<{ ok: boolean; mutual?: boolean }>(`/api/likes/${likeId}/respond`, {
       method: 'POST',

@@ -536,13 +536,14 @@ def api_like_event(event_id: int, user_id: int = Depends(get_user_id)):
         (user_id, creator_id, event_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
         commit=True,
     )
-    # Уведомление создателю события: кто лайкнул и ссылка на профиль (в Telegram)
+    # Уведомление создателю события: короткое сообщение + кнопка «Открыть приложение»
     try:
         NotificationService.send_like_notification(
             creator_id, user_id, {"id": event_id}, like_id, bot=None
         )
-    except Exception:
-        pass  # не ломаем ответ API при сбое отправки в Telegram
+    except Exception as e:
+        import logging
+        logging.getLogger("api").warning("Не удалось отправить уведомление о лайке в Telegram: %s", e)
     if event.get("category"):
         prefs = execute_query("SELECT liked_categories FROM user_preferences WHERE user_id = ?", (user_id,), fetchone=True)
         liked = []
@@ -622,6 +623,50 @@ def api_get_pending_likes(user_id: int = Depends(get_user_id)):
             "event": event_dict,
         })
     return {"likes": result}
+
+
+@app.get("/api/likes/matches")
+def api_get_likes_matches(user_id: int = Depends(get_user_id)):
+    """Взаимные симпатии (матчинг) — пользователи, с которыми взаимный лайк."""
+    rows = execute_query(
+        """SELECT l.from_user, l.to_user, l.event_id
+           FROM likes l
+           WHERE l.mutual = TRUE AND (l.from_user = ? OR l.to_user = ?)
+           ORDER BY l.event_id DESC NULLS LAST""",
+        (user_id, user_id), fetchall=True
+    )
+    seen = set()
+    result = []
+    for r in rows:
+        other_id = r["to_user"] if r["from_user"] == user_id else r["from_user"]
+        if other_id in seen:
+            continue
+        seen.add(other_id)
+        other = execute_query(
+            """SELECT user_id, name, age, gender, city, relationship_status, photo, purpose, username
+               FROM users WHERE user_id = ? AND is_banned = FALSE""",
+            (other_id,), fetchone=True
+        )
+        event_dict = None
+        if r.get("event_id"):
+            event_row = execute_query(
+                """SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.created,
+                          u.name, u.age, u.gender, u.photo, u.purpose, u.relationship_status
+                   FROM events e JOIN users u ON e.user_id = u.user_id WHERE e.id = ?""",
+                (r["event_id"],), fetchone=True
+            )
+            if event_row:
+                event_dict = _row_to_event(event_row)
+        user_dict = None
+        if other:
+            user_dict = _row_to_public_user(other)
+            user_dict["username"] = other.get("username")
+        result.append({
+            "user_id": other_id,
+            "user": user_dict,
+            "event": event_dict,
+        })
+    return {"matches": result}
 
 
 @app.post("/api/likes/{like_id:int}/respond")

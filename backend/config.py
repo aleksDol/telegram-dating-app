@@ -7,6 +7,7 @@ load_dotenv()
 
 class Config:
     BOT_TOKEN = os.getenv('BOT_TOKEN')
+    MINI_APP_URL = (os.getenv('MINI_APP_URL') or '').strip().rstrip('/')
     ADMINS = [int(admin_id) for admin_id in os.getenv(
         'ADMINS', '').split(',') if admin_id]
     BROADCAST_LIMIT = int(os.getenv('BROADCAST_LIMIT', 1000))

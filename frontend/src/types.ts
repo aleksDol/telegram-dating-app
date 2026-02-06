@@ -65,3 +65,10 @@ export interface PendingLike {
   liker: (Pick<User, 'user_id' | 'name' | 'age' | 'gender' | 'city' | 'relationship_status' | 'photo' | 'purpose'>) & { username?: string }
   event: Event | null
 }
+
+/** Взаимная симпатия (матчинг). */
+export interface LikeMatch {
+  user_id: number
+  user: (Pick<User, 'user_id' | 'name' | 'age' | 'gender' | 'city' | 'relationship_status' | 'photo' | 'purpose'>) & { username?: string }
+  event: Event | null
+}
