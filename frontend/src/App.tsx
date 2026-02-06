@@ -32,7 +32,7 @@ function Nav() {
       </NavLink>
       <NavLink to="/events" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
         <span>🔍</span>
-        <span>События</span>
+        <span>Встречи</span>
       </NavLink>
       <NavLink to="/create" className={({ isActive }) => `nav-item nav-item-center ${isActive ? 'active' : ''}`}>
         <span>✨</span>

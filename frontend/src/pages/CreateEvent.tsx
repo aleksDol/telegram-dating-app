@@ -63,7 +63,7 @@ export default function CreateEvent() {
     <>
       <DemoBanner />
       <div className="page-header">
-        <h1 className="page-title">Создать событие</h1>
+        <h1 className="page-title">Создать встречу</h1>
         <p className="page-subtitle">Опишите встречу — её увидят люди рядом</p>
       </div>
       <form className="form" onSubmit={handleSubmit}>
@@ -81,7 +81,7 @@ export default function CreateEvent() {
           className="input"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Опишите событие..."
+          placeholder="Опишите встречу..."
           rows={3}
           required
         />
@@ -129,7 +129,7 @@ export default function CreateEvent() {
 
         {error && <p className="text-error">{error}</p>}
         <button type="submit" className="btn btn-primary btn-lg" disabled={loading}>
-          {loading ? 'Создание...' : '🎉 Создать событие'}
+          {loading ? 'Создание...' : '🎉 Создать встречу'}
         </button>
       </form>
     </>

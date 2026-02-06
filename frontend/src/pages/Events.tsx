@@ -55,7 +55,7 @@ export default function Events() {
       <DemoBanner />
       <div className="page-header page-header-with-logo">
         <Logo size="sm" showText link />
-        <h1 className="page-title animate-in">Найти события</h1>
+        <h1 className="page-title animate-in">Найти встречу</h1>
         <p className="page-subtitle animate-in stagger-1">Выберите фильтр и смотрите карточки</p>
       </div>
       <div className="filter-chips animate-in stagger-2">
@@ -75,13 +75,13 @@ export default function Events() {
       {!loading && !error && events.length === 0 && (
         <div className="empty-state">
           <span className="empty-icon">📅</span>
-          <p>Нет событий по выбранному фильтру</p>
+          <p>Нет встреч по выбранному фильтру</p>
           <button
             type="button"
             className="btn btn-primary"
             onClick={() => setUseDemoEvents(true)}
           >
-            Показать примеры событий
+            Показать примеры встреч
           </button>
         </div>
       )}

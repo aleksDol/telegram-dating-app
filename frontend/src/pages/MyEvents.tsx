@@ -48,7 +48,7 @@ export default function MyEvents() {
       setError('В демо-режиме удаление недоступно')
       return
     }
-    if (!window.confirm('Удалить событие «' + ev.title + '»? Это действие нельзя отменить.')) return
+    if (!window.confirm('Удалить встречу «' + ev.title + '»? Это действие нельзя отменить.')) return
     setDeletingId(ev.id)
     setError('')
     try {
@@ -67,27 +67,27 @@ export default function MyEvents() {
     <>
       <DemoBanner />
       <div className="page-header">
-        <h1 className="page-title">Мои события</h1>
+        <h1 className="page-title">Мои встречи</h1>
         <p className="page-subtitle">Управляйте своими встречами</p>
       </div>
       <button type="button" className="btn btn-primary btn-lg block-btn" onClick={() => navigate('/create')}>
-        🎉 Создать событие
+        🎉 Создать встречу
       </button>
       {loading && <div className="screen-center"><div className="loader" /><p className="text-muted">Загрузка...</p></div>}
       {error && <div className="card card-error"><p className="text-error">{error}</p></div>}
       {!loading && !error && events.length === 0 && (
         <div className="empty-state">
           <span className="empty-icon">📅</span>
-          <p>У вас пока нет событий</p>
+          <p>У вас пока нет встреч</p>
           <p className="text-muted" style={{ marginTop: 8 }}>Создайте первое — кнопка выше</p>
-          <button type="button" className="btn btn-ghost" style={{ marginTop: 16 }} onClick={() => navigate('/create')}>Создать событие</button>
+          <button type="button" className="btn btn-ghost" style={{ marginTop: 16 }} onClick={() => navigate('/create')}>Создать встречу</button>
           <button
             type="button"
             className="btn btn-primary"
             style={{ marginTop: 12 }}
             onClick={() => setUseDemoEvents(true)}
           >
-            Показать примеры событий
+            Показать примеры встреч
           </button>
         </div>
       )}

@@ -96,19 +96,14 @@ export default function Home() {
         <WaveSvg />
         <div className="home-hero-inner">
           <Logo size="md" showText link />
-          <div className="home-greeting-wrap">
-            <h1 className="home-greeting animate-in stagger-1">
-              Привет, {user.name}
-            </h1>
-          </div>
         </div>
       </header>
 
       {/* Быстрые действия — 2 кнопки */}
-      <div className="home-quick-actions animate-in stagger-2">
+      <div className="home-quick-actions animate-in stagger-1">
         <Link to="/events" className="home-quick-btn">
           <span>🔍</span>
-          <span>Найти события</span>
+          <span>Найти встречу</span>
         </Link>
         <Link to="/create" className="home-quick-btn home-quick-btn-secondary">
           <span>🎯</span>
@@ -116,24 +111,27 @@ export default function Home() {
         </Link>
       </div>
 
-      {/* Статистика — 3 колонки */}
-      <div className="home-stats-cols animate-in stagger-3">
+      {/* Статистика — 3 колонки с подписями */}
+      <div className="home-stats-cols animate-in stagger-2">
         <Link to="/my-events" className="home-stat-col">
           <span className="home-stat-num">17</span>
           <span className="home-stat-emoji">💫</span>
+          <span className="home-stat-label">Мои встречи</span>
         </Link>
         <div className="home-stat-col">
           <span className="home-stat-num">{user.points}</span>
           <span className="home-stat-emoji">⭐</span>
+          <span className="home-stat-label">Рейтинг</span>
         </div>
         <Link to="/referral" className="home-stat-col">
           <span className="home-stat-num">{user.referrals_count}</span>
           <span className="home-stat-emoji">👥</span>
+          <span className="home-stat-label">Рефералов</span>
         </Link>
       </div>
 
       {/* Призыв к действию с иллюстрацией */}
-      <section className="home-cta animate-in stagger-4">
+      <section className="home-cta animate-in stagger-3">
         <div className="home-cta-card">
           <h2 className="home-cta-title">🎯 Не знаешь, с чего начать?</h2>
           <div className="home-cta-illus">✨</div>
@@ -146,7 +144,7 @@ export default function Home() {
       </section>
 
       {/* Рекомендации */}
-      <section className="home-recommendations animate-in stagger-5">
+      <section className="home-recommendations animate-in stagger-4">
         <h2 className="home-recommendations-title">🔥 Популярные рядом с тобой</h2>
         <div className="home-recommendations-grid">
           <Link to="/events/sport" className="home-rec-card">

@@ -117,7 +117,7 @@ export default function EditEvent() {
 
   const handleDelete = async () => {
     if (!event) return
-    if (!window.confirm('Удалить событие «' + event.title + '»? Это действие нельзя отменить.')) return
+    if (!window.confirm('Удалить встречу «' + event.title + '»? Это действие нельзя отменить.')) return
     if (isDemo || useDemoEvents || !isApiConfigured()) {
       setError('В демо-режиме удаление недоступно')
       return
@@ -136,7 +136,7 @@ export default function EditEvent() {
 
   if (!user) return null
   if (loading) return <div className="screen-center"><div className="loader" /><p className="text-muted">Загрузка...</p></div>
-  if (error && !event) return <div className="empty-state"><p className="text-error">{error}</p><button type="button" className="btn btn-ghost" onClick={() => navigate('/my-events')}>К моим событиям</button></div>
+  if (error && !event) return <div className="empty-state"><p className="text-error">{error}</p><button type="button" className="btn btn-ghost" onClick={() => navigate('/my-events')}>К моим встречам</button></div>
   if (!event) return null
   if (event.user_id !== user.user_id) return null
 
@@ -145,7 +145,7 @@ export default function EditEvent() {
   return (
     <>
       <div className="page-header">
-        <h1 className="page-title">Редактировать событие</h1>
+        <h1 className="page-title">Редактировать встречу</h1>
         <p className="page-subtitle">{event.title}</p>
       </div>
       <form className="form" onSubmit={handleSubmit}>
@@ -163,7 +163,7 @@ export default function EditEvent() {
           className="input"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Опишите событие..."
+          placeholder="Опишите встречу..."
           rows={3}
           required
         />
@@ -227,7 +227,7 @@ export default function EditEvent() {
             onClick={handleDelete}
             disabled={deleting}
           >
-            {deleting ? 'Удаление...' : '🗑 Удалить событие'}
+            {deleting ? 'Удаление...' : '🗑 Удалить встречу'}
           </button>
         )}
       </form>

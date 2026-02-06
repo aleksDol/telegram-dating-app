@@ -75,7 +75,7 @@ export default function EventDetail() {
 
   const handleDelete = async () => {
     if (!event || !isApiConfigured()) return
-    if (!window.confirm('Удалить событие «' + event.title + '»? Это действие нельзя отменить.')) return
+    if (!window.confirm('Удалить встречу «' + event.title + '»? Это действие нельзя отменить.')) return
     try {
       await api.deleteEvent(event.id)
       navigate('/my-events', { replace: true })
@@ -86,7 +86,7 @@ export default function EventDetail() {
 
   if (!user) return null
   if (loading) return <div className="screen-center"><div className="loader" /><p className="text-muted">Загрузка...</p></div>
-  if (!event) return <div className="empty-state"><span className="empty-icon">📅</span><p>Событие не найдено</p><button type="button" className="btn btn-ghost" onClick={() => navigate('/events')}>К событиям</button></div>
+  if (!event) return <div className="empty-state"><span className="empty-icon">📅</span><p>Встреча не найдена</p><button type="button" className="btn btn-ghost" onClick={() => navigate('/events')}>К встречам</button></div>
 
   const showDemoActions = (isDemo || useDemoEvents) && !isApiConfigured()
   const isOwnEvent = event.user_id === user.user_id

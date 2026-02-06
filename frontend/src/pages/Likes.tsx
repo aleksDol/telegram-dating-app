@@ -98,7 +98,7 @@ export default function Likes() {
           <span className="empty-icon">💌</span>
           <p>Нет новых лайков</p>
           <p className="text-muted" style={{ fontSize: 14, marginTop: 8 }}>
-            Когда кто-то лайкнет ваше событие, он появится здесь
+            Когда кто-то лайкнет вашу встречу, он появится здесь
           </p>
         </div>
       )}
@@ -173,7 +173,7 @@ export default function Likes() {
                     style={{ cursor: 'default', marginBottom: 12 }}
                   >
                     <p className="text-muted" style={{ marginBottom: 8, fontSize: 14 }}>
-                      Лайкнул ваше событие
+                      Лайкнул вашу встречу
                     </p>
                     {item.event && (
                       <div style={{ marginBottom: 12 }}>
