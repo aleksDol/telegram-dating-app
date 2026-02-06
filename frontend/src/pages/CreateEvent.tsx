@@ -62,9 +62,12 @@ export default function CreateEvent() {
   return (
     <div className="create-event-page">
       <DemoBanner />
-      <div className="page-header">
-        <h1 className="page-title">Создать встречу</h1>
-        <p className="page-subtitle">Опишите встречу — её увидят люди рядом</p>
+      <div className="create-event-hero">
+        <h1 className="create-event-hero-title">Создать встречу</h1>
+        <p className="create-event-hero-subtitle">Опишите встречу — её увидят люди рядом</p>
+        <svg className="create-event-hero-wave" viewBox="0 0 400 32" preserveAspectRatio="none" aria-hidden>
+          <path d="M0 32V0h400v32c-66.5-8-133-8-200 0S66.5 32 0 32z" />
+        </svg>
       </div>
       <form className="form form-create" onSubmit={handleSubmit}>
         <label className="label">Название</label>
@@ -88,7 +91,7 @@ export default function CreateEvent() {
 
         <label className="label">Дата и время</label>
         <input
-          className="input"
+          className="input input-datetime"
           type="datetime-local"
           value={eventDate}
           onChange={(e) => setEventDate(e.target.value)}
@@ -128,7 +131,7 @@ export default function CreateEvent() {
         </select>
 
         {error && <p className="text-error">{error}</p>}
-        <button type="submit" className="btn btn-primary btn-lg" disabled={loading}>
+        <button type="submit" className="btn btn-primary btn-lg btn-create-event" disabled={loading}>
           {loading ? 'Создание...' : '🎉 Создать встречу'}
         </button>
       </form>

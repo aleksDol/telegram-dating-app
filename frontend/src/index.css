@@ -1473,6 +1473,51 @@ button {
   max-width: 100%;
 }
 
+/* Шапка «Создать встречу» — фон и шрифт как на главной (градиент логотипа, белый текст) */
+.create-event-hero {
+  position: relative;
+  padding: 1.5rem 1rem 2rem;
+  margin: 0 -4px 1.5rem;
+  background: var(--gradient-logo);
+  color: #fff;
+  overflow: hidden;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.create-event-hero-title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  filter: none;
+  position: relative;
+  z-index: 1;
+}
+
+.create-event-hero-subtitle {
+  font-size: 1.08rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.create-event-hero-wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 32px;
+  fill: var(--bg);
+  pointer-events: none;
+}
+
 .create-event-page .form-create {
   max-width: 100%;
 }
@@ -1512,6 +1557,29 @@ button {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft), 0 2px 8px rgba(45, 55, 72, 0.1);
+}
+
+/* Поле «Дата и время» не вылезает за экран (убираем min-width у datetime-local) */
+.create-event-page .form-create .input-datetime,
+.create-event-page .form-create input[type="datetime-local"] {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
+/* Кнопка «Создать встречу»: градиент как на главной/логотипе + отступ снизу */
+.create-event-page .btn-create-event {
+  background: var(--gradient-logo);
+  background-size: 200% 200%;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35);
+  margin-top: 8px;
+  margin-bottom: 2rem;
+}
+
+.create-event-page .btn-create-event:hover:not(:disabled) {
+  background-position: 100% 50%;
+  box-shadow: 0 6px 24px rgba(124, 58, 237, 0.4);
 }
 
 .input {
