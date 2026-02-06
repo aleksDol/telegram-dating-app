@@ -28,6 +28,7 @@ export default function Events() {
   const { filter = 'new' } = useParams<{ filter?: string }>()
   const navigate = useNavigate()
   const filterDropdownRef = useRef<HTMLDivElement>(null)
+  const cardWrapRef = useRef<HTMLDivElement>(null)
   const { user, loading: userLoading, fetchUser, isDemo, useDemoEvents, setUseDemoEvents } = useApp()
   const [events, setEvents] = useState<EventType[]>([])
   const [loading, setLoading] = useState(true)
@@ -36,8 +37,11 @@ export default function Events() {
   const [swipeOffset, setSwipeOffset] = useState(0)
   const [actionBusy, setActionBusy] = useState(false)
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
+  const [touchStartY, setTouchStartY] = useState<number | null>(null)
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
   const [exitDirection, setExitDirection] = useState<'left' | 'right' | null>(null)
+  const [exitStartOffset, setExitStartOffset] = useState(0)
+  const [exitAnimateToEnd, setExitAnimateToEnd] = useState(false)
 
   useEffect(() => {
     fetchUser()
@@ -85,12 +89,14 @@ export default function Events() {
       .finally(() => setLoading(false))
   }, [user, userLoading, filter, isDemo, useDemoEvents, navigate])
 
-  const performLike = useCallback(async () => {
+  const performLike = useCallback((startOffset = 0) => {
     const ev = events[currentIndex]
     if (!ev || actionBusy || currentIndex >= events.length) return
     setActionBusy(true)
-    setSwipeOffset(0)
+    setExitStartOffset(startOffset)
+    setExitAnimateToEnd(false)
     setExitDirection('right')
+    if (!startOffset) setSwipeOffset(0)
     if (isApiConfigured() && !isDemo && !useDemoEvents) {
       api.likeEvent(ev.id).then((res) => {
         if (res.mutual) alert('💞 Взаимная симпатия! Можете обменяться контактами.')
@@ -100,52 +106,88 @@ export default function Events() {
     setTimeout(() => {
       setCurrentIndex((i) => Math.min(i + 1, events.length))
       setExitDirection(null)
+      setExitAnimateToEnd(false)
+      setSwipeOffset(0)
       setActionBusy(false)
     }, CARD_EXIT_DURATION_MS)
   }, [events, currentIndex, actionBusy, isDemo, useDemoEvents])
 
-  const performSkip = useCallback(async () => {
+  const performSkip = useCallback((startOffset = 0) => {
     const ev = events[currentIndex]
     if (!ev || actionBusy || currentIndex >= events.length) return
     setActionBusy(true)
-    setSwipeOffset(0)
+    setExitStartOffset(startOffset)
+    setExitAnimateToEnd(false)
     setExitDirection('left')
+    if (!startOffset) setSwipeOffset(0)
     if (isApiConfigured() && !isDemo && !useDemoEvents) {
       api.skipEvent(ev.id).catch(() => {})
     }
     setTimeout(() => {
       setCurrentIndex((i) => Math.min(i + 1, events.length))
       setExitDirection(null)
+      setExitAnimateToEnd(false)
+      setSwipeOffset(0)
       setActionBusy(false)
     }, CARD_EXIT_DURATION_MS)
   }, [events, currentIndex, actionBusy, isDemo, useDemoEvents])
 
+  useEffect(() => {
+    if (!exitDirection) return
+    const id = requestAnimationFrame(() => setExitAnimateToEnd(true))
+    return () => cancelAnimationFrame(id)
+  }, [exitDirection])
+
+  useEffect(() => {
+    const el = cardWrapRef.current
+    if (!el) return
+    const onTouchMove = (e: TouchEvent) => {
+      if (touchStartX === null || touchStartY === null) return
+      const dx = e.touches[0].clientX - touchStartX
+      const dy = e.touches[0].clientY - touchStartY
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
+        e.preventDefault()
+      }
+    }
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    return () => el.removeEventListener('touchmove', onTouchMove)
+  }, [touchStartX, touchStartY])
+
   const handleSwipeEnd = useCallback(() => {
     if (swipeOffset > SWIPE_THRESHOLD) {
-      performLike()
+      performLike(swipeOffset)
       setTouchStartX(null)
+      setTouchStartY(null)
       return
     }
     if (swipeOffset < -SWIPE_THRESHOLD) {
-      performSkip()
+      performSkip(swipeOffset)
       setTouchStartX(null)
+      setTouchStartY(null)
       return
     }
     setSwipeOffset(0)
     setTouchStartX(null)
+    setTouchStartY(null)
   }, [swipeOffset, performLike, performSkip])
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStartX(e.touches[0].clientX)
+    setTouchStartY(e.touches[0].clientY)
   }
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (touchStartX === null) return
+    if (touchStartX === null || touchStartY === null) return
     const dx = e.touches[0].clientX - touchStartX
-    setSwipeOffset(Math.max(-200, Math.min(200, dx)))
+    const dy = e.touches[0].clientY - touchStartY
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
+      e.preventDefault()
+    }
+    setSwipeOffset(Math.max(-280, Math.min(280, dx)))
   }
   const handleTouchEnd = () => {
     handleSwipeEnd()
     setTouchStartX(null)
+    setTouchStartY(null)
   }
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -255,14 +297,22 @@ export default function Events() {
                   </div>
                 )}
                 <div
-                  className={`events-tinder-card-wrap events-tinder-card-exit events-tinder-card-exit-${exitDirection}`}
+                  className="events-tinder-card-wrap events-tinder-card-exit"
                   key={`exit-${currentEvent?.id}`}
+                  style={{
+                    transform: exitAnimateToEnd
+                      ? (exitDirection === 'right' ? 'translateX(120%) rotate(18deg)' : 'translateX(-120%) rotate(-18deg)')
+                      : `translateX(${exitStartOffset}px) rotate(${exitStartOffset * 0.06}deg)`,
+                    opacity: exitAnimateToEnd ? 0 : 1,
+                    transition: 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease-out',
+                  }}
                 >
                   {currentEvent && <EventCard event={currentEvent} navigate={navigate} />}
                 </div>
               </>
             ) : (
               <div
+                ref={cardWrapRef}
                 className="events-tinder-card-wrap"
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
@@ -290,7 +340,7 @@ export default function Events() {
             <button
               type="button"
               className="btn events-tinder-btn events-tinder-btn-skip"
-              onClick={performSkip}
+              onClick={() => performSkip(0)}
               disabled={actionBusy}
               aria-label="Пропустить"
             >
@@ -299,7 +349,7 @@ export default function Events() {
             <button
               type="button"
               className="btn events-tinder-btn events-tinder-btn-like"
-              onClick={performLike}
+              onClick={() => performLike(0)}
               disabled={actionBusy}
               aria-label="Лайк"
             >
