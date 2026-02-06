@@ -100,9 +100,14 @@ class Database:
                 )
             """)
             try:
+                cursor.execute("SAVEPOINT before_alter_likes_response")
                 cursor.execute("ALTER TABLE likes ADD COLUMN response TEXT DEFAULT NULL")
+                cursor.execute("RELEASE SAVEPOINT before_alter_likes_response")
             except Exception:
-                pass  # колонка уже есть (новая БД или миграция уже выполнена)
+                try:
+                    cursor.execute("ROLLBACK TO SAVEPOINT before_alter_likes_response")
+                except Exception:
+                    pass  # колонка уже есть или savepoint не создан
 
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS achievements (
