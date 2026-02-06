@@ -891,14 +891,103 @@ button {
   margin-bottom: 4px;
 }
 
-/* ===== Filter chips ===== */
+/* ===== Filter dropdown (маркетплейс-стиль) ===== */
+.filter-dropdown-wrap {
+  position: relative;
+  margin-bottom: 1.25rem;
+}
+.filter-dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid rgba(45, 55, 72, 0.12);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s var(--ease-spring);
+}
+.filter-dropdown-btn:hover {
+  border-color: rgba(232, 121, 249, 0.35);
+  box-shadow: 0 4px 16px rgba(232, 121, 249, 0.12);
+}
+.filter-dropdown-btn[aria-expanded="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+.filter-dropdown-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+.filter-dropdown-label {
+  flex: 1;
+  text-align: left;
+}
+.filter-dropdown-arrow {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.filter-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid rgba(45, 55, 72, 0.1);
+  box-shadow: 0 12px 40px rgba(45, 55, 72, 0.15);
+  z-index: 50;
+  padding: 6px;
+  animation: filter-dropdown-in 0.2s var(--ease-out-expo);
+}
+@keyframes filter-dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.filter-dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.filter-dropdown-item:hover {
+  background: rgba(232, 121, 249, 0.1);
+}
+.filter-dropdown-item-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Legacy chips (если нужны на других страницах) */
 .filter-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 1.25rem;
 }
-
 .chip {
   padding: 9px 16px;
   border-radius: 999px;
@@ -909,11 +998,9 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: background 0.25s, color 0.25s, border-color 0.25s, transform 0.2s var(--ease-spring);
 }
-
 .chip:hover {
   transform: translateY(-2px);
 }
-
 .chip-active,
 .chip:hover {
   background: linear-gradient(135deg, rgba(232, 121, 249, 0.28) 0%, rgba(129, 140, 248, 0.22) 100%);
@@ -1107,6 +1194,10 @@ button {
 .events-tinder {
   margin-top: 12px;
 }
+.events-tinder-cards {
+  position: relative;
+  min-height: 320px;
+}
 .events-tinder-card-wrap {
   position: relative;
   touch-action: pan-y;
@@ -1114,6 +1205,47 @@ button {
 }
 .events-tinder-card-wrap .event-card {
   margin-bottom: 0;
+}
+/* Анимация вылета карточки при лайке/пропуске */
+.events-tinder-card-exit {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.events-tinder-card-exit-left {
+  animation: card-exit-left 0.45s var(--ease-out-expo) forwards;
+}
+.events-tinder-card-exit-right {
+  animation: card-exit-right 0.45s var(--ease-out-expo) forwards;
+}
+@keyframes card-exit-left {
+  to {
+    transform: translateX(-120%) rotate(-18deg);
+    opacity: 0;
+  }
+}
+@keyframes card-exit-right {
+  to {
+    transform: translateX(120%) rotate(18deg);
+    opacity: 0;
+  }
+}
+/* Анимация появления следующей карточки */
+.events-tinder-card-enter {
+  animation: card-enter 0.45s var(--ease-out-expo) forwards;
+}
+@keyframes card-enter {
+  from {
+    transform: scale(0.92);
+    opacity: 0.5;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 .events-tinder-badge {
   position: absolute;

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { api, isApiConfigured } from '../api/client'
@@ -9,10 +9,25 @@ import type { Event as EventType } from '../types'
 
 const FILTERS = ['new', 'popular', 'nearby', 'today', 'tomorrow', 'for_me', 'random', 'interest'] as const
 const SWIPE_THRESHOLD = 80
+const CARD_EXIT_DURATION_MS = 450
+
+function FilterSliderIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="4" y1="12" x2="14" y2="12" />
+      <line x1="4" y1="18" x2="10" y2="18" />
+      <circle cx="17" cy="6" r="2" fill="currentColor" />
+      <circle cx="17" cy="12" r="2" fill="currentColor" />
+      <circle cx="17" cy="18" r="2" fill="currentColor" />
+    </svg>
+  )
+}
 
 export default function Events() {
   const { filter = 'new' } = useParams<{ filter?: string }>()
   const navigate = useNavigate()
+  const filterDropdownRef = useRef<HTMLDivElement>(null)
   const { user, loading: userLoading, fetchUser, isDemo, useDemoEvents, setUseDemoEvents } = useApp()
   const [events, setEvents] = useState<EventType[]>([])
   const [loading, setLoading] = useState(true)
@@ -21,10 +36,23 @@ export default function Events() {
   const [swipeOffset, setSwipeOffset] = useState(0)
   const [actionBusy, setActionBusy] = useState(false)
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
+  const [exitDirection, setExitDirection] = useState<'left' | 'right' | null>(null)
 
   useEffect(() => {
     fetchUser()
   }, [fetchUser])
+
+  useEffect(() => {
+    if (!filterDropdownOpen) return
+    const close = (e: MouseEvent) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target as Node)) {
+        setFilterDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [filterDropdownOpen])
 
   useEffect(() => {
     if (!user && !userLoading) {
@@ -57,53 +85,50 @@ export default function Events() {
       .finally(() => setLoading(false))
   }, [user, userLoading, filter, isDemo, useDemoEvents, navigate])
 
-  const goNext = useCallback(() => {
-    setCurrentIndex((i) => Math.min(i + 1, events.length))
-    setSwipeOffset(0)
-  }, [events.length])
-
   const performLike = useCallback(async () => {
     const ev = events[currentIndex]
-    if (!ev || actionBusy) return
+    if (!ev || actionBusy || currentIndex >= events.length) return
     setActionBusy(true)
+    setSwipeOffset(0)
+    setExitDirection('right')
     if (isApiConfigured() && !isDemo && !useDemoEvents) {
-      try {
-        const res = await api.likeEvent(ev.id)
-        if (res.mutual) {
-          alert('💞 Взаимная симпатия! Можете обменяться контактами.')
-        } else {
-          alert('❤️ Лайк отправлен!')
-        }
-      } catch (e) {
-        alert(e instanceof Error ? e.message : 'Ошибка')
-        setActionBusy(false)
-        return
-      }
+      api.likeEvent(ev.id).then((res) => {
+        if (res.mutual) alert('💞 Взаимная симпатия! Можете обменяться контактами.')
+        else alert('❤️ Лайк отправлен!')
+      }).catch((e) => alert(e instanceof Error ? e.message : 'Ошибка'))
     }
-    goNext()
-    setActionBusy(false)
-  }, [events, currentIndex, actionBusy, isDemo, useDemoEvents, goNext])
+    setTimeout(() => {
+      setCurrentIndex((i) => Math.min(i + 1, events.length))
+      setExitDirection(null)
+      setActionBusy(false)
+    }, CARD_EXIT_DURATION_MS)
+  }, [events, currentIndex, actionBusy, isDemo, useDemoEvents])
 
   const performSkip = useCallback(async () => {
     const ev = events[currentIndex]
-    if (!ev || actionBusy) return
+    if (!ev || actionBusy || currentIndex >= events.length) return
     setActionBusy(true)
+    setSwipeOffset(0)
+    setExitDirection('left')
     if (isApiConfigured() && !isDemo && !useDemoEvents) {
-      try {
-        await api.skipEvent(ev.id)
-      } catch (_) {}
+      api.skipEvent(ev.id).catch(() => {})
     }
-    goNext()
-    setActionBusy(false)
-  }, [events, currentIndex, actionBusy, isDemo, useDemoEvents, goNext])
+    setTimeout(() => {
+      setCurrentIndex((i) => Math.min(i + 1, events.length))
+      setExitDirection(null)
+      setActionBusy(false)
+    }, CARD_EXIT_DURATION_MS)
+  }, [events, currentIndex, actionBusy, isDemo, useDemoEvents])
 
   const handleSwipeEnd = useCallback(() => {
     if (swipeOffset > SWIPE_THRESHOLD) {
       performLike()
+      setTouchStartX(null)
       return
     }
     if (swipeOffset < -SWIPE_THRESHOLD) {
       performSkip()
+      setTouchStartX(null)
       return
     }
     setSwipeOffset(0)
@@ -154,17 +179,40 @@ export default function Events() {
         <h1 className="page-title animate-in">Найти встречу</h1>
         <p className="page-subtitle animate-in stagger-1">Свайп влево — пропустить, вправо — лайк</p>
       </div>
-      <div className="filter-chips animate-in stagger-2">
-        {FILTERS.map((f) => (
-          <button
-            key={f}
-            type="button"
-            className={`chip ${filter === f ? 'chip-active' : ''}`}
-            onClick={() => navigate(`/events/${f}`)}
-          >
-            {FILTER_LABELS[f] ?? f}
-          </button>
-        ))}
+      <div className="filter-dropdown-wrap animate-in stagger-2" ref={filterDropdownRef}>
+        <button
+          type="button"
+          className="filter-dropdown-btn"
+          onClick={() => setFilterDropdownOpen((o) => !o)}
+          aria-expanded={filterDropdownOpen}
+          aria-haspopup="listbox"
+          aria-label="Выбрать фильтр"
+        >
+          <span className="filter-dropdown-icon">
+            <FilterSliderIcon />
+          </span>
+          <span className="filter-dropdown-label">Фильтры</span>
+          <span className="filter-dropdown-arrow">{filterDropdownOpen ? '▲' : '▼'}</span>
+        </button>
+        {filterDropdownOpen && (
+          <div className="filter-dropdown-panel" role="listbox">
+            {FILTERS.map((f) => (
+              <button
+                key={f}
+                type="button"
+                role="option"
+                aria-selected={filter === f}
+                className={`filter-dropdown-item ${filter === f ? 'filter-dropdown-item-active' : ''}`}
+                onClick={() => {
+                  navigate(`/events/${f}`)
+                  setFilterDropdownOpen(false)
+                }}
+              >
+                {FILTER_LABELS[f] ?? f}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       {loading && <div className="screen-center"><div className="loader" /><p className="text-muted">Загрузка...</p></div>}
       {error && <p className="text-error">{error}</p>}
@@ -196,89 +244,47 @@ export default function Events() {
           </button>
         </div>
       )}
-      {!loading && hasCards && currentEvent && (
+      {!loading && hasCards && (currentEvent || (exitDirection && events[currentIndex + 1])) && (
         <div className="events-tinder">
-          <div
-            className="events-tinder-card-wrap"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseLeave}
-            style={{
-              transform: `translateX(${swipeOffset}px) rotate(${swipeOffset * 0.06}deg)`,
-              transition: touchStartX === null ? 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none',
-            }}
-          >
-            {swipeOffset > 40 && (
-              <span className="events-tinder-badge events-tinder-badge-like">❤️ Лайк</span>
-            )}
-            {swipeOffset < -40 && (
-              <span className="events-tinder-badge events-tinder-badge-skip">Пропустить</span>
-            )}
-            <div className="card event-card">
+          <div className="events-tinder-cards">
+            {exitDirection ? (
+              <>
+                {events[currentIndex + 1] && (
+                  <div className="events-tinder-card-wrap events-tinder-card-enter" key={`enter-${events[currentIndex + 1].id}`}>
+                    <EventCard event={events[currentIndex + 1]} navigate={navigate} />
+                  </div>
+                )}
+                <div
+                  className={`events-tinder-card-wrap events-tinder-card-exit events-tinder-card-exit-${exitDirection}`}
+                  key={`exit-${currentEvent?.id}`}
+                >
+                  {currentEvent && <EventCard event={currentEvent} navigate={navigate} />}
+                </div>
+              </>
+            ) : (
               <div
-                className="event-card-image-wrap"
-                role="button"
-                tabIndex={0}
-                onClick={() => navigate(`/event/${currentEvent.id}`)}
-                onKeyDown={(e) => e.key === 'Enter' && navigate(`/event/${currentEvent.id}`)}
+                className="events-tinder-card-wrap"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseLeave}
+                style={{
+                  transform: `translateX(${swipeOffset}px) rotate(${swipeOffset * 0.06}deg)`,
+                  transition: touchStartX === null ? 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none',
+                }}
               >
-                {currentEvent.photo ? (
-                  <img src={currentEvent.photo} alt="" />
-                ) : (
-                  <div className="event-card-image-placeholder">
-                    {currentEvent.category?.slice(0, 2) || '🎉'}
-                  </div>
+                {swipeOffset > 40 && (
+                  <span className="events-tinder-badge events-tinder-badge-like">❤️ Лайк</span>
                 )}
-                {currentEvent.category && (
-                  <span className="event-card-cat-badge">{currentEvent.category}</span>
+                {swipeOffset < -40 && (
+                  <span className="events-tinder-badge events-tinder-badge-skip">Пропустить</span>
                 )}
+                {currentEvent && <EventCard event={currentEvent} navigate={navigate} />}
               </div>
-              <div className="event-card-footer">
-                <div
-                  className="event-card-author"
-                  role="button"
-                  tabIndex={0}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    navigate(`/profile/${currentEvent.user_id}`, { state: { fromEventId: currentEvent.id } })
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.stopPropagation()
-                      navigate(`/profile/${currentEvent.user_id}`, { state: { fromEventId: currentEvent.id } })
-                    }
-                  }}
-                >
-                  <div className="event-author-avatar-placeholder">
-                    {(currentEvent.name ?? '?').slice(0, 1)}
-                  </div>
-                  <div className="event-author-info">
-                    <span className="event-author-name">{currentEvent.name ?? 'Пользователь'}</span>
-                    <span className="event-author-meta">{currentEvent.age} · {currentEvent.city}</span>
-                    <span className="event-card-author-hint">Нажать — открыть профиль</span>
-                  </div>
-                  <span className="event-author-arrow">→</span>
-                </div>
-                <div
-                  role="button"
-                  tabIndex={0}
-                  className="event-card-body"
-                  onClick={() => navigate(`/event/${currentEvent.id}`)}
-                  onKeyDown={(e) => e.key === 'Enter' && navigate(`/event/${currentEvent.id}`)}
-                >
-                  <div className="event-card-header">
-                    <h3 className="event-card-title">{currentEvent.title}</h3>
-                    {currentEvent.category && <span className="event-card-cat">{currentEvent.category}</span>}
-                  </div>
-                  <p className="event-card-meta">{currentEvent.city} · {currentEvent.event_date?.slice(0, 16)}</p>
-                  <p className="event-card-desc">{currentEvent.description?.slice(0, 120)}{(currentEvent.description?.length ?? 0) > 120 ? '…' : ''}</p>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
           <div className="events-tinder-actions">
             <button
@@ -306,6 +312,76 @@ export default function Events() {
         </div>
       )}
     </>
+  )
+}
+
+function EventCard({
+  event: ev,
+  navigate,
+}: {
+  event: EventType
+  navigate: (to: string, opts?: { state?: { fromEventId: number } }) => void
+}) {
+  return (
+    <div className="card event-card">
+      <div
+        className="event-card-image-wrap"
+        role="button"
+        tabIndex={0}
+        onClick={() => navigate(`/event/${ev.id}`)}
+        onKeyDown={(e) => e.key === 'Enter' && navigate(`/event/${ev.id}`)}
+      >
+        {ev.photo ? (
+          <img src={ev.photo} alt="" />
+        ) : (
+          <div className="event-card-image-placeholder">
+            {ev.category?.slice(0, 2) || '🎉'}
+          </div>
+        )}
+        {ev.category && <span className="event-card-cat-badge">{ev.category}</span>}
+      </div>
+      <div className="event-card-footer">
+        <div
+          className="event-card-author"
+          role="button"
+          tabIndex={0}
+          onClick={(e) => {
+            e.stopPropagation()
+            navigate(`/profile/${ev.user_id}`, { state: { fromEventId: ev.id } })
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.stopPropagation()
+              navigate(`/profile/${ev.user_id}`, { state: { fromEventId: ev.id } })
+            }
+          }}
+        >
+          <div className="event-author-avatar-placeholder">
+            {(ev.name ?? '?').slice(0, 1)}
+          </div>
+          <div className="event-author-info">
+            <span className="event-author-name">{ev.name ?? 'Пользователь'}</span>
+            <span className="event-author-meta">{ev.age} · {ev.city}</span>
+            <span className="event-card-author-hint">Нажать — открыть профиль</span>
+          </div>
+          <span className="event-author-arrow">→</span>
+        </div>
+        <div
+          role="button"
+          tabIndex={0}
+          className="event-card-body"
+          onClick={() => navigate(`/event/${ev.id}`)}
+          onKeyDown={(e) => e.key === 'Enter' && navigate(`/event/${ev.id}`)}
+        >
+          <div className="event-card-header">
+            <h3 className="event-card-title">{ev.title}</h3>
+            {ev.category && <span className="event-card-cat">{ev.category}</span>}
+          </div>
+          <p className="event-card-meta">{ev.city} · {ev.event_date?.slice(0, 16)}</p>
+          <p className="event-card-desc">{ev.description?.slice(0, 120)}{(ev.description?.length ?? 0) > 120 ? '…' : ''}</p>
+        </div>
+      </div>
+    </div>
   )
 }
 
