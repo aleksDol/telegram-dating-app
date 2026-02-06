@@ -21,9 +21,9 @@ export default function Profile() {
     <>
       <DemoBanner />
       <div className="page-header">
-        <h1 className="page-title">Мой профиль</h1>
+        <h1 className="page-title animate-in">Мой профиль</h1>
       </div>
-      <div className="card profile-card">
+      <div className="card profile-card animate-in stagger-1">
         {user.photo && (
           <img src={user.photo} alt="" className="profile-avatar" />
         )}

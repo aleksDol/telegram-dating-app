@@ -49,13 +49,18 @@ export default function Home() {
     return (
       <div className="hero">
         <div className="hero-bg" />
+        <div className="hero-orb hero-orb-1" aria-hidden />
+        <div className="hero-orb hero-orb-2" aria-hidden />
+        <div className="hero-orb hero-orb-3" aria-hidden />
         <div className="hero-content">
-          <Logo size="lg" showText link={false} />
-          <h1 className="hero-title hero-title-sub">Найди компанию для встречи</h1>
-          <p className="hero-subtitle">
+          <div className="animate-in stagger-1">
+            <Logo size="lg" showText link={false} />
+          </div>
+          <h1 className="hero-title hero-title-sub animate-in stagger-2">Найди компанию для встречи</h1>
+          <p className="hero-subtitle animate-in stagger-3">
             Хочешь куда-то сходить, но не знаешь с кем — создай встречу. Бот покажет её людям рядом. Откликнутся — идите.
           </p>
-          <div className="hero-actions">
+          <div className="hero-actions animate-in stagger-4">
             <button
               type="button"
               className="btn btn-primary btn-lg"
@@ -85,24 +90,24 @@ export default function Home() {
       <DemoBanner />
       <div className="page-header page-header-with-logo">
         <Logo size="sm" showText link />
-        <h1 className="page-title">Привет, {user.name} 👋</h1>
-        <p className="page-subtitle">
+        <h1 className="page-title animate-in">Привет, {user.name} 👋</h1>
+        <p className="page-subtitle animate-in stagger-1">
           Хочешь куда-то сходить — создай встречу или найдите события рядом.
         </p>
       </div>
 
       <div className="card-grid">
-        <Link to="/events" className="card card-action">
+        <Link to="/events" className="card card-action animate-in stagger-1">
           <span className="card-icon">🔍</span>
           <span className="card-title">Найти события</span>
           <span className="card-desc">Популярные, рядом, сегодня</span>
         </Link>
-        <Link to="/create" className="card card-action">
+        <Link to="/create" className="card card-action animate-in stagger-2">
           <span className="card-icon">🎉</span>
           <span className="card-title">Создать событие</span>
           <span className="card-desc">Кино, кафе, прогулка</span>
         </Link>
-        <Link to="/my-events" className="card card-action">
+        <Link to="/my-events" className="card card-action animate-in stagger-3">
           <span className="card-icon">📅</span>
           <span className="card-title">Мои события</span>
           <span className="card-desc">Управление встречами</span>
@@ -110,10 +115,10 @@ export default function Home() {
       </div>
 
       <section className="section">
-        <h2 className="section-title">Аккаунт</h2>
+        <h2 className="section-title animate-in stagger-4">Аккаунт</h2>
         <button
           type="button"
-          className="card card-row card-action"
+          className="card card-row card-action animate-in stagger-5"
           onClick={() => {
             setUseDemoEvents(true)
             navigate('/events')
@@ -126,7 +131,7 @@ export default function Home() {
           </div>
           <span className="card-arrow">→</span>
         </button>
-        <Link to="/achievements" className="card card-row">
+        <Link to="/achievements" className="card card-row animate-in stagger-5">
           <span className="card-icon">🏆</span>
           <div>
             <span className="card-title">Достижения</span>
@@ -134,7 +139,7 @@ export default function Home() {
           </div>
           <span className="card-arrow">→</span>
         </Link>
-        <Link to="/referral" className="card card-row">
+        <Link to="/referral" className="card card-row animate-in stagger-6">
           <span className="card-icon">👥</span>
           <div>
             <span className="card-title">Реферальная программа</span>
@@ -142,7 +147,7 @@ export default function Home() {
           </div>
           <span className="card-arrow">→</span>
         </Link>
-        <Link to="/about" className="card card-row">
+        <Link to="/about" className="card card-row animate-in stagger-6">
           <span className="card-icon">ℹ️</span>
           <div>
             <span className="card-title">О боте</span>

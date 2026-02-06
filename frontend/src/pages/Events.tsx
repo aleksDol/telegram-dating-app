@@ -55,10 +55,10 @@ export default function Events() {
       <DemoBanner />
       <div className="page-header page-header-with-logo">
         <Logo size="sm" showText link />
-        <h1 className="page-title">Найти события</h1>
-        <p className="page-subtitle">Выберите фильтр и смотрите карточки</p>
+        <h1 className="page-title animate-in">Найти события</h1>
+        <p className="page-subtitle animate-in stagger-1">Выберите фильтр и смотрите карточки</p>
       </div>
-      <div className="filter-chips">
+      <div className="filter-chips animate-in stagger-2">
         {FILTERS.map((f) => (
           <button
             key={f}
