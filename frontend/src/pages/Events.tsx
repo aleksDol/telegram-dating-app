@@ -301,7 +301,7 @@ export default function Events() {
                   key={`exit-${currentEvent?.id}`}
                   style={{
                     transform: exitAnimateToEnd
-                      ? (exitDirection === 'right' ? 'translateX(120%) rotate(18deg)' : 'translateX(-120%) rotate(-18deg)')
+                      ? (exitDirection === 'right' ? 'translateX(9999px) rotate(18deg)' : 'translateX(-9999px) rotate(-18deg)')
                       : `translateX(${exitStartOffset}px) rotate(${exitStartOffset * 0.06}deg)`,
                     opacity: exitAnimateToEnd ? 0 : 1,
                     transition: 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease-out',
