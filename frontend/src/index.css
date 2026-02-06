@@ -517,12 +517,202 @@ button {
   margin: 0 0 12px;
 }
 
-/* ===== Profile card ===== */
-.profile-card {
-  text-align: center;
-  padding: 2rem 1.25rem;
+/* ===== Profile ===== */
+.profile-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 1.25rem;
 }
 
+.profile-photo-wrap {
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 2px solid rgba(255, 107, 157, 0.25);
+  box-shadow: var(--shadow-card), 0 0 24px rgba(255, 107, 157, 0.1);
+}
+
+.profile-photo,
+.profile-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-photo-placeholder {
+  background: var(--gradient-main);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-edit-btn {
+  margin-left: auto;
+  margin-top: 4px;
+}
+
+/* Обо мне */
+.profile-about {
+  padding: 1.25rem 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.profile-about-title {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 12px;
+}
+
+.profile-name {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.profile-meta {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.profile-purpose {
+  font-size: 0.95rem;
+  margin: 10px 0 0;
+  color: var(--text);
+}
+
+.profile-points {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Блок с фото */
+.profile-photo-block {
+  padding: 1rem 1.25rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.profile-block-title {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 12px;
+}
+
+.profile-photo-main {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 200px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.profile-photo-main-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-photo-main-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.profile-photo-main-emoji {
+  font-size: 2.5rem;
+  opacity: 0.7;
+}
+
+/* Реферальная программа и Достижения — два блока в ряд */
+.profile-actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.profile-action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.25rem 1rem;
+  text-decoration: none;
+  color: inherit;
+  min-height: 100px;
+  position: relative;
+}
+
+.profile-action-card:hover {
+  border-color: rgba(255, 107, 157, 0.3) !important;
+  transform: translateY(-2px) !important;
+}
+
+.profile-action-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.profile-action-title {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+
+.profile-action-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.profile-action-arrow {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.profile-action-referral:hover .profile-action-icon { filter: drop-shadow(0 0 8px rgba(124, 156, 255, 0.4)); }
+.profile-action-achievements:hover .profile-action-icon { filter: drop-shadow(0 0 8px rgba(255, 107, 157, 0.4)); }
+
+/* Legacy: круглый аватар (если используется на других страницах) */
 .profile-avatar,
 .profile-avatar-placeholder {
   width: 88px;
@@ -541,35 +731,6 @@ button {
   color: #fff;
   line-height: 88px;
   box-shadow: var(--glow-pink);
-}
-
-.profile-name {
-  font-family: var(--font-heading);
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin: 0 0 4px;
-}
-
-.profile-meta {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  margin: 0;
-}
-
-.profile-purpose {
-  font-size: 0.9rem;
-  margin: 10px 0 0;
-}
-
-.profile-points {
-  display: inline-block;
-  margin-top: 12px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 600;
-  font-size: 0.9rem;
 }
 
 .card-error {
