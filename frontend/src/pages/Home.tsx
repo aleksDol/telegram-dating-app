@@ -18,6 +18,14 @@ const MOCK_USER: User = {
   referrals_count: 0,
 }
 
+function WaveSvg() {
+  return (
+    <svg className="home-hero-wave" viewBox="0 0 400 32" preserveAspectRatio="none" aria-hidden>
+      <path d="M0 32V0h400v32c-66.5-8-133-8-200 0S66.5 32 0 32z" />
+    </svg>
+  )
+}
+
 export default function Home() {
   const navigate = useNavigate()
   const { user, loading, fetchUser, setUser } = useApp()
@@ -35,7 +43,6 @@ export default function Home() {
     )
   }
 
-  // Не залогинен: при подключённом API — сразу на регистрацию, иначе — приветствие и выбор
   if (!user) {
     if (isApiConfigured()) {
       navigate('/register', { replace: true })
@@ -49,9 +56,6 @@ export default function Home() {
     return (
       <div className="hero">
         <div className="hero-bg" />
-        <div className="hero-orb hero-orb-1" aria-hidden />
-        <div className="hero-orb hero-orb-2" aria-hidden />
-        <div className="hero-orb hero-orb-3" aria-hidden />
         <div className="hero-content">
           <div className="animate-in stagger-1">
             <Logo size="lg" showText link={false} />
@@ -71,7 +75,6 @@ export default function Home() {
             >
               Посмотреть все страницы
             </button>
-            <p className="hero-hint">Откроются главная, события, профиль, достижения и остальные разделы без сервера</p>
             <button
               type="button"
               className="btn btn-ghost btn-lg"
@@ -88,37 +91,73 @@ export default function Home() {
   return (
     <>
       <DemoBanner />
-      <div className="page-header page-header-with-logo">
-        <Logo size="sm" showText link />
-        <h1 className="page-title animate-in">Привет, {user.name} 👋</h1>
-        <p className="page-subtitle animate-in stagger-1">
-          Хочешь куда-то сходить — создай встречу или найдите события рядом.
-        </p>
+      {/* Градиентный хедер с волной */}
+      <header className="home-hero">
+        <WaveSvg />
+        <div className="home-hero-inner">
+          <Logo size="md" showText link />
+          <h1 className="home-greeting animate-in stagger-1">
+            <span className="home-greeting-emoji">👤</span> {user.name}
+          </h1>
+        </div>
+      </header>
+
+      {/* Быстрые действия — 2 кнопки */}
+      <div className="home-quick-actions animate-in stagger-2">
+        <Link to="/events" className="home-quick-btn">
+          <span>🔍</span>
+          <span>Найти события</span>
+        </Link>
+        <Link to="/create" className="home-quick-btn home-quick-btn-secondary">
+          <span>🎯</span>
+          <span>Создать встречу</span>
+        </Link>
       </div>
 
-      <section className="section home-stats-section">
-        <div className="home-stats-row animate-in stagger-1">
-          <Link to="/my-events" className="card home-stat-card home-stat-events">
-            <span className="home-stat-icon">📅</span>
-            <span className="home-stat-value">Мои события</span>
-            <span className="home-stat-label">Управление встречами</span>
-          </Link>
-          <Link to="/referral" className="card home-stat-card home-stat-referrals">
-            <span className="home-stat-icon">👥</span>
-            <span className="home-stat-value">{user.referrals_count}</span>
-            <span className="home-stat-label">Рефералов</span>
-          </Link>
+      {/* Статистика — 3 колонки */}
+      <div className="home-stats-cols animate-in stagger-3">
+        <Link to="/my-events" className="home-stat-col">
+          <span className="home-stat-num">17</span>
+          <span className="home-stat-emoji">💫</span>
+        </Link>
+        <div className="home-stat-col">
+          <span className="home-stat-num">{user.points}</span>
+          <span className="home-stat-emoji">⭐</span>
         </div>
-        <div className="home-stats-row animate-in stagger-2">
-          <div className="card home-stat-card home-stat-rating">
-            <span className="home-stat-icon">⭐</span>
-            <span className="home-stat-value">{user.points}</span>
-            <span className="home-stat-label">Рейтинг</span>
-          </div>
-          <Link to="/about" className="card home-stat-card home-stat-about">
-            <span className="home-stat-icon">ℹ️</span>
-            <span className="home-stat-value">О боте</span>
-            <span className="home-stat-label">Как это работает</span>
+        <Link to="/referral" className="home-stat-col">
+          <span className="home-stat-num">{user.referrals_count}</span>
+          <span className="home-stat-emoji">👥</span>
+        </Link>
+      </div>
+
+      {/* Призыв к действию с иллюстрацией */}
+      <section className="home-cta animate-in stagger-4">
+        <div className="home-cta-card">
+          <h2 className="home-cta-title">🎯 Не знаешь, с чего начать?</h2>
+          <div className="home-cta-illus">✨</div>
+          <ul className="home-cta-steps">
+            <li data-step="1.">Создай встречу</li>
+            <li data-step="2.">Пригласи людей</li>
+            <li data-step="3.">Знакомься!</li>
+          </ul>
+        </div>
+      </section>
+
+      {/* Рекомендации */}
+      <section className="home-recommendations animate-in stagger-5">
+        <h2 className="home-recommendations-title">🔥 Популярные рядом с тобой</h2>
+        <div className="home-recommendations-grid">
+          <Link to="/events/sport" className="home-rec-card">
+            <span className="home-rec-emoji">🏀</span>
+            <span className="home-rec-label">Спорт</span>
+          </Link>
+          <Link to="/events/culture" className="home-rec-card">
+            <span className="home-rec-emoji">🎭</span>
+            <span className="home-rec-label">Культура</span>
+          </Link>
+          <Link to="/events/party" className="home-rec-card">
+            <span className="home-rec-emoji">🍸</span>
+            <span className="home-rec-label">Вечеринки</span>
           </Link>
         </div>
       </section>
