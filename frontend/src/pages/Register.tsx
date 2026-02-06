@@ -278,7 +278,7 @@ export default function Register() {
               <p className="text-error">{error}</p>
               {isApiConfigured() ? (
                 <p className="text-muted" style={{ marginTop: 8, fontSize: 14 }}>
-                  Откройте приложение из Telegram (кнопка «Открыть» в боте). Если открываете из бота и ошибка остаётся — на бэкенде (Render) в Environment переменная BOT_TOKEN должна быть от того же бота, в настройках которого указан URL Mini App. Для локальной проверки без Telegram: ALLOW_DEV_USER_ID=1 на бэкенде и при необходимости VITE_DEV_USER_ID на фронте.
+                  Откройте приложение из Telegram (кнопка «Открыть» в боте). Если открываете из бота и ошибка остаётся — на бэкенде (VPS: в .env) переменная BOT_TOKEN должна быть от того же бота, в настройках которого указан URL Mini App. Для локальной проверки без Telegram: ALLOW_DEV_USER_ID=1 на бэкенде и при необходимости VITE_DEV_USER_ID на фронте.
                 </p>
               ) : (
                 <button type="button" className="btn btn-ghost" style={{ marginTop: 8 }} onClick={enterDemoWithForm}>
