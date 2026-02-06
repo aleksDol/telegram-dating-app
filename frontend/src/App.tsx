@@ -34,17 +34,13 @@ function Nav() {
         <span>🔍</span>
         <span>События</span>
       </NavLink>
-      <NavLink to="/likes" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-        <span>💌</span>
-        <span>Лайки</span>
-      </NavLink>
-      <NavLink to="/create" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-        <span>🎉</span>
+      <NavLink to="/create" className={({ isActive }) => `nav-item nav-item-center ${isActive ? 'active' : ''}`}>
+        <span>✨</span>
         <span>Создать</span>
       </NavLink>
-      <NavLink to="/my-events" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-        <span>📅</span>
-        <span>Мои</span>
+      <NavLink to="/likes" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+        <span>💌</span>
+        <span>Отклики</span>
       </NavLink>
       <NavLink to="/profile" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
         <span>👤</span>

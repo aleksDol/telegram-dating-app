@@ -20,7 +20,7 @@ const MOCK_USER: User = {
 
 export default function Home() {
   const navigate = useNavigate()
-  const { user, loading, fetchUser, setUser, setUseDemoEvents } = useApp()
+  const { user, loading, fetchUser, setUser } = useApp()
 
   useEffect(() => {
     fetchUser()
@@ -114,46 +114,31 @@ export default function Home() {
         </Link>
       </div>
 
-      <section className="section">
-        <h2 className="section-title animate-in stagger-4">Аккаунт</h2>
-        <button
-          type="button"
-          className="card card-row card-action animate-in stagger-5"
-          onClick={() => {
-            setUseDemoEvents(true)
-            navigate('/events')
-          }}
-        >
-          <span className="card-icon">👀</span>
-          <div>
-            <span className="card-title">Посмотреть примеры событий</span>
-            <span className="card-meta">Демо-карточки без бэкенда</span>
+      <section className="section home-stats-section">
+        <div className="home-stats-row animate-in stagger-4">
+          <Link to="/my-events" className="card home-stat-card home-stat-events">
+            <span className="home-stat-icon">📅</span>
+            <span className="home-stat-value">Мои события</span>
+            <span className="home-stat-label">Управление встречами</span>
+          </Link>
+          <Link to="/referral" className="card home-stat-card home-stat-referrals">
+            <span className="home-stat-icon">👥</span>
+            <span className="home-stat-value">{user.referrals_count}</span>
+            <span className="home-stat-label">Рефералов</span>
+          </Link>
+        </div>
+        <div className="home-stats-row animate-in stagger-5">
+          <div className="card home-stat-card home-stat-rating">
+            <span className="home-stat-icon">⭐</span>
+            <span className="home-stat-value">{user.points}</span>
+            <span className="home-stat-label">Рейтинг</span>
           </div>
-          <span className="card-arrow">→</span>
-        </button>
-        <Link to="/achievements" className="card card-row animate-in stagger-5">
-          <span className="card-icon">🏆</span>
-          <div>
-            <span className="card-title">Достижения</span>
-            <span className="card-meta">Очков: {user.points}</span>
-          </div>
-          <span className="card-arrow">→</span>
-        </Link>
-        <Link to="/referral" className="card card-row animate-in stagger-6">
-          <span className="card-icon">👥</span>
-          <div>
-            <span className="card-title">Реферальная программа</span>
-            <span className="card-meta">Приглашай друзей</span>
-          </div>
-          <span className="card-arrow">→</span>
-        </Link>
-        <Link to="/about" className="card card-row animate-in stagger-6">
-          <span className="card-icon">ℹ️</span>
-          <div>
-            <span className="card-title">О боте</span>
-          </div>
-          <span className="card-arrow">→</span>
-        </Link>
+          <Link to="/about" className="card home-stat-card home-stat-about">
+            <span className="home-stat-icon">ℹ️</span>
+            <span className="home-stat-value">О боте</span>
+            <span className="home-stat-label">Как это работает</span>
+          </Link>
+        </div>
       </section>
     </>
   )

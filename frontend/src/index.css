@@ -1338,6 +1338,90 @@ select.input {
   transform: scale(1.1);
 }
 
+.nav-item-center {
+  padding: 6px 14px 8px;
+}
+.nav-item-center span:first-child {
+  font-size: 1.6rem;
+  margin-bottom: 2px;
+}
+.nav-item-center span:last-child {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.nav-item-center.active {
+  color: var(--accent);
+}
+.nav-item-center.active::before {
+  width: 28px;
+  height: 4px;
+  box-shadow: 0 0 16px rgba(255, 107, 157, 0.6);
+}
+
+/* ===== Home stats (главный экран) ===== */
+.home-stats-section {
+  margin-top: 0.5rem;
+}
+
+.home-stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.home-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.25rem 1rem;
+  text-decoration: none;
+  color: inherit;
+  min-height: 100px;
+  transition: transform 0.25s var(--ease-spring), box-shadow 0.3s ease, border-color 0.25s;
+}
+
+.home-stat-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 107, 157, 0.3) !important;
+  box-shadow: var(--shadow-card), 0 0 36px rgba(255, 107, 157, 0.1) !important;
+}
+
+.home-stat-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.home-stat-value {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: var(--text);
+}
+
+.home-stat-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.home-stat-referrals .home-stat-value,
+.home-stat-rating .home-stat-value {
+  font-size: 1.5rem;
+  background: var(--gradient-main);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.home-stat-events:hover .home-stat-icon { filter: drop-shadow(0 0 10px rgba(255, 107, 157, 0.35)); }
+.home-stat-referrals:hover .home-stat-icon { filter: drop-shadow(0 0 10px rgba(124, 156, 255, 0.35)); }
+.home-stat-rating:hover .home-stat-icon { filter: drop-shadow(0 0 10px rgba(255, 179, 71, 0.35)); }
+.home-stat-about:hover .home-stat-icon { filter: drop-shadow(0 0 10px rgba(167, 139, 250, 0.35)); }
+
 /* ===== States ===== */
 .screen-center {
   display: flex;
