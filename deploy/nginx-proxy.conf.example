@@ -1,0 +1,22 @@
+# Пример конфига Nginx на хосте: прокси на Docker-контейнер (порт 8080).
+# После Certbot скопируйте в /etc/nginx/sites-available/ и включите сайт.
+# Замените spontime.ru на свой домен.
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name spontime.ru www.spontime.ru;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# После запуска Certbot он добавит блок listen 443 ssl и пути к сертификатам.
+# Или выполните: sudo certbot --nginx -d spontime.ru
+# Certbot сам отредактирует этот конфиг и добавит HTTPS.
