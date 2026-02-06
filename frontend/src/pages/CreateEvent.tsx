@@ -13,6 +13,7 @@ export default function CreateEvent() {
   const [targetGender, setTargetGender] = useState('Все')
   const [category, setCategory] = useState('')
   const [city, setCity] = useState('')
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -89,14 +90,29 @@ export default function CreateEvent() {
           required
         />
 
+        <label className="label">Фото (необязательно)</label>
+        <label className="input-photo-placeholder">
+          <input
+            type="file"
+            accept="image/*"
+            className="input-photo-input"
+            onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+          />
+          <span className="input-photo-text">
+            {photoFile ? photoFile.name : 'Например фото заведения'}
+          </span>
+        </label>
+
         <label className="label">Дата и время</label>
-        <input
-          className="input input-datetime"
-          type="datetime-local"
-          value={eventDate}
-          onChange={(e) => setEventDate(e.target.value)}
-          required
-        />
+        <div className="input-datetime-wrap">
+          <input
+            className="input input-datetime"
+            type="datetime-local"
+            value={eventDate}
+            onChange={(e) => setEventDate(e.target.value)}
+            required
+          />
+        </div>
 
         <label className="label">Для кого</label>
         <select
