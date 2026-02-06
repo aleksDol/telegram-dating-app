@@ -1,0 +1,59 @@
+# Telegram Dating App — деплой на VPS (Ubuntu / Timeweb)
+# Запуск: docker compose up -d
+# Остановка: docker compose down
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dating-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-dating}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-dating}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dating-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      ADMINS: ${ADMINS:-}
+      BROADCAST_LIMIT: ${BROADCAST_LIMIT:-1000}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-dating}
+      API_HOST: "0.0.0.0"
+      API_PORT: "8000"
+      MINI_APP_URL: ${MINI_APP_URL:-}
+      ADDITIONAL_CORS_ORIGINS: ${ADDITIONAL_CORS_ORIGINS:-}
+      ALLOW_DEV_USER_ID: ${ALLOW_DEV_USER_ID:-0}
+    expose:
+      - "8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Пустой = тот же origin, nginx проксирует /api на backend
+        VITE_API_URL: ${VITE_API_URL:-}
+    container_name: dating-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+
+volumes:
+  postgres_data:

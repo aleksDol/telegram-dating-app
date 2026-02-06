@@ -80,6 +80,37 @@ npm run dev
 
 ---
 
+## 🐳 Деплой на VPS (Ubuntu / Timeweb) с Docker
+
+Для развёртывания на своём VPS (в т.ч. **Timeweb**, Ubuntu) используется **Docker** и **Docker Compose**.
+
+**Что уже есть в проекте:**
+
+- `backend/Dockerfile` — бэкенд (FastAPI + бот)
+- `frontend/Dockerfile` — фронт (сборка Vite + Nginx, прокси `/api` на бэкенд)
+- `docker-compose.yml` — сервисы: **postgres**, **backend**, **frontend**
+- `deploy/DEPLOY.md` — пошаговая инструкция для Ubuntu
+- `deploy/deploy.sh` — скрипт запуска на сервере
+- `deploy/.env.production.example` — пример `.env` для продакшена
+
+**Быстрый старт на сервере:**
+
+```bash
+# Установка Docker и Docker Compose (один раз)
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker $USER
+# Перелогиньтесь
+
+cd ~/telegram-dating-app
+cp deploy/.env.production.example .env
+nano .env   # заполнить BOT_TOKEN, ADMINS, POSTGRES_PASSWORD
+./deploy/deploy.sh
+```
+
+Приложение будет доступно по адресу сервера на порту 80 (или по `FRONTEND_PORT` из `.env`). Подробности — в **deploy/DEPLOY.md**.
+
+---
+
 ## 🌐 Деплой на Render (без файлов в репозитории)
 
 Всё настраивается вручную в [dashboard.render.com](https://dashboard.render.com). Репозиторий подключаете один раз, сервисы создаёте через веб-интерфейс.
