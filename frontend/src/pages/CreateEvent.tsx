@@ -10,6 +10,7 @@ export default function CreateEvent() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [eventDate, setEventDate] = useState('')
+  const [eventTime, setEventTime] = useState('')
   const [targetGender, setTargetGender] = useState('Все')
   const [category, setCategory] = useState('')
   const [city, setCity] = useState('')
@@ -31,8 +32,8 @@ export default function CreateEvent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim() || !description.trim() || !eventDate || !city) {
-      setError('Заполните название, описание, дату и город')
+    if (!title.trim() || !description.trim() || !eventDate || !eventTime || !city) {
+      setError('Заполните название, описание, дату, время и город')
       return
     }
     if (!isApiConfigured()) {
@@ -45,7 +46,7 @@ export default function CreateEvent() {
       await api.createEvent({
         title: title.trim(),
         description: description.trim(),
-        event_date: eventDate,
+        event_date: `${eventDate}T${eventTime}`,
         target_gender: targetGender,
         city,
         category: category || undefined,
@@ -104,12 +105,19 @@ export default function CreateEvent() {
         </label>
 
         <label className="label">Дата и время</label>
-        <div className="input-datetime-wrap">
+        <div className="input-date-time-row">
           <input
-            className="input input-datetime"
-            type="datetime-local"
+            className="input"
+            type="date"
             value={eventDate}
             onChange={(e) => setEventDate(e.target.value)}
+            required
+          />
+          <input
+            className="input"
+            type="time"
+            value={eventTime}
+            onChange={(e) => setEventTime(e.target.value)}
             required
           />
         </div>

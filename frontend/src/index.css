@@ -1465,19 +1465,22 @@ button {
 
 .label:first-child { margin-top: 0; }
 
-/* Страница «Создать событие»: контент не уезжает по горизонтали, поля с отступом и заметнее */
+/* Страница «Создать событие»: без overflow-x здесь, чтобы шапка могла уйти в полную ширину */
 .create-event-page {
-  overflow-x: hidden;
   min-width: 0;
   padding: 0 4px;
   max-width: 100%;
 }
 
-/* Шапка «Создать встречу» — во всю ширину экрана (выступ за отступы .app) */
+/* Шапка «Создать встречу» — строго во всю ширину экрана (100vw, без отступов) */
 .create-event-hero {
   position: relative;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  margin-bottom: 1.5rem;
   padding: 1.5rem 1rem 2rem;
-  margin: 0 calc(-1 * var(--page-padding) - 4px) 1.5rem;
+  box-sizing: border-box;
   background: var(--gradient-logo);
   color: #fff;
   overflow: hidden;
@@ -1521,6 +1524,7 @@ button {
 .create-event-page .form-create {
   max-width: 100%;
   min-width: 0;
+  overflow-x: hidden;
 }
 
 .create-event-page .form-create .label {
@@ -1602,20 +1606,25 @@ button {
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-/* Поле «Дата и время» не вылезает за экран: обёртка режет overflow, input масштабируется */
-.create-event-page .form-create .input-datetime-wrap {
-  overflow: hidden;
+/* Дата и время — два поля в ряд на мобильном, не убегают за экран */
+.create-event-page .form-create .input-date-time-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  min-width: 0;
+}
+
+.create-event-page .form-create .input-date-time-row .input {
   min-width: 0;
   width: 100%;
   max-width: 100%;
+  box-sizing: border-box;
 }
 
-.create-event-page .form-create .input-datetime,
-.create-event-page .form-create input[type="datetime-local"] {
+.create-event-page .form-create input[type="date"],
+.create-event-page .form-create input[type="time"] {
   min-width: 0 !important;
   max-width: 100% !important;
-  width: 100% !important;
-  box-sizing: border-box;
   font-size: 16px;
 }
 
