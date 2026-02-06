@@ -16,6 +16,12 @@ import EditProfile from './pages/EditProfile'
 import EditEvent from './pages/EditEvent'
 import Likes from './pages/Likes'
 
+import navHome from './img/hom-page.png'
+import navMeets from './img/metts.png'
+import navCreate from './img/create.png'
+import navLikes from './img/likes.png'
+import navProfile from './img/user.png'
+
 function Nav() {
   const location = useLocation()
   const path = location.pathname
@@ -27,23 +33,23 @@ function Nav() {
   return (
     <nav className="nav-bottom">
       <NavLink to="/" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-        <span>🏠</span>
+        <img src={navHome} alt="" className="nav-item-icon" />
         <span>Главная</span>
       </NavLink>
       <NavLink to="/events" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-        <span>🔍</span>
+        <img src={navMeets} alt="" className="nav-item-icon" />
         <span>Встречи</span>
       </NavLink>
       <NavLink to="/create" className={({ isActive }) => `nav-item nav-item-center ${isActive ? 'active' : ''}`}>
-        <span>✨</span>
+        <img src={navCreate} alt="" className="nav-item-icon" />
         <span>Создать</span>
       </NavLink>
       <NavLink to="/likes" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-        <span>💌</span>
+        <img src={navLikes} alt="" className="nav-item-icon" />
         <span>Отклики</span>
       </NavLink>
       <NavLink to="/profile" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-        <span>👤</span>
+        <img src={navProfile} alt="" className="nav-item-icon" />
         <span>Профиль</span>
       </NavLink>
     </nav>

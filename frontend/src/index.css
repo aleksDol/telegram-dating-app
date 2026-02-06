@@ -1334,21 +1334,24 @@ select.input {
   background: var(--gradient-main);
 }
 
-.nav-item span:first-child {
-  font-size: 1.35rem;
+.nav-item-icon {
+  width: 26px;
+  height: 26px;
   margin-bottom: 2px;
+  display: block;
+  object-fit: contain;
   transition: transform 0.2s var(--ease-spring);
 }
-.nav-item.active span:first-child {
+.nav-item.active .nav-item-icon {
   transform: scale(1.1);
 }
 
 .nav-item-center {
   padding: 6px 14px 8px;
 }
-.nav-item-center span:first-child {
-  font-size: 1.6rem;
-  margin-bottom: 2px;
+.nav-item-center .nav-item-icon {
+  width: 30px;
+  height: 30px;
 }
 .nav-item-center span:last-child {
   font-size: 0.7rem;
