@@ -144,7 +144,13 @@ export const api = {
   getReferral: () => request<{ referral_code: string; referrals_count: number }>('/api/referral'),
 }
 
-/** Check if backend API is configured */
+/** Check if backend API is configured (env URL or same-origin /api on production) */
 export function isApiConfigured(): boolean {
-  return Boolean(API_BASE)
+  if (API_BASE) return true
+  // На VPS фронт и API на одном домене: nginx проксирует /api на бэкенд, запросы относительные
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    const origin = window.location.origin
+    if (!/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true
+  }
+  return false
 }

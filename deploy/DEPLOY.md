@@ -76,7 +76,7 @@ nano .env
 | `FRONTEND_PORT` | Порт веб-приложения на хосте (по умолчанию 80) |
 | `BROADCAST_LIMIT` | Лимит рассылки (по умолчанию 1000) |
 | `ADDITIONAL_CORS_ORIGINS` | Доп. CORS origins через запятую |
-| `VITE_API_URL` | Оставьте пустым, если фронт и API на одном домене; иначе укажите полный URL API |
+| `VITE_API_URL` | Оставьте **пустым** при деплое на один домен — фронт сам ходит на `/api/` того же origin; иначе укажите полный URL API |
 
 Пример `.env`:
 
@@ -87,7 +87,9 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=СложныйПароль123
 POSTGRES_DB=dating
 MINI_APP_URL=https://yourdomain.com
+ADDITIONAL_CORS_ORIGINS=https://yourdomain.com
 FRONTEND_PORT=80
+# VITE_API_URL оставьте пустым — регистрация и API работают через тот же домен (/api/)
 ```
 
 ## 4. Запуск
