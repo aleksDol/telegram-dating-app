@@ -582,6 +582,101 @@ def api_skip_event(event_id: int, user_id: int = Depends(get_user_id)):
     return {"ok": True}
 
 
+class RespondToLikeBody(BaseModel):
+    action: str  # "mutual" | "ignore"
+
+
+@app.get("/api/likes/pending")
+def api_get_pending_likes(user_id: int = Depends(get_user_id)):
+    """Лайки, на которые ещё не ответили (взаимностью или пропуском)."""
+    rows = execute_query(
+        """SELECT l.id AS like_id, l.from_user, l.event_id
+           FROM likes l
+           WHERE l.to_user = ? AND (l.response IS NULL OR l.response = '')
+           ORDER BY l.created DESC""",
+        (user_id,), fetchall=True
+    )
+    result = []
+    for r in rows:
+        liker = execute_query(
+            """SELECT user_id, name, age, gender, city, relationship_status, photo, purpose, username
+               FROM users WHERE user_id = ? AND is_banned = FALSE""",
+            (r["from_user"],), fetchone=True
+        )
+        event_row = None
+        if r.get("event_id"):
+            event_row = execute_query(
+                """SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.created,
+                          u.name, u.age, u.gender, u.photo, u.purpose, u.relationship_status
+                   FROM events e JOIN users u ON e.user_id = u.user_id WHERE e.id = ?""",
+                (r["event_id"],), fetchone=True
+            )
+        liker_dict = None
+        if liker:
+            liker_dict = _row_to_public_user(liker)
+            liker_dict["username"] = liker.get("username")
+        event_dict = _row_to_event(event_row) if event_row else None
+        result.append({
+            "like_id": r["like_id"],
+            "liker": liker_dict,
+            "event": event_dict,
+        })
+    return {"likes": result}
+
+
+@app.post("/api/likes/{like_id:int}/respond")
+def api_respond_to_like(
+    like_id: int,
+    body: RespondToLikeBody,
+    user_id: int = Depends(get_user_id),
+):
+    """Ответ на лайк: mutual (взаимность) или ignore (пропустить)."""
+    if body.action not in ("mutual", "ignore"):
+        raise HTTPException(status_code=400, detail="action must be 'mutual' or 'ignore'")
+    like_row = execute_query(
+        "SELECT id, from_user, to_user, event_id FROM likes WHERE id = ?",
+        (like_id,), fetchone=True
+    )
+    if not like_row:
+        raise HTTPException(status_code=404, detail="Like not found")
+    if like_row["to_user"] != user_id:
+        raise HTTPException(status_code=403, detail="Not your like to respond")
+    if body.action == "ignore":
+        execute_query(
+            "UPDATE likes SET response = 'ignored' WHERE id = ?",
+            (like_id,), commit=True
+        )
+        return {"ok": True}
+    # mutual
+    creator_id = user_id
+    liker_id = like_row["from_user"]
+    event_id = like_row["event_id"]
+    execute_query(
+        "UPDATE likes SET mutual = TRUE, response = 'mutual' WHERE id = ?",
+        (like_id,), commit=True
+    )
+    mutual_check = execute_query(
+        "SELECT id FROM likes WHERE from_user = ? AND to_user = ? AND event_id = ? AND mutual = TRUE",
+        (user_id, liker_id, event_id), fetchone=True
+    )
+    if not mutual_check:
+        execute_query(
+            """INSERT INTO likes (from_user, to_user, event_id, mutual, created)
+               VALUES (?, ?, ?, TRUE, ?)""",
+            (user_id, liker_id, event_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+            commit=True
+        )
+    AchievementService.update_user_points(creator_id, 20, "за взаимную симпатию")
+    AchievementService.update_user_points(liker_id, 20, "за взаимную симпатию")
+    AchievementService.check_achievements(creator_id)
+    AchievementService.check_achievements(liker_id)
+    try:
+        NotificationService.send_mutual_response_to_liker(liker_id, creator_id, event_id, bot=None)
+    except Exception:
+        pass
+    return {"ok": True, "mutual": True}
+
+
 @app.get("/api/achievements")
 def api_achievements(user_id: int = Depends(get_user_id)):
     achievements = AchievementService.get_user_achievements(user_id)

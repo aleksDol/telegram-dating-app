@@ -142,6 +142,14 @@ export const api = {
 
   getAchievements: () => request<{ achievements: import('../types').Achievement[]; points: number }>('/api/achievements'),
   getReferral: () => request<{ referral_code: string; referrals_count: number }>('/api/referral'),
+
+  getPendingLikes: () =>
+    request<{ likes: import('../types').PendingLike[] }>('/api/likes/pending'),
+  respondToLike: (likeId: number, action: 'mutual' | 'ignore') =>
+    request<{ ok: boolean; mutual?: boolean }>(`/api/likes/${likeId}/respond`, {
+      method: 'POST',
+      body: JSON.stringify({ action }),
+    }),
 }
 
 /** Check if backend API is configured (env URL or same-origin /api on production) */

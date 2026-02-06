@@ -14,6 +14,7 @@ import EventDetail from './pages/EventDetail'
 import UserProfile from './pages/UserProfile'
 import EditProfile from './pages/EditProfile'
 import EditEvent from './pages/EditEvent'
+import Likes from './pages/Likes'
 
 function Nav() {
   const location = useLocation()
@@ -32,6 +33,10 @@ function Nav() {
       <NavLink to="/events" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
         <span>🔍</span>
         <span>События</span>
+      </NavLink>
+      <NavLink to="/likes" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+        <span>💌</span>
+        <span>Лайки</span>
       </NavLink>
       <NavLink to="/create" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
         <span>🎉</span>
@@ -64,6 +69,7 @@ export default function App() {
           <Route path="/profile/:userId" element={<UserProfile />} />
           <Route path="/events" element={<Events />} />
           <Route path="/events/:filter" element={<Events />} />
+          <Route path="/likes" element={<Likes />} />
           <Route path="/event/:id" element={<EventDetail />} />
           <Route path="/event/:id/edit" element={<EditEvent />} />
           <Route path="/create" element={<CreateEvent />} />

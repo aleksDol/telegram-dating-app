@@ -17,78 +17,35 @@ class NotificationService:
 
     @staticmethod
     def send_like_notification(creator_id, liker_id, event, like_id, bot=None):
-        """Отправить уведомление о лайке создателю события (bot опционален — из API не передаётся)."""
+        """Короткое уведомление о лайке + кнопка «Открыть приложение» (обработка лайков в Mini App)."""
         bot = NotificationService._get_bot(bot)
-        # Проверяем блокировку
         user = execute_query(
             "SELECT is_banned FROM users WHERE user_id = ?",
             (creator_id,), fetchone=True
         )
-
         if user and user['is_banned'] == 1:
             return
-
-        # Получаем полную информацию о событии
-        event_full = execute_query(
-            "SELECT title, description, event_date, category FROM events WHERE id = ?",
-            (event['id'],), fetchone=True
-        )
-
-        # Получаем информацию о пользователе, который лайкнул
-        liker = execute_query(
-            "SELECT name, age, gender, city, relationship_status, photo, purpose, username FROM users WHERE user_id=? AND is_banned = FALSE",
-            (liker_id,), fetchone=True
-        )
-
-        if liker:
-            username_display = f"@{liker['username']}" if liker.get(
-                'username') else "не указан"
-
-            profile_text = f"""💌 *Новый лайк!*
-
-👤 *Профиль пользователя:*
-
-📛 *Имя:* {escape_markdown(liker['name'])}
-🎂 *Возраст:* {escape_markdown(str(liker['age']))}
-⚧️ *Пол:* {escape_markdown(liker['gender'])}
-🏙️ *Город:* {escape_markdown(liker['city']) if liker['city'] else 'Не указан'}
-💖 *Статус:* {escape_markdown(liker['relationship_status']) if liker['relationship_status'] else 'Не указан'}
-🎯 *Цель:* {escape_markdown(liker['purpose']) if liker['purpose'] else 'куда\\-то сходить'}
-📱 *Контакт:* {escape_markdown(username_display)}
-
-*Лайкнул ваше событие:*
-🎉 *{escape_markdown(event_full['title'])}*
-🏷️ *Категория:* {escape_markdown(event_full.get('category', '🎯 Разное'))}
-📅 *Дата:* {escape_markdown(event_full['event_date'])}
-📝 *Описание:* {escape_markdown(event_full['description'][:100])}{'...' if len(event_full['description']) > 100 else ''}"""
-
-            from keyboards.user_keyboards import get_mutual_notification_keyboard
-            keyboard = get_mutual_notification_keyboard(like_id)
-
-            # Добавляем кнопку для жалобы
-            keyboard.add(
-                telebot.types.InlineKeyboardButton(
-                    "🚨 Пожаловаться на пользователя", callback_data=f"report_user_{liker_id}")
+        import os
+        mini_app_url = (os.getenv("MINI_APP_URL") or "").rstrip("/")
+        if not mini_app_url:
+            mini_app_url = "https://telegram-dating-app1.onrender.com"
+        open_likes_url = f"{mini_app_url}/likes"
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        keyboard.add(
+            telebot.types.InlineKeyboardButton(
+                "📱 Открыть приложение",
+                web_app=telebot.types.WebAppInfo(url=open_likes_url),
             )
-
-            try:
-                if liker['photo']:
-                    bot.send_photo(
-                        creator_id,
-                        liker['photo'],
-                        caption=profile_text,
-                        parse_mode='Markdown',
-                        reply_markup=keyboard
-                    )
-                else:
-                    bot.send_message(
-                        creator_id,
-                        profile_text + "\n\n📸 *Пользователь не загрузил фото*",
-                        parse_mode='Markdown',
-                        reply_markup=keyboard
-                    )
-            except Exception as e:
-                print(f"❌ Ошибка отправки уведомления: {e}")
+        )
+        try:
+            bot.send_message(
+                creator_id,
+                "💌 *Пришёл новый лайк!*\n\nОткройте приложение, чтобы посмотреть кто это и ответить взаимностью или пропустить.",
+                parse_mode='Markdown',
+                reply_markup=keyboard,
+            )
+        except Exception as e:
+            print(f"❌ Ошибка отправки уведомления: {e}")
 
     @staticmethod
     def send_mutual_response_to_liker(liker_id, creator_id, event_id, bot=None):

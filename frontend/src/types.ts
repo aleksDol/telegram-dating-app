@@ -58,3 +58,10 @@ export type FilterType =
   | 'tomorrow'
   | 'for_me'
   | 'random'
+
+/** Лайк, на который ещё не ответили (вкладка «Лайки»). */
+export interface PendingLike {
+  like_id: number
+  liker: (Pick<User, 'user_id' | 'name' | 'age' | 'gender' | 'city' | 'relationship_status' | 'photo' | 'purpose'>) & { username?: string }
+  event: Event | null
+}

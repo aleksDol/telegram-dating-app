@@ -95,9 +95,14 @@ class Database:
                     to_user BIGINT,
                     event_id INTEGER REFERENCES events(id),
                     mutual BOOLEAN DEFAULT FALSE,
-                    created TEXT
+                    created TEXT,
+                    response TEXT DEFAULT NULL
                 )
             """)
+            try:
+                cursor.execute("ALTER TABLE likes ADD COLUMN response TEXT DEFAULT NULL")
+            except Exception:
+                pass  # колонка уже есть (новая БД или миграция уже выполнена)
 
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS achievements (

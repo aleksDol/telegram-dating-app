@@ -272,9 +272,9 @@ class CallbackHandler:
                 (like['to_user'],), fetchone=True
             )
 
-            # Обновляем лайк как взаимный
+            # Обновляем лайк как взаимный и отмечаем ответ
             execute_query(
-                "UPDATE likes SET mutual = TRUE WHERE id = ?",
+                "UPDATE likes SET mutual = TRUE, response = 'mutual' WHERE id = ?",
                 (like_id,), commit=True
             )
 
@@ -548,6 +548,10 @@ class CallbackHandler:
                 self.bot.answer_callback_query(call.id, "❌ Это не ваш лайк")
                 return
 
+            execute_query(
+                "UPDATE likes SET response = 'ignored' WHERE id = ?",
+                (like_id,), commit=True
+            )
             self.bot.answer_callback_query(call.id, "➡️ Лайк пропущен")
 
             # Удаляем сообщение
