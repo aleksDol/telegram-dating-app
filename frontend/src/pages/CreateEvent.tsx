@@ -60,13 +60,13 @@ export default function CreateEvent() {
   if (!user) return null
 
   return (
-    <>
+    <div className="create-event-page">
       <DemoBanner />
       <div className="page-header">
         <h1 className="page-title">Создать встречу</h1>
         <p className="page-subtitle">Опишите встречу — её увидят люди рядом</p>
       </div>
-      <form className="form" onSubmit={handleSubmit}>
+      <form className="form form-create" onSubmit={handleSubmit}>
         <label className="label">Название</label>
         <input
           className="input"
@@ -132,7 +132,7 @@ export default function CreateEvent() {
           {loading ? 'Создание...' : '🎉 Создать встречу'}
         </button>
       </form>
-    </>
+    </div>
   )
 }
 
