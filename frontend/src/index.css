@@ -574,6 +574,7 @@ button {
 .profile-about {
   position: relative;
   padding: 1.25rem 1.25rem 1.5rem;
+  padding-left: calc(96px + 14px + 12px);
   margin-bottom: 1rem;
   text-align: left;
 }
@@ -581,9 +582,9 @@ button {
 .profile-about-avatar {
   position: absolute;
   top: 14px;
-  right: 14px;
-  width: 72px;
-  height: 72px;
+  left: 14px;
+  width: 96px;
+  height: 96px;
   border-radius: 14px;
   overflow: hidden;
   border: 2px solid rgba(232, 121, 249, 0.22);
@@ -604,9 +605,23 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.6rem;
+  font-size: 2rem;
   font-weight: 800;
   color: #fff;
+}
+
+/* Отступ снизу: Мой профиль */
+.profile-page {
+  padding-bottom: 2rem;
+}
+
+/* Отступ снизу: страница редактирования профиля */
+.edit-profile-page {
+  padding-bottom: 2.5rem;
+}
+
+.edit-profile-page .form-actions {
+  margin-bottom: 0.5rem;
 }
 
 .profile-about-title {

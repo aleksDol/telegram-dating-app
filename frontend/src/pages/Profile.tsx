@@ -18,7 +18,7 @@ export default function Profile() {
   if (!user) return null
 
   return (
-    <>
+    <div className="profile-page">
       <DemoBanner />
       <div className="page-header">
         <h1 className="page-title animate-in">Мой профиль</h1>
@@ -46,7 +46,7 @@ export default function Profile() {
           📅 Мои встречи
         </Link>
         <Link to="/profile/edit" className="btn btn-ghost btn-lg">
-          ✏️ Редактировать
+          ✏️ Изменить
         </Link>
       </div>
 
@@ -96,7 +96,7 @@ export default function Profile() {
           <span className="profile-action-arrow">→</span>
         </Link>
       </div>
-    </>
+    </div>
   )
 }
 

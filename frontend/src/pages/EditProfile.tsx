@@ -85,7 +85,7 @@ export default function EditProfile() {
   if (userLoading || !user) return null
 
   return (
-    <>
+    <div className="edit-profile-page">
       <div className="page-header">
         <h1 className="page-title">Редактировать профиль</h1>
         <p className="page-subtitle">Измените данные и нажмите «Сохранить»</p>
@@ -167,6 +167,6 @@ export default function EditProfile() {
           </button>
         </div>
       </form>
-    </>
+    </div>
   )
 }
