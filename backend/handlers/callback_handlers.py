@@ -296,11 +296,21 @@ class CallbackHandler:
             AchievementService.check_achievements(user_id)
             AchievementService.check_achievements(like['from_user'])
 
-            # Отправляем уведомление о матчинге
-            NotificationService.send_match_notification(
+            # Уведомление тому, кто поставил лайк: полный профиль ответившего + событие + username
+            NotificationService.send_mutual_response_to_liker(
                 like['from_user'], user_id, like['event_id'], self.bot)
 
-            # Без дублирующих сообщений — только "Матч! ..."
+            # Короткое подтверждение создателю, что он ответил взаимностью
+            liker_contact = f"@{liker_user['username']}" if liker_user.get('username') else "не указан"
+            try:
+                self.bot.send_message(
+                    user_id,
+                    f"💞 Вы ответили взаимностью!\n\n👤 {liker_user['name']}\n📱 Контакт в Telegram: {liker_contact}\n\n💬 Можете связаться для обсуждения встречи.",
+                    parse_mode=None,
+                )
+            except Exception:
+                pass
+
             self.bot.answer_callback_query(call.id)
 
             # Удаляем сообщение с уведомлением

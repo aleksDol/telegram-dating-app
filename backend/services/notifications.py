@@ -91,6 +91,60 @@ class NotificationService:
                 print(f"❌ Ошибка отправки уведомления: {e}")
 
     @staticmethod
+    def send_mutual_response_to_liker(liker_id, creator_id, event_id, bot=None):
+        """Отправить тому, кто поставил лайк: уведомление о взаимности + полный профиль ответившего + событие + username."""
+        bot = NotificationService._get_bot(bot)
+        creator = execute_query(
+            "SELECT name, age, gender, city, relationship_status, photo, purpose, username FROM users WHERE user_id = ? AND is_banned = FALSE",
+            (creator_id,), fetchone=True
+        )
+        if not creator:
+            return
+        username_display = f"@{creator['username']}" if creator.get('username') else "не указан"
+        profile_block = f"""👤 *Профиль пользователя:*
+
+📛 *Имя:* {escape_markdown(creator['name'])}
+🎂 *Возраст:* {escape_markdown(str(creator['age']))}
+⚧️ *Пол:* {escape_markdown(creator['gender'])}
+🏙️ *Город:* {escape_markdown(creator['city']) if creator['city'] else 'Не указан'}
+💖 *Статус:* {escape_markdown(creator['relationship_status']) if creator['relationship_status'] else 'Не указан'}
+🎯 *Цель:* {escape_markdown(creator['purpose']) if creator['purpose'] else 'куда\\-то сходить'}
+📱 *Контакт в Telegram:* {escape_markdown(username_display)}"""
+        event_block = ""
+        if event_id:
+            event_row = execute_query(
+                "SELECT title, description, event_date, category FROM events WHERE id = ?",
+                (event_id,), fetchone=True
+            )
+            if event_row:
+                event_block = f"""
+
+*Ответ на лайк к вашему событию:*
+🎉 *{escape_markdown(event_row['title'])}*
+🏷️ *Категория:* {escape_markdown(event_row.get('category') or '🎯 Разное')}
+📅 *Дата:* {escape_markdown(event_row['event_date'])}
+📝 *Описание:* {escape_markdown(event_row['description'][:100])}{'...' if len(event_row['description']) > 100 else ''}"""
+        text = f"""💞 *Взаимная симпатия!*
+
+Пользователь ответил взаимностью на ваш лайк.
+
+{profile_block}{event_block}
+
+💬 *Можете написать в Telegram:* {escape_markdown(username_display)}"""
+        try:
+            if creator.get('photo'):
+                bot.send_photo(
+                    liker_id,
+                    creator['photo'],
+                    caption=text,
+                    parse_mode='Markdown',
+                )
+            else:
+                bot.send_message(liker_id, text + "\n\n📸 *Фото не загружено*", parse_mode='Markdown')
+        except Exception as e:
+            print(f"❌ Ошибка отправки уведомления о взаимности (liker): {e}")
+
+    @staticmethod
     def send_match_notification(user1_id, user2_id, event_id, bot=None):
         """Отправить уведомление о матчинге обоим пользователям (bot опционален)."""
         bot = NotificationService._get_bot(bot)
