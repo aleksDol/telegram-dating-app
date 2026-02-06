@@ -4,9 +4,17 @@
 Использование: из папки backend выполнить
     python run_all.py
 """
+import logging
 import os
 import sys
 import threading
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    stream=sys.stdout,
+)
 
 # Порт API: на Render используется PORT, локально — API_PORT или 8000
 API_HOST = os.getenv("API_HOST", "0.0.0.0")

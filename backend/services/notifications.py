@@ -1,10 +1,13 @@
 # services/notifications.py
+import logging
 from datetime import datetime
 import telebot
 
 from database import execute_query
 from config import config
 from utils.helpers import escape_markdown
+
+_log = logging.getLogger(__name__)
 
 
 class NotificationService:
@@ -23,12 +26,53 @@ class NotificationService:
         return f"{url.rstrip('/')}/likes"
 
     @staticmethod
+    def _send_with_fallback(bot, chat_id: int, text: str, open_url: str):
+        """Отправить сообщение с кнопкой «Открыть приложение»; при ошибке — без кнопки, с ссылкой в тексте."""
+        chat_id = int(chat_id)
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        if open_url.startswith("https://"):
+            keyboard.add(
+                telebot.types.InlineKeyboardButton(
+                    "📱 Открыть приложение",
+                    web_app=telebot.types.WebAppInfo(url=open_url),
+                )
+            )
+        else:
+            keyboard.add(
+                telebot.types.InlineKeyboardButton("📱 Открыть приложение", url=open_url)
+            )
+        try:
+            bot.send_message(chat_id, text, parse_mode='Markdown', reply_markup=keyboard)
+            return True
+        except Exception as e1:
+            err_str = str(e1).lower()
+            if "can't initiate" in err_str or "blocked" in err_str or "forbidden" in err_str:
+                _log.warning(
+                    "Уведомление не доставлено (chat_id=%s): пользователь не начал диалог с ботом или заблокировал бота. Нужно нажать /start в боте.",
+                    chat_id,
+                )
+            else:
+                _log.warning("Отправка с кнопкой не удалась (chat_id=%s), пробуем без кнопки: %s", chat_id, e1)
+            try:
+                fallback_text = text + f"\n\n📱 Открыть приложение: {open_url}"
+                bot.send_message(chat_id, fallback_text, parse_mode='Markdown')
+                return True
+            except Exception as e2:
+                _log.exception("Не удалось отправить уведомление (chat_id=%s): %s", chat_id, e2)
+                return False
+        return False
+
+    @staticmethod
     def send_like_notification(creator_id, liker_id, event, like_id, bot=None):
         """Короткое уведомление о лайке + кнопка «Открыть приложение» (обработка лайков в Mini App)."""
         if not config.BOT_TOKEN:
-            print("❌ BOT_TOKEN не задан — уведомление о лайке не отправлено")
+            _log.warning("BOT_TOKEN не задан — уведомление о лайке не отправлено")
             return
-        bot = NotificationService._get_bot(bot)
+        try:
+            bot = NotificationService._get_bot(bot)
+        except Exception as e:
+            _log.exception("Не удалось создать бота для уведомления: %s", e)
+            return
         user = execute_query(
             "SELECT is_banned FROM users WHERE user_id = ?",
             (creator_id,), fetchone=True
@@ -36,29 +80,22 @@ class NotificationService:
         if user and user.get('is_banned'):
             return
         open_likes_url = NotificationService._get_mini_app_likes_url()
-        keyboard = telebot.types.InlineKeyboardMarkup()
-        keyboard.add(
-            telebot.types.InlineKeyboardButton(
-                "📱 Открыть приложение",
-                web_app=telebot.types.WebAppInfo(url=open_likes_url),
-            )
+        text = "💌 *Пришёл новый лайк!*\n\nОткройте приложение, чтобы посмотреть кто это и ответить взаимностью или пропустить."
+        NotificationService._send_with_fallback(
+            bot, int(creator_id), text, open_likes_url
         )
-        try:
-            bot.send_message(
-                creator_id,
-                "💌 *Пришёл новый лайк!*\n\nОткройте приложение, чтобы посмотреть кто это и ответить взаимностью или пропустить.",
-                parse_mode='Markdown',
-                reply_markup=keyboard,
-            )
-        except Exception as e:
-            print(f"❌ Ошибка отправки уведомления о лайке (creator_id={creator_id}): {e}")
 
     @staticmethod
     def send_mutual_response_to_liker(liker_id, creator_id, event_id, bot=None):
         """Короткое уведомление о взаимной симпатии + кнопка «Открыть приложение» (профиль смотреть в приложении)."""
         if not config.BOT_TOKEN:
+            _log.warning("BOT_TOKEN не задан — уведомление о взаимности не отправлено")
             return
-        bot = NotificationService._get_bot(bot)
+        try:
+            bot = NotificationService._get_bot(bot)
+        except Exception as e:
+            _log.exception("Не удалось создать бота для уведомления: %s", e)
+            return
         user = execute_query(
             "SELECT is_banned FROM users WHERE user_id = ?",
             (liker_id,), fetchone=True
@@ -66,26 +103,17 @@ class NotificationService:
         if user and user.get('is_banned'):
             return
         open_likes_url = NotificationService._get_mini_app_likes_url()
-        keyboard = telebot.types.InlineKeyboardMarkup()
-        keyboard.add(
-            telebot.types.InlineKeyboardButton(
-                "📱 Открыть приложение",
-                web_app=telebot.types.WebAppInfo(url=open_likes_url),
-            )
+        text = "💞 *Взаимная симпатия!*\n\nПользователь ответил на ваш лайк. Откройте приложение, чтобы посмотреть профиль и связаться."
+        NotificationService._send_with_fallback(
+            bot, int(liker_id), text, open_likes_url
         )
-        try:
-            bot.send_message(
-                liker_id,
-                "💞 *Взаимная симпатия!*\n\nПользователь ответил на ваш лайк. Откройте приложение, чтобы посмотреть профиль и связаться.",
-                parse_mode='Markdown',
-                reply_markup=keyboard,
-            )
-        except Exception as e:
-            print(f"❌ Ошибка отправки уведомления о взаимности (liker_id={liker_id}): {e}")
 
     @staticmethod
     def send_match_notification(user1_id, user2_id, event_id, bot=None):
         """Отправить уведомление о матчинге обоим пользователям (bot опционален)."""
+        if not config.BOT_TOKEN and bot is None:
+            _log.warning("BOT_TOKEN не задан — уведомление о матчинге не отправлено")
+            return
         bot = NotificationService._get_bot(bot)
         if event_id:
             event = execute_query(
