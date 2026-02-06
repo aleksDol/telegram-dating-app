@@ -2,6 +2,8 @@
 
 Инструкция по развёртыванию Telegram Dating App на VPS с Ubuntu (в т.ч. Timeweb Cloud).
 
+**Подробная инструкция по SSH и Nginx (подключение с Windows, настройка HTTPS, прокси):** см. **[SSH-AND-NGINX.md](SSH-AND-NGINX.md)** в этой же папке.
+
 ## Требования
 
 - VPS с **Ubuntu 22.04** (или 24.04)
