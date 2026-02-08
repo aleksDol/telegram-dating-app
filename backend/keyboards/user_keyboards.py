@@ -1,10 +1,25 @@
 # keyboards/user_keyboards.py
 import os
+import re
 import telebot
 from config import config
 
 # URL Mini App (можно переопределить через env MINI_APP_URL)
-MINI_APP_URL = os.getenv("MINI_APP_URL", "https://telegram-dating-app1.onrender.com")
+_raw_mini_app_url = os.getenv("MINI_APP_URL", "https://telegram-dating-app1.onrender.com")
+
+
+def _normalize_webapp_url(url: str) -> str:
+    """Убирает двойную схему (https://http://... или http://https://...) — Telegram выдаёт 400."""
+    if not url or not isinstance(url, str):
+        return url
+    url = url.strip()
+    # Убираем дубликат: https://http://host -> https://host, http://https://host -> https://host
+    url = re.sub(r"^https://http://", "https://", url, flags=re.IGNORECASE)
+    url = re.sub(r"^http://https://", "https://", url, flags=re.IGNORECASE)
+    return url
+
+
+MINI_APP_URL = _normalize_webapp_url(_raw_mini_app_url)
 
 
 def get_start_webapp_keyboard():

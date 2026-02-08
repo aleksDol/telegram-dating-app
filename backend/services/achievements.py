@@ -47,21 +47,24 @@ class AchievementService:
             )
             current_points = user['points'] if user else 0
 
-        # Получаем статистику пользователя
-        events_count = execute_query(
+        # Получаем статистику пользователя (защита от None при сбое запроса)
+        row = execute_query(
             "SELECT COUNT(*) as count FROM events WHERE user_id = ? AND is_hidden = FALSE",
             (user_id,), fetchone=True
-        )['count']
+        )
+        events_count = row['count'] if row else 0
 
-        likes_received = execute_query(
+        row = execute_query(
             "SELECT COUNT(*) as count FROM likes WHERE to_user = ?",
             (user_id,), fetchone=True
-        )['count']
+        )
+        likes_received = row['count'] if row else 0
 
-        mutual_count = execute_query(
+        row = execute_query(
             "SELECT COUNT(*) as count FROM likes WHERE to_user = ? AND mutual = TRUE",
             (user_id,), fetchone=True
-        )['count']
+        )
+        mutual_count = row['count'] if row else 0
 
         # Проверяем достижения
         achievements_to_check = [

@@ -104,14 +104,9 @@ class Database:
                 )
             """)
                 try:
-                    cursor.execute("SAVEPOINT before_alter_likes_response")
                     cursor.execute("ALTER TABLE likes ADD COLUMN response TEXT DEFAULT NULL")
-                    cursor.execute("RELEASE SAVEPOINT before_alter_likes_response")
                 except Exception:
-                    try:
-                        cursor.execute("ROLLBACK TO SAVEPOINT before_alter_likes_response")
-                    except Exception:
-                        pass  # колонка уже есть или savepoint не создан
+                    pass  # колонка уже есть
                 try:
                     cursor.execute("ALTER TABLE users ADD COLUMN photos TEXT DEFAULT '[]'")
                 except Exception:

@@ -63,7 +63,7 @@ class UserHandlers:
             (user_id,), fetchone=True
         )
 
-        if user and user['is_banned'] == 1:
+        if user and user.get('is_banned'):
             reason = user['ban_reason'] or "Нарушение правил"
             date = user['banned_date'][:10] if user['banned_date'] else "неизвестно"
 
@@ -97,7 +97,10 @@ class UserHandlers:
                 "📱 Открыть приложение в браузере:",
                 reply_markup=get_start_webapp_keyboard(),
             )
-            AchievementService.check_achievements(user_id)
+            try:
+                AchievementService.check_achievements(user_id)
+            except Exception as e:
+                logger.warning("check_achievements при /start: %s", e, exc_info=True)
             return
 
         # Обработка реферальной ссылки
@@ -187,7 +190,7 @@ class UserHandlers:
             user = execute_query(
                 "SELECT is_banned FROM users WHERE user_id = ?", (user_id,), fetchone=True
             )
-            if user and user['is_banned'] == 1:
+            if user and user.get('is_banned'):
                 self._show_ban_message(user_id, chat_id)
                 return
 
@@ -443,7 +446,7 @@ class UserHandlers:
 🔗 Ваш код: `{user.get('referral_code', 'не задан')}`
 💎 Ваша ссылка: `t.me/RELOCK_CLUB_BOT?start={user.get('referral_code', '')}`"""
 
-        if user['is_banned'] == 1:
+        if user.get('is_banned'):
             ban_info = execute_query(
                 "SELECT ban_reason, banned_date FROM users WHERE user_id = ?",
                 (user_id,), fetchone=True
@@ -1178,7 +1181,7 @@ class UserHandlers:
             "SELECT is_banned FROM users WHERE user_id = ?", (user_id,), fetchone=True
         )
 
-        if user and user['is_banned'] == 1:
+        if user and user.get('is_banned'):
             return
 
         # Проверяем, есть ли уже события
