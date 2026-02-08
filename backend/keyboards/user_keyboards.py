@@ -42,19 +42,6 @@ def get_start_webapp_keyboard():
     return markup
 
 
-def get_main_menu():
-    """Главное меню пользователя"""
-    markup = telebot.types.ReplyKeyboardMarkup(
-        resize_keyboard=True, row_width=2)
-    markup.add(
-        '👤 Мой профиль', '🔍 Найти события',
-        '📅 Мои события', '🎉 Создать событие',
-        '⭐ Рекомендации', '🏆 Достижения',
-        'ℹ️ О боте'
-    )
-    return markup
-
-
 def get_category_keyboard():
     """Клавиатура для выбора категории события"""
     markup = telebot.types.ReplyKeyboardMarkup(
@@ -90,19 +77,6 @@ def get_relationship_keyboard():
     markup = telebot.types.ReplyKeyboardMarkup(
         resize_keyboard=True, row_width=2)
     markup.add('Не в отношениях', 'В отношениях', 'В браке', 'Всё сложно')
-    return markup
-
-
-def get_profile_menu():
-    """Меню редактирования профиля"""
-    markup = telebot.types.ReplyKeyboardMarkup(
-        resize_keyboard=True, row_width=2)
-    markup.add(
-        '✏️ Изменить имя', '✏️ Изменить возраст',
-        '✏️ Изменить пол', '✏️ Изменить город',
-        '✏️ Изменить статус', '✏️ Изменить фото',
-        '✏️ Изменить цель', '⬅️ Назад'
-    )
     return markup
 
 

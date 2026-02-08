@@ -9,12 +9,9 @@ logger = logging.getLogger(__name__)
 from config import config
 from keyboards.user_keyboards import (
     get_start_webapp_keyboard,
-    get_main_menu,
     get_gender_keyboard,
     get_relationship_keyboard,
     get_user_profile_keyboard,
-    get_filter_keyboard,
-    get_event_action_keyboard,
     get_yes_no_keyboard,
     get_ban_notification_keyboard,
 )
@@ -91,10 +88,8 @@ class UserHandlers:
                 commit=True
             )
             self.bot.send_message(
-                chat_id, "С возвращением! 👋", reply_markup=get_main_menu())
-            self.bot.send_message(
                 chat_id,
-                "📱 Открыть приложение в браузере:",
+                "С возвращением! 👋 Откройте приложение:",
                 reply_markup=get_start_webapp_keyboard(),
             )
             try:
@@ -223,7 +218,7 @@ class UserHandlers:
                             "✅ *Жалоба отправлена администратору.*\n\n"
                             "Спасибо! Мы рассмотрим её в ближайшее время.",
                             parse_mode='Markdown',
-                            reply_markup=get_main_menu()
+                            reply_markup=get_start_webapp_keyboard()
                         )
                     else:
                         self.bot.send_message(chat_id, "❌ Не удалось отправить жалобу. Попробуйте позже.")
@@ -307,53 +302,6 @@ class UserHandlers:
         elif state == 'edit_relationship':
             self._handle_edit_relationship(user_id, chat_id, text)
 
-        # Обработка главного меню
-        elif text == '👤 Мой профиль':
-            self.show_profile(message)
-        elif text == '🔍 Найти события':
-            self.show_filter_menu(message)
-        elif text == '📅 Мои события':
-            self.show_my_events(message)
-        elif text == '🎉 Создать событие':
-            self._handle_create_event_start(message)
-        elif text == '⭐ Рекомендации':
-            self.show_recommendations(message)
-        elif text == '🏆 Достижения':
-            self.show_achievements(message)
-        elif text == 'ℹ️ О боте':
-            self.show_about_bot(message)
-        elif text == '⬅️ Назад':
-            self.bot.send_message(chat_id, "Главное меню:",
-                                  reply_markup=get_main_menu())
-
-        # Редактирование профиля из меню
-        elif text == '✏️ Изменить цель':
-            self.user_state[user_id] = 'edit_purpose'
-            self.bot.send_message(
-                chat_id,
-                "Введите новую цель (например: 'сходить в кино', 'посетить выставку'):"
-            )
-        elif text == '✏️ Изменить имя':
-            self.user_state[user_id] = 'edit_name'
-            self.bot.send_message(chat_id, "Введите новое имя:")
-        elif text == '✏️ Изменить возраст':
-            self.user_state[user_id] = 'edit_age'
-            self.bot.send_message(chat_id, "Введите новый возраст:")
-        elif text == '✏️ Изменить пол':
-            self.user_state[user_id] = 'edit_gender'
-            self.bot.send_message(chat_id, "Выберите пол:",
-                                  reply_markup=get_gender_keyboard())
-        elif text == '✏️ Изменить город':
-            self.user_state[user_id] = 'edit_city'
-            self.bot.send_message(chat_id, "Введите новый город:")
-        elif text == '✏️ Изменить статус':
-            self.user_state[user_id] = 'edit_relationship'
-            self.bot.send_message(
-                chat_id, "Выберите статус:", reply_markup=get_relationship_keyboard())
-        elif text == '✏️ Изменить фото':
-            self.user_state[user_id] = 'edit_photo'
-            self.bot.send_message(chat_id, "Отправьте новое фото:")
-
         # Команды
         elif text == '/cities':
             self._show_cities_list(chat_id)
@@ -371,7 +319,10 @@ class UserHandlers:
                     chat_id, "Вы не зарегистрированы. Напишите /start", reply_markup=self._remove_keyboard())
             else:
                 self.bot.send_message(
-                    chat_id, "Используйте меню для навигации:", reply_markup=get_main_menu())
+                    chat_id,
+                    "📱 Все функции доступны в приложении. Откройте его:",
+                    reply_markup=get_start_webapp_keyboard(),
+                )
 
     def show_profile(self, message):
         """Показать профиль пользователя"""
@@ -840,7 +791,7 @@ class UserHandlers:
         )
         del self.user_state[user_id]
         self.bot.send_message(chat_id, "✅ Цель обновлена!",
-                              reply_markup=get_profile_menu())
+                              reply_markup=get_start_webapp_keyboard())
 
     def _handle_edit_name(self, user_id, chat_id, text):
         """Обработка изменения имени"""
@@ -849,7 +800,7 @@ class UserHandlers:
         )
         del self.user_state[user_id]
         self.bot.send_message(chat_id, "✅ Имя обновлено!",
-                              reply_markup=get_profile_menu())
+                              reply_markup=get_start_webapp_keyboard())
 
     def _handle_edit_age(self, user_id, chat_id, text):
         """Обработка изменения возраста"""
@@ -859,7 +810,7 @@ class UserHandlers:
             )
             del self.user_state[user_id]
             self.bot.send_message(
-                chat_id, "✅ Возраст обновлён!", reply_markup=get_profile_menu())
+                chat_id, "✅ Возраст обновлён!", reply_markup=get_start_webapp_keyboard())
         else:
             self.bot.send_message(chat_id, "Введите возраст от 18 до 100:")
 
@@ -871,7 +822,7 @@ class UserHandlers:
             )
             del self.user_state[user_id]
             self.bot.send_message(chat_id, "✅ Пол обновлён!",
-                                  reply_markup=get_profile_menu())
+                                  reply_markup=get_start_webapp_keyboard())
 
     def _handle_edit_city(self, user_id, chat_id, text):
         """Обработка изменения города"""
@@ -882,7 +833,7 @@ class UserHandlers:
             )
             del self.user_state[user_id]
             self.bot.send_message(
-                chat_id, "✅ Город обновлён!", reply_markup=get_profile_menu())
+                chat_id, "✅ Город обновлён!", reply_markup=get_start_webapp_keyboard())
         else:
             similar_city = find_similar_city(city, config.CITIES)
             if similar_city:
@@ -915,7 +866,7 @@ class UserHandlers:
             del self.user_state[user_id]
             del self.user_data[user_id]
             self.bot.send_message(
-                chat_id, "✅ Город обновлён!", reply_markup=get_profile_menu())
+                chat_id, "✅ Город обновлён!", reply_markup=get_start_webapp_keyboard())
         elif text == '❌ Нет':
             self.user_state[user_id] = 'edit_city'
             self.bot.send_message(
@@ -929,7 +880,7 @@ class UserHandlers:
             )
             del self.user_state[user_id]
             self.bot.send_message(
-                chat_id, "✅ Статус обновлён!", reply_markup=get_profile_menu())
+                chat_id, "✅ Статус обновлён!", reply_markup=get_start_webapp_keyboard())
 
     def show_about_bot(self, message):
         """Показать подробную информацию о боте"""
@@ -991,11 +942,11 @@ class UserHandlers:
             "• /help — эта справка\n"
             "• /ref — информация о реферальной программе\n\n"
             "❓ *Вопросы?*\n"
-            "Используйте меню для навигации. Все функции доступны через кнопки!"
+            "Все функции доступны в приложении — нажмите кнопку ниже."
         )
 
         self.bot.send_message(
-            chat_id, about_text, parse_mode='Markdown', reply_markup=get_main_menu()
+            chat_id, about_text, parse_mode='Markdown', reply_markup=get_start_webapp_keyboard()
         )
 
     def _show_cities_list(self, chat_id):
@@ -1154,7 +1105,7 @@ class UserHandlers:
             del self.user_data[user_id]
 
         self.bot.send_message(
-            chat_id, "✅ Регистрация завершена!", reply_markup=get_main_menu())
+            chat_id, "✅ Регистрация завершена! Откройте приложение:", reply_markup=get_start_webapp_keyboard())
 
         # Предлагаем создать событие через 2 минуты
         import threading
@@ -1168,7 +1119,7 @@ class UserHandlers:
         )
         del self.user_state[user_id]
         self.bot.send_message(chat_id, "✅ Фото обновлено!",
-                              reply_markup=get_profile_menu())
+                              reply_markup=get_start_webapp_keyboard())
 
     def _suggest_event_delayed(self, user_id):
         """Предложить создать событие через 2 минуты"""
@@ -1191,17 +1142,13 @@ class UserHandlers:
         )
 
         if events_count and events_count['count'] == 0:
-            markup = telebot.types.InlineKeyboardMarkup()
-            markup.add(telebot.types.InlineKeyboardButton(
-                "🎉 Создать событие", callback_data="create_event"))
-
             try:
                 self.bot.send_message(
                     user_id,
                     "💡 *Хочешь создать своё первое событие для знакомств?*\n\n"
-                    "Это поможет другим пользователям найти тебя быстрее! ✨",
+                    "Откройте приложение — там все функции! ✨",
                     parse_mode='Markdown',
-                    reply_markup=markup
+                    reply_markup=get_start_webapp_keyboard()
                 )
             except:
                 pass

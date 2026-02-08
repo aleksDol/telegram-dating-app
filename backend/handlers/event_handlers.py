@@ -198,7 +198,7 @@ class EventHandlers:
                     del self.user_data[user_id]
 
                 self.bot.send_message(
-                    chat_id, "✅ Событие успешно создано!", reply_markup=get_main_menu()
+                    chat_id, "✅ Событие успешно создано! Откройте приложение:", reply_markup=get_start_webapp_keyboard()
                 )
 
             except ValueError:

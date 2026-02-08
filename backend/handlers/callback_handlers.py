@@ -382,28 +382,24 @@ class CallbackHandler:
             self._handle_admin_all_reports(call)
 
     def _handle_filter(self, call):
-        """Обработка фильтров поиска"""
+        """Обработка фильтров поиска — перенаправление в приложение"""
         user_id = call.from_user.id
-        filter_type = call.data.replace("filter_", "")
-
-        # Проверяем регистрацию
         user = execute_query(
             "SELECT * FROM users WHERE user_id=?", (user_id,), fetchone=True
         )
-
         if not user:
             self.bot.answer_callback_query(
                 call.id, "❌ Сначала завершите регистрацию!")
             return
-
-        # Проверяем бан
-        if user['is_banned'] == 1:
+        if user.get('is_banned') == 1:
             self.bot.answer_callback_query(
                 call.id, "⛔ Ваш аккаунт заблокирован!")
             return
-
-        # Показываем первое событие по выбранному фильтру
-        self.show_next_event(call.message, user_id, filter_type=filter_type)
+        self.bot.send_message(
+            call.message.chat.id,
+            "🔍 Поиск событий доступен в приложении. Откройте его:",
+            reply_markup=get_start_webapp_keyboard()
+        )
         self.bot.answer_callback_query(call.id)
 
     def _handle_report(self, call):
@@ -635,80 +631,74 @@ class CallbackHandler:
             self.bot.answer_callback_query(call.id, "⚠️ Команда не распознана")
 
     def _handle_new_search(self, call):
-        """Обработка нового поиска"""
+        """Обработка нового поиска — перенаправление в приложение"""
         user_id = call.from_user.id
-
         user = execute_query(
             "SELECT * FROM users WHERE user_id=?", (user_id,), fetchone=True
         )
-
         if not user:
             self.bot.answer_callback_query(
                 call.id, "❌ Сначала завершите регистрацию!")
             return
-
-        keyboard = get_filter_keyboard()
         self.bot.send_message(
             call.message.chat.id,
-            "🔍 *Выберите тип поиска:*",
-            parse_mode='Markdown',
-            reply_markup=keyboard
+            "🔍 Поиск событий доступен в приложении. Откройте его:",
+            reply_markup=get_start_webapp_keyboard()
         )
         self.bot.answer_callback_query(call.id)
 
     def _handle_create_event(self, call):
-        """Обработка создания события из callback"""
+        """Обработка создания события — перенаправление в приложение"""
         user_id = call.from_user.id
-
         user = execute_query(
             "SELECT * FROM users WHERE user_id=?", (user_id,), fetchone=True
         )
-
         if not user:
             self.bot.answer_callback_query(
                 call.id, "❌ Сначала завершите регистрацию!")
             return
-
-        self.user_state[user_id] = 'waiting_event_title'
-        self.bot.send_message(call.message.chat.id,
-                              "Введите название события:")
+        self.bot.send_message(
+            call.message.chat.id,
+            "🎉 Создание событий доступно в приложении. Откройте его:",
+            reply_markup=get_start_webapp_keyboard()
+        )
         self.bot.answer_callback_query(call.id)
 
     def _handle_back_to_profile(self, call):
-        """Обработка возврата к профилю"""
-        if self.user_handlers:
-            self.user_handlers.show_profile(call.message)
-        else:
-            # fallback: просто показываем главное меню
-            self.bot.send_message(call.message.chat.id, "Главное меню:", reply_markup=get_main_menu())
+        """Обработка возврата к профилю — перенаправление в приложение"""
+        self.bot.send_message(
+            call.message.chat.id,
+            "📱 Все функции доступны в приложении. Откройте его:",
+            reply_markup=get_start_webapp_keyboard()
+        )
         self.bot.answer_callback_query(call.id)
 
     def _handle_edit_profile(self, call):
-        """Обработка редактирования профиля"""
+        """Обработка редактирования профиля — перенаправление в приложение"""
         self.bot.send_message(
             call.message.chat.id,
-            "Выберите что изменить:",
-            reply_markup=get_profile_menu()
+            "✏️ Редактирование профиля доступно в приложении. Откройте его:",
+            reply_markup=get_start_webapp_keyboard()
         )
         self.bot.answer_callback_query(call.id)
 
     def _handle_my_events_list(self, call):
-        """Обработка показа событий пользователя"""
-        from handlers.event_handlers import EventHandlers
-        event_handler = EventHandlers(self.bot)
-        event_handler.show_my_events(call.message)
+        """Обработка показа событий пользователя — перенаправление в приложение"""
+        self.bot.send_message(
+            call.message.chat.id,
+            "📅 Мои события доступны в приложении. Откройте его:",
+            reply_markup=get_start_webapp_keyboard()
+        )
         self.bot.answer_callback_query(call.id)
 
     def _handle_my_events_pagination(self, call):
-        """Обработка пагинации событий"""
-        try:
-            page = int(call.data.split("_")[2])
-            from handlers.event_handlers import EventHandlers
-            event_handler = EventHandlers(self.bot)
-            event_handler.show_my_events(call.message, page=page)
-            self.bot.answer_callback_query(call.id)
-        except:
-            self.bot.answer_callback_query(call.id, "❌ Ошибка обработки")
+        """Обработка пагинации событий — перенаправление в приложение"""
+        self.bot.send_message(
+            call.message.chat.id,
+            "📅 Мои события доступны в приложении. Откройте его:",
+            reply_markup=get_start_webapp_keyboard()
+        )
+        self.bot.answer_callback_query(call.id)
 
     def _handle_edit_event(self, call):
         """Обработка редактирования события"""
