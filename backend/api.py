@@ -130,18 +130,20 @@ def get_user_id(telegram_user: dict = Depends(get_telegram_user_from_init_data))
     return user_id
 
 
-def _upload_photo_to_telegram(chat_id: int, data_url: str) -> str | None:
-    """Загружает фото из data URL в Telegram и возвращает file_id. Сообщение в чат не оставляем — удаляем сразу."""
+def _upload_photo_to_telegram(chat_id: int, data_url: str) -> tuple[str | None, str | None]:
+    """Загружает фото из data URL в Telegram и возвращает (file_id, error_message). Сообщение в чат удаляем сразу."""
     token = (config.BOT_TOKEN or "").strip()
     if not token or not data_url.strip().lower().startswith("data:"):
-        return None
+        return None, "Нет токена бота или неверный формат изображения"
     try:
         match = re.match(r"data:([^;]+);base64,(.+)", data_url.strip(), re.DOTALL | re.IGNORECASE)
         if not match:
-            return None
+            return None, "Неверный data URL изображения"
         content_type = match.group(1).strip().lower()
         b64 = match.group(2)
         raw = base64.b64decode(b64)
+        if len(raw) > 10 * 1024 * 1024:  # 10 MB лимит Telegram для фото
+            return None, "Файл слишком большой (макс. 10 МБ)"
         ext = "jpg" if "jpeg" in content_type or "jpg" in content_type else "png"
         url = f"https://api.telegram.org/bot{token}/sendPhoto"
         with requests.post(
@@ -150,14 +152,16 @@ def _upload_photo_to_telegram(chat_id: int, data_url: str) -> str | None:
             files={"photo": (f"photo.{ext}", BytesIO(raw), content_type)},
             timeout=30,
         ) as r:
-            r.raise_for_status()
-            data = r.json()
+            data = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
             if not data.get("ok"):
-                return None
+                desc = data.get("description", r.text or "Неизвестная ошибка Telegram")
+                if "can't initiate" in desc.lower() or "blocked" in desc.lower() or "forbidden" in desc.lower():
+                    desc = "Бот не может написать этому пользователю. Напишите боту /start от имени одного из админов (ADMINS в .env), затем повторите рассылку с фото."
+                return None, desc
             result = data.get("result", {})
             photos = result.get("photo", [])
             if not photos:
-                return None
+                return None, "Telegram не вернул file_id"
             file_id = photos[-1].get("file_id")
             message_id = result.get("message_id")
             if message_id is not None:
@@ -167,9 +171,11 @@ def _upload_photo_to_telegram(chat_id: int, data_url: str) -> str | None:
                     json={"chat_id": chat_id, "message_id": message_id},
                     timeout=10,
                 )
-            return file_id
-    except Exception:
-        return None
+            return file_id, None
+    except requests.RequestException as e:
+        return None, str(e) or "Ошибка сети"
+    except Exception as e:
+        return None, str(e) or "Ошибка загрузки фото"
 
 
 def _photo_for_response(user_id: int, photo: str | None) -> str | None:
@@ -430,7 +436,7 @@ def api_register(
     purpose = (body.purpose or "").strip() or "куда-то сходить"
     photo_value = body.photo.strip()
     if photo_value.lower().startswith("data:"):
-        file_id = _upload_photo_to_telegram(user_id, photo_value)
+        file_id, _ = _upload_photo_to_telegram(user_id, photo_value)
         photo_value = file_id or photo_value
     username = (telegram_user.get("username") or "").strip()
     execute_query(
@@ -512,7 +518,7 @@ def api_update_profile(body: UpdateProfileBody, user_id: int = Depends(get_user_
             if not p:
                 continue
             if p.lower().startswith("data:"):
-                file_id = _upload_photo_to_telegram(user_id, p)
+                file_id, _ = _upload_photo_to_telegram(user_id, p)
                 new_file_ids.append(file_id or p)
             elif f"/api/photo/user/{user_id}" in p:
                 # URL с индексом: /api/photo/user/123/0 или без индекса: /api/photo/user/123
@@ -540,7 +546,7 @@ def api_update_profile(body: UpdateProfileBody, user_id: int = Depends(get_user_
             photo_value = None
         if photo_value is not None:
             if photo_value.lower().startswith("data:"):
-                file_id = _upload_photo_to_telegram(user_id, photo_value)
+                file_id, _ = _upload_photo_to_telegram(user_id, photo_value)
                 if file_id:
                     photo_value = file_id
             updates.append("photo = ?"); params.append(photo_value)
@@ -599,7 +605,7 @@ def api_create_event(body: CreateEventBody, user_id: int = Depends(get_user_id))
     event_photo_value = None
     if body.photo and body.photo.strip():
         if body.photo.strip().lower().startswith("data:"):
-            event_photo_value = _upload_photo_to_telegram(user_id, body.photo.strip())
+            event_photo_value, _ = _upload_photo_to_telegram(user_id, body.photo.strip())
             event_photo_value = event_photo_value or body.photo.strip()
         else:
             event_photo_value = body.photo.strip()
@@ -645,7 +651,7 @@ def api_update_event(event_id: int, body: CreateEventBody, user_id: int = Depend
     if body.photo is not None:
         if body.photo and body.photo.strip():
             if body.photo.strip().lower().startswith("data:"):
-                event_photo_value = _upload_photo_to_telegram(user_id, body.photo.strip())
+                event_photo_value, _ = _upload_photo_to_telegram(user_id, body.photo.strip())
                 event_photo_value = event_photo_value or body.photo.strip()
             else:
                 event_photo_value = body.photo.strip()
@@ -1195,9 +1201,12 @@ def admin_api_broadcast_send(
         admin_chat_id = config.ADMINS[0] if config.ADMINS else None
         if not admin_chat_id:
             raise HTTPException(status_code=400, detail="Нет админа в ADMINS для загрузки фото")
-        file_id = _upload_photo_to_telegram(admin_chat_id, photo_data)
+        file_id, upload_err = _upload_photo_to_telegram(admin_chat_id, photo_data)
         if not file_id:
-            raise HTTPException(status_code=400, detail="Не удалось загрузить фото в Telegram")
+            raise HTTPException(
+                status_code=400,
+                detail=upload_err or "Не удалось загрузить фото в Telegram",
+            )
         content_type = "photo"
         content = file_id
         caption = text
