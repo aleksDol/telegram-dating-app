@@ -59,6 +59,7 @@ class Database:
                     city TEXT,
                     relationship_status TEXT,
                     photo TEXT,
+                    photos TEXT DEFAULT '[]',
                     purpose TEXT DEFAULT 'куда-то сходить',
                     reg_date TEXT,
                     points INTEGER DEFAULT 0,
@@ -108,6 +109,10 @@ class Database:
                     cursor.execute("ROLLBACK TO SAVEPOINT before_alter_likes_response")
                 except Exception:
                     pass  # колонка уже есть или savepoint не создан
+            try:
+                cursor.execute("ALTER TABLE users ADD COLUMN photos TEXT DEFAULT '[]'")
+            except Exception:
+                pass  # колонка уже есть
 
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS achievements (

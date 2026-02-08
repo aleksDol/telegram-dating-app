@@ -7,6 +7,7 @@ export interface User {
   city?: string
   relationship_status?: string
   photo?: string
+  photos?: string[]
   purpose: string
   points: number
   reg_date?: string

@@ -1,10 +1,22 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
+import { api, isApiConfigured } from '../api/client'
+
+const MAX_PHOTOS = 3
+const API_BASE = import.meta.env.VITE_API_URL || ''
+
+function photoSrc(url: string): string {
+  if (!url) return ''
+  if (url.startsWith('data:') || url.startsWith('http')) return url
+  return API_BASE + url
+}
 
 export default function Profile() {
   const navigate = useNavigate()
-  const { user, loading, fetchUser } = useApp()
+  const { user, loading, fetchUser, setUser } = useApp()
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetchUser()
@@ -13,6 +25,44 @@ export default function Profile() {
   useEffect(() => {
     if (!loading && !user) navigate('/', { replace: true })
   }, [loading, user, navigate])
+
+  const photos: string[] = user?.photos?.length
+    ? user.photos
+    : user?.photo
+      ? [user.photo]
+      : []
+
+  const handleAddPhoto = () => {
+    if (photos.length >= MAX_PHOTOS) return
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file || !user || !file.type.startsWith('image/')) return
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const r = new FileReader()
+      r.onload = () => resolve(r.result as string)
+      r.onerror = reject
+      r.readAsDataURL(file)
+    })
+    const newPhotos = [...photos, dataUrl].slice(0, MAX_PHOTOS)
+    setUploading(true)
+    try {
+      if (isApiConfigured()) {
+        const { user: updated } = await api.updateProfile({ photos: newPhotos })
+        setUser(updated)
+        await fetchUser()
+      } else {
+        setUser({ ...user, photo: dataUrl, photos: [dataUrl] })
+      }
+    } catch {
+      // ignore
+    } finally {
+      setUploading(false)
+    }
+  }
 
   if (loading) return <div className="screen-center"><div className="loader" /><p className="text-muted">Загрузка...</p></div>
   if (!user) return null
@@ -53,30 +103,40 @@ export default function Profile() {
       {/* Блок с фото */}
       <section className="profile-photo-block card animate-in stagger-3">
         <h2 className="profile-block-title">Мои фото</h2>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="profile-photo-input-hidden"
+          aria-hidden
+          onChange={handleFileChange}
+        />
         <div className="profile-photos-grid">
-          <div className="profile-photo-slot">
-            {user.photo ? (
-              <img src={user.photo} alt="" className="profile-photo-slot-img" />
-            ) : (
-              <div className="profile-photo-slot-empty">
-                <span className="profile-photo-slot-emoji">📷</span>
-              </div>
-            )}
-          </div>
-          <div className="profile-photo-slot profile-photo-slot-empty-wrap">
-            <div className="profile-photo-slot-empty">
-              <span className="profile-photo-slot-emoji">＋</span>
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className={`profile-photo-slot ${photos[i] ? '' : 'profile-photo-slot-empty-wrap'}`}
+            >
+              {photos[i] ? (
+                <img src={photoSrc(photos[i])} alt="" className="profile-photo-slot-img" />
+              ) : (
+                <button
+                  type="button"
+                  className="profile-photo-slot-empty profile-photo-slot-add"
+                  onClick={handleAddPhoto}
+                  disabled={uploading || photos.length >= MAX_PHOTOS}
+                  title="Добавить фото"
+                  aria-label="Добавить фото"
+                >
+                  <span className="profile-photo-slot-emoji">＋</span>
+                </button>
+              )}
             </div>
-          </div>
-          <div className="profile-photo-slot profile-photo-slot-empty-wrap">
-            <div className="profile-photo-slot-empty">
-              <span className="profile-photo-slot-emoji">＋</span>
-            </div>
-          </div>
+          ))}
         </div>
-        {!user.photo && (
-          <p className="text-muted" style={{ margin: '10px 0 0' }}>
-            Фото можно добавить в редактировании профиля
+        {photos.length < MAX_PHOTOS && (
+          <p className="text-muted profile-photo-hint">
+            Нажмите ＋, чтобы добавить фото (максимум {MAX_PHOTOS})
           </p>
         )}
       </section>

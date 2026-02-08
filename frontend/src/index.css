@@ -767,6 +767,38 @@ button {
   user-select: none;
 }
 
+.profile-photo-input-hidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  pointer-events: none;
+}
+
+.profile-photo-slot-add {
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: none;
+  border-radius: inherit;
+}
+
+.profile-photo-slot-add:hover:not(:disabled) {
+  color: var(--text);
+  background: rgba(45, 55, 72, 0.04);
+}
+
+.profile-photo-slot-add:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.profile-photo-hint {
+  margin: 10px 0 0;
+}
+
 /* Реферальная программа и Достижения — два блока в ряд */
 .profile-actions-row {
   display: grid;

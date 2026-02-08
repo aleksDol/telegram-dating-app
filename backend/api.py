@@ -156,6 +156,20 @@ def _photo_for_response(user_id: int, photo: str | None) -> str | None:
     return f"/api/photo/user/{user_id}"
 
 
+def _user_photos_list(row: dict) -> list:
+    """Список file_id фото пользователя (из photos JSON или из одного photo)."""
+    raw = row.get("photos")
+    if raw:
+        try:
+            parsed = json.loads(raw)
+            if isinstance(parsed, list):
+                return [str(p) for p in parsed if p]
+        except (json.JSONDecodeError, TypeError):
+            pass
+    single = row.get("photo")
+    return [single] if single and str(single).strip() else []
+
+
 # --- Pydantic models ---
 
 class RegisterBody(BaseModel):
@@ -176,6 +190,7 @@ class UpdateProfileBody(BaseModel):
     city: str | None = None
     relationship_status: str | None = None
     photo: str | None = None
+    photos: list[str] | None = None
     purpose: str | None = None
 
 
@@ -189,6 +204,10 @@ class CreateEventBody(BaseModel):
 
 
 def _row_to_user(row: dict) -> dict:
+    photos_list = _user_photos_list(row)
+    first_photo = photos_list[0] if photos_list else row.get("photo")
+    user_id = row["user_id"]
+    photo_urls = [f"/api/photo/user/{user_id}/{i}" for i in range(len(photos_list))]
     return {
         "user_id": row["user_id"],
         "username": row.get("username"),
@@ -197,7 +216,8 @@ def _row_to_user(row: dict) -> dict:
         "gender": row["gender"],
         "city": row.get("city"),
         "relationship_status": row.get("relationship_status"),
-        "photo": _photo_for_response(row["user_id"], row.get("photo")),
+        "photo": _photo_for_response(user_id, first_photo),
+        "photos": photo_urls,
         "purpose": row.get("purpose") or "куда-то сходить",
         "points": row.get("points", 0),
         "reg_date": row.get("reg_date"),
@@ -214,14 +234,19 @@ def _row_to_user(row: dict) -> dict:
 
 def _row_to_public_user(row: dict) -> dict:
     """Публичный профиль пользователя (для просмотра автора события)."""
+    photos_list = _user_photos_list(row)
+    uid = row["user_id"]
+    first = photos_list[0] if photos_list else row.get("photo")
+    photo_urls = [f"/api/photo/user/{uid}/{i}" for i in range(len(photos_list))]
     return {
-        "user_id": row["user_id"],
+        "user_id": uid,
         "name": row["name"],
         "age": row["age"],
         "gender": row["gender"],
         "city": row.get("city"),
         "relationship_status": row.get("relationship_status"),
-        "photo": _photo_for_response(row["user_id"], row.get("photo")),
+        "photo": _photo_for_response(uid, first),
+        "photos": photo_urls,
         "purpose": row.get("purpose") or "куда-то сходить",
     }
 
@@ -276,40 +301,50 @@ def api_get_user_profile(
     return {"user": _row_to_public_user(row)}
 
 
-@app.get("/api/photo/user/{profile_user_id:int}")
-def api_get_user_photo(profile_user_id: int):
-    """Отдаёт фото пользователя по user_id (из БД хранится file_id, проксируем из Telegram)."""
-    row = execute_query(
-        "SELECT photo FROM users WHERE user_id = ?", (profile_user_id,), fetchone=True
-    )
-    if not row or not row.get("photo"):
-        raise HTTPException(status_code=404, detail="Photo not found")
-    photo = row["photo"].strip()
-    if photo.startswith("data:") or photo.startswith("http"):
-        raise HTTPException(status_code=400, detail="Legacy photo format, use file_id")
+def _stream_photo_by_file_id(file_id: str):
+    """Скачивает фото по file_id из Telegram и возвращает StreamingResponse."""
     token = (config.BOT_TOKEN or "").strip()
     if not token:
         raise HTTPException(status_code=503, detail="Bot not configured")
+    r = requests.get(
+        f"https://api.telegram.org/bot{token}/getFile",
+        params={"file_id": file_id},
+        timeout=10,
+    )
+    r.raise_for_status()
+    data = r.json()
+    if not data.get("ok"):
+        raise HTTPException(status_code=404, detail="File not found")
+    file_path = data.get("result", {}).get("file_path")
+    if not file_path:
+        raise HTTPException(status_code=404, detail="File path not found")
+    file_url = f"https://api.telegram.org/file/bot{token}/{file_path}"
+    resp = requests.get(file_url, timeout=15, stream=True)
+    resp.raise_for_status()
+    return StreamingResponse(
+        resp.iter_content(chunk_size=8192),
+        media_type=resp.headers.get("content-type", "image/jpeg"),
+    )
+
+
+@app.get("/api/photo/user/{profile_user_id:int}")
+@app.get("/api/photo/user/{profile_user_id:int}/{photo_index:int}")
+def api_get_user_photo(profile_user_id: int, photo_index: int | None = None):
+    """Отдаёт фото пользователя: без индекса — первое; с индексом — фото по слоту (0, 1, 2)."""
+    row = execute_query(
+        "SELECT photo, photos FROM users WHERE user_id = ?", (profile_user_id,), fetchone=True
+    )
+    if not row:
+        raise HTTPException(status_code=404, detail="User not found")
+    photos_list = _user_photos_list(row)
+    idx = 0 if photo_index is None else photo_index
+    if idx < 0 or idx >= len(photos_list):
+        raise HTTPException(status_code=404, detail="Photo not found")
+    photo = photos_list[idx].strip()
+    if photo.startswith("data:") or photo.startswith("http"):
+        raise HTTPException(status_code=400, detail="Legacy photo format, use file_id")
     try:
-        r = requests.get(
-            f"https://api.telegram.org/bot{token}/getFile",
-            params={"file_id": photo},
-            timeout=10,
-        )
-        r.raise_for_status()
-        data = r.json()
-        if not data.get("ok"):
-            raise HTTPException(status_code=404, detail="File not found")
-        file_path = data.get("result", {}).get("file_path")
-        if not file_path:
-            raise HTTPException(status_code=404, detail="File path not found")
-        file_url = f"https://api.telegram.org/file/bot{token}/{file_path}"
-        resp = requests.get(file_url, timeout=15, stream=True)
-        resp.raise_for_status()
-        return StreamingResponse(
-            resp.iter_content(chunk_size=8192),
-            media_type=resp.headers.get("content-type", "image/jpeg"),
-        )
+        return _stream_photo_by_file_id(photo)
     except requests.RequestException:
         raise HTTPException(status_code=502, detail="Failed to fetch photo")
 
@@ -377,7 +412,31 @@ def api_update_profile(body: UpdateProfileBody, user_id: int = Depends(get_user_
         updates.append("city = ?"); params.append(body.city)
     if body.relationship_status is not None:
         updates.append("relationship_status = ?"); params.append(body.relationship_status)
-    if body.photo is not None:
+    if body.photos is not None:
+        current_list = _user_photos_list(row)
+        new_file_ids = []
+        for p in (body.photos or [])[:3]:
+            p = (p or "").strip()
+            if not p:
+                continue
+            if p.lower().startswith("data:"):
+                file_id = _upload_photo_to_telegram(user_id, p)
+                new_file_ids.append(file_id or p)
+            elif f"/api/photo/user/{user_id}/" in p:
+                parts = p.rstrip("/").split("/")
+                try:
+                    idx = int(parts[-1])
+                    if 0 <= idx < len(current_list):
+                        new_file_ids.append(current_list[idx])
+                except (ValueError, IndexError):
+                    pass
+            else:
+                new_file_ids.append(p)
+        photos_json = json.dumps(new_file_ids)
+        first_photo = new_file_ids[0] if new_file_ids else None
+        updates.append("photos = ?"); params.append(photos_json)
+        updates.append("photo = ?"); params.append(first_photo or row.get("photo"))
+    elif body.photo is not None:
         photo_value = body.photo.strip()
         if photo_value.startswith("/api/photo/"):
             photo_value = None
