@@ -77,7 +77,7 @@ class Database:
                 )
             """)
 
-            cursor.execute("""
+                cursor.execute("""
                 CREATE TABLE IF NOT EXISTS events (
                     id SERIAL PRIMARY KEY,
                     user_id BIGINT REFERENCES users(user_id),
@@ -92,7 +92,7 @@ class Database:
                 )
             """)
 
-            cursor.execute("""
+                cursor.execute("""
                 CREATE TABLE IF NOT EXISTS likes (
                     id SERIAL PRIMARY KEY,
                     from_user BIGINT,
@@ -103,21 +103,21 @@ class Database:
                     response TEXT DEFAULT NULL
                 )
             """)
-            try:
-                cursor.execute("SAVEPOINT before_alter_likes_response")
-                cursor.execute("ALTER TABLE likes ADD COLUMN response TEXT DEFAULT NULL")
-                cursor.execute("RELEASE SAVEPOINT before_alter_likes_response")
-            except Exception:
                 try:
-                    cursor.execute("ROLLBACK TO SAVEPOINT before_alter_likes_response")
+                    cursor.execute("SAVEPOINT before_alter_likes_response")
+                    cursor.execute("ALTER TABLE likes ADD COLUMN response TEXT DEFAULT NULL")
+                    cursor.execute("RELEASE SAVEPOINT before_alter_likes_response")
                 except Exception:
-                    pass  # колонка уже есть или savepoint не создан
-            try:
-                cursor.execute("ALTER TABLE users ADD COLUMN photos TEXT DEFAULT '[]'")
-            except Exception:
-                pass  # колонка уже есть
+                    try:
+                        cursor.execute("ROLLBACK TO SAVEPOINT before_alter_likes_response")
+                    except Exception:
+                        pass  # колонка уже есть или savepoint не создан
+                try:
+                    cursor.execute("ALTER TABLE users ADD COLUMN photos TEXT DEFAULT '[]'")
+                except Exception:
+                    pass  # колонка уже есть
 
-            cursor.execute("""
+                cursor.execute("""
                 CREATE TABLE IF NOT EXISTS achievements (
                     id SERIAL PRIMARY KEY,
                     user_id BIGINT REFERENCES users(user_id),
@@ -126,7 +126,7 @@ class Database:
                 )
             """)
 
-            cursor.execute("""
+                cursor.execute("""
                 CREATE TABLE IF NOT EXISTS user_preferences (
                     user_id BIGINT PRIMARY KEY REFERENCES users(user_id),
                     liked_categories TEXT DEFAULT '[]',
@@ -135,7 +135,7 @@ class Database:
                 )
             """)
 
-            cursor.execute("""
+                cursor.execute("""
                 CREATE TABLE IF NOT EXISTS admin_broadcasts (
                     id SERIAL PRIMARY KEY,
                     admin_id BIGINT,
@@ -152,7 +152,7 @@ class Database:
                 )
             """)
 
-            cursor.execute("""
+                cursor.execute("""
                 CREATE TABLE IF NOT EXISTS admin_logs (
                     id SERIAL PRIMARY KEY,
                     admin_id BIGINT,
@@ -162,7 +162,7 @@ class Database:
                 )
             """)
 
-            cursor.execute("""
+                cursor.execute("""
                 CREATE TABLE IF NOT EXISTS bans (
                     id SERIAL PRIMARY KEY,
                     user_id BIGINT UNIQUE,
@@ -173,7 +173,7 @@ class Database:
                 )
             """)
 
-            cursor.execute("""
+                cursor.execute("""
                 CREATE TABLE IF NOT EXISTS reports (
                     id SERIAL PRIMARY KEY,
                     reporter_id BIGINT REFERENCES users(user_id),
@@ -186,7 +186,7 @@ class Database:
                     appeal_status TEXT DEFAULT 'none',
                     appeal_text TEXT
                 )
-            """)
+                """)
             finally:
                 conn.autocommit = old_autocommit
 
