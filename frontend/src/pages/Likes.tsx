@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { api, isApiConfigured, API_BASE } from '../api/client'
 import Logo from '../components/Logo'
@@ -147,18 +147,11 @@ export default function Likes() {
                       </p>
                     </div>
                   )}
-                  <Link
-                    to={item.user ? `/profile/${item.user.user_id}` : '#'}
-                    state={{ fromLikes: true }}
-                    className="event-card-author"
-                    style={{ marginBottom: 8, textDecoration: 'none', color: 'inherit' }}
-                    onClick={(e) => !item.user && e.preventDefault()}
-                  >
+                  <div className="event-card-author" style={{ marginBottom: 8 }}>
                     <button
                       type="button"
                       className="event-author-avatar-wrap event-author-avatar-btn"
                       onClick={(e) => {
-                        e.preventDefault()
                         e.stopPropagation()
                         const urls = userPhotosForViewer(item.user?.photo, item.user?.photos)
                         if (urls.length) setPhotoViewerPhotos(urls)
@@ -173,15 +166,35 @@ export default function Likes() {
                         </div>
                       )}
                     </button>
-                    <div className="event-author-info">
+                    <div
+                      className="event-author-info event-author-info-clickable"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => item.user && navigate(`/profile/${item.user.user_id}`, { state: { fromLikes: true } })}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          item.user && navigate(`/profile/${item.user.user_id}`, { state: { fromLikes: true } })
+                        }
+                      }}
+                      aria-label="Открыть профиль"
+                    >
                       <span className="event-author-name">{item.user?.name ?? 'Пользователь'}</span>
                       <span className="event-author-meta">
                         {item.user?.age} · {item.user?.city ?? '—'}
                         {item.user?.username ? ` · @${item.user.username}` : ''}
                       </span>
+                      <span className="event-author-arrow">→</span>
                     </div>
-                    <span className="event-author-arrow">→</span>
-                  </Link>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    style={{ marginTop: 8, width: '100%' }}
+                    onClick={() => item.user && navigate(`/profile/${item.user.user_id}`, { state: { fromLikes: true } })}
+                  >
+                    Открыть профиль
+                  </button>
                   <a
                     href={telegramChatLink(item.user_id, item.user?.username)}
                     target="_blank"
@@ -228,18 +241,11 @@ export default function Likes() {
                       </div>
                     )}
                   </div>
-                  <Link
-                    to={item.liker ? `/profile/${item.liker.user_id}` : '#'}
-                    state={{ fromLikes: true }}
-                    className="event-card-author"
-                    style={{ marginBottom: 12, textDecoration: 'none', color: 'inherit' }}
-                    onClick={(e) => !item.liker && e.preventDefault()}
-                  >
+                  <div className="event-card-author" style={{ marginBottom: 12 }}>
                     <button
                       type="button"
                       className="event-author-avatar-wrap event-author-avatar-btn"
                       onClick={(e) => {
-                        e.preventDefault()
                         e.stopPropagation()
                         const urls = userPhotosForViewer(item.liker?.photo, item.liker?.photos)
                         if (urls.length) setPhotoViewerPhotos(urls)
@@ -254,7 +260,19 @@ export default function Likes() {
                         </div>
                       )}
                     </button>
-                    <div className="event-author-info">
+                    <div
+                      className="event-author-info event-author-info-clickable"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => item.liker && navigate(`/profile/${item.liker.user_id}`, { state: { fromLikes: true } })}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          item.liker && navigate(`/profile/${item.liker.user_id}`, { state: { fromLikes: true } })
+                        }
+                      }}
+                      aria-label="Открыть профиль"
+                    >
                       <span className="event-author-name">{item.liker?.name ?? 'Пользователь'}</span>
                       <span className="event-author-meta">
                         {item.liker?.age} · {item.liker?.city ?? '—'}
@@ -262,9 +280,17 @@ export default function Likes() {
                       <p className="text-muted" style={{ margin: '4px 0 0', fontSize: 12 }}>
                         Контакт (ник) виден после взаимности
                       </p>
+                      <span className="event-author-arrow">→</span>
                     </div>
-                    <span className="event-author-arrow">→</span>
-                  </Link>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    style={{ marginTop: 8, width: '100%' }}
+                    onClick={() => item.liker && navigate(`/profile/${item.liker.user_id}`, { state: { fromLikes: true } })}
+                  >
+                    Открыть профиль
+                  </button>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <button
                       type="button"

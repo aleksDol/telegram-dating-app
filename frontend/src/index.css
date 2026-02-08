@@ -1571,6 +1571,19 @@ button {
   flex: 1;
   min-width: 0;
 }
+.event-author-info-clickable {
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  padding: 2px 4px;
+  margin: -2px -4px;
+}
+.event-author-info-clickable:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.event-author-info-clickable:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.1);
+}
 .event-author-name {
   font-weight: 600;
   font-size: 0.95rem;
