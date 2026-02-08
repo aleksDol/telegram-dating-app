@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Админ-панель</title>
-    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="/admin/admin.css">
 </head>
 <body>
     <div id="app">
@@ -12,22 +12,22 @@
             <div class="login-card">
                 <h1>Вход в админ-панель</h1>
                 <p class="hint">Введите логин, пароль и токен из .env</p>
-                <form id="login-form">
+                <form id="login-form" action="javascript:void(0)" method="post">
                     <label>
                         <span>Логин</span>
-                        <input type="text" name="login" autocomplete="username" required>
+                        <input type="text" name="login" id="input-login" autocomplete="username" required>
                     </label>
                     <label>
                         <span>Пароль</span>
-                        <input type="password" name="password" autocomplete="current-password" required>
+                        <input type="password" name="password" id="input-password" autocomplete="current-password" required>
                     </label>
                     <label>
                         <span>Токен</span>
-                        <input type="password" name="token" autocomplete="off" required>
+                        <input type="password" name="token" id="input-token" autocomplete="off" required>
                     </label>
-                    <button type="submit">Войти</button>
+                    <button type="submit" id="login-btn">Войти</button>
                 </form>
-                <p id="login-error" class="error hidden"></p>
+                <div id="login-error" class="error-box hidden" role="alert"></div>
             </div>
         </div>
 
@@ -68,6 +68,6 @@
             </section>
         </div>
     </div>
-    <script src="admin.js"></script>
+    <script src="/admin/admin.js"></script>
 </body>
 </html>

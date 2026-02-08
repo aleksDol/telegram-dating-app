@@ -97,14 +97,24 @@ body {
     background: #5558e3;
 }
 
-.error {
+.error,
+.error-box {
     margin-top: 1rem;
+    padding: 0.75rem 1rem;
     font-size: 0.875rem;
     color: #f87171;
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-radius: 8px;
 }
 
-.error.hidden {
+.error.hidden,
+.error-box.hidden {
     display: none;
+}
+
+.error-box:not(.hidden) {
+    display: block;
 }
 
 /* Dashboard */

@@ -18,17 +18,22 @@
             ...(options.headers || {}),
         };
         if (token) headers["Authorization"] = "Bearer " + token;
-        const res = await fetch(API_PREFIX + path, { ...options, headers });
+        let res;
+        try {
+            res = await fetch(API_PREFIX + path, { ...options, headers });
+        } catch (err) {
+            throw new Error(err.message || "Сеть недоступна");
+        }
+        const body = await res.json().catch(() => ({}));
         if (res.status === 401) {
             setToken(null);
             showLogin();
-            throw new Error("Сессия истекла");
+            throw new Error(body.detail || "Сессия истекла");
         }
         if (!res.ok) {
-            const err = await res.json().catch(() => ({ detail: res.statusText }));
-            throw new Error(err.detail || res.statusText);
+            throw new Error(body.detail || res.statusText || "Ошибка сервера");
         }
-        return res.json();
+        return body;
     }
 
     function showLogin() {
@@ -48,22 +53,42 @@
     // Login form
     document.getElementById("login-form").addEventListener("submit", async (e) => {
         e.preventDefault();
+        e.stopPropagation();
         const errEl = document.getElementById("login-error");
+        const btn = document.getElementById("login-btn");
         errEl.classList.add("hidden");
+        errEl.textContent = "";
         const form = e.target;
-        const login = form.login.value.trim();
-        const password = form.password.value.trim();
-        const token = form.token.value.trim();
+        const login = (form.login || document.getElementById("input-login")).value.trim();
+        const password = (form.password || document.getElementById("input-password")).value.trim();
+        const token = (form.token || document.getElementById("input-token")).value.trim();
+        if (!login || !password || !token) {
+            errEl.textContent = "Заполните все поля";
+            errEl.classList.remove("hidden");
+            return;
+        }
+        btn.disabled = true;
+        btn.textContent = "Вход…";
         try {
             const data = await api("/auth", {
                 method: "POST",
                 body: JSON.stringify({ login, password, token }),
             });
+            if (!data || !data.access_token) {
+                throw new Error("Сервер не вернул токен");
+            }
             setToken(data.access_token);
             showDashboard();
         } catch (err) {
-            errEl.textContent = err.message || "Ошибка входа";
+            let msg = err.message || "Ошибка входа";
+            if (msg.indexOf("fetch") !== -1 || msg === "Failed to fetch" || msg.indexOf("NetworkError") !== -1) {
+                msg = "Не удалось подключиться к серверу. Убедитесь, что бэкенд запущен и админка открыта с того же домена (например https://ваш-домен.ru/admin или http://localhost:8080/admin).";
+            }
+            errEl.textContent = msg;
             errEl.classList.remove("hidden");
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "Войти";
         }
     });
 

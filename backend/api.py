@@ -993,7 +993,7 @@ def admin_api_auth(body: AdminLoginBody):
     if not all([config.LOGIN_ADMIN, config.PASSWORD_ADMIN, config.TOKEN_ADMIN]):
         raise HTTPException(status_code=503, detail="Admin credentials not configured")
     if login != config.LOGIN_ADMIN or password != config.PASSWORD_ADMIN or token != config.TOKEN_ADMIN:
-        raise HTTPException(status_code=401, detail="Invalid login, password or token")
+        raise HTTPException(status_code=401, detail="Неверный логин, пароль или токен")
     access_token = _admin_issue_token()
     return {"access_token": access_token, "token_type": "bearer"}
 
