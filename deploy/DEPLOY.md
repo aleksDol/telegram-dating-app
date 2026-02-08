@@ -191,7 +191,10 @@ docker compose down -v
 
 ## Возможные проблемы
 
-- **Бот не отвечает:** проверьте `BOT_TOKEN` и логи `docker compose logs backend`.
+- **Бот не отвечает на /start:**  
+  1. Убедитесь, что в `.env` указан **BOT_TOKEN** (токен от @BotFather), без пробелов и кавычек.  
+  2. Проверьте логи: `docker compose logs -f backend` — при отсутствии токена будет сообщение «BOT_TOKEN не задан»; при ошибке БД — трассировка в логах.  
+  3. Перезапустите backend после изменения `.env`: `docker compose up -d --force-recreate backend`.
 - **Ошибка подключения к БД:** дождитесь готовности PostgreSQL (healthcheck), перезапустите: `docker compose restart backend`.
 - **CORS при отдельном домене для API:** задайте `ADDITIONAL_CORS_ORIGINS=https://your-miniapp-domain.com` и при необходимости `VITE_API_URL=https://api.yourdomain.com` при сборке фронта.
 

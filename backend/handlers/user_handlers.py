@@ -1,8 +1,11 @@
 # handlers/user_handlers.py
+import logging
 import telebot
 from datetime import datetime
 import json
 from database import execute_query
+
+logger = logging.getLogger(__name__)
 from config import config
 from keyboards.user_keyboards import (
     get_start_webapp_keyboard,
@@ -39,6 +42,20 @@ class UserHandlers:
         """Обработка команды /start"""
         user_id = message.from_user.id
         chat_id = message.chat.id
+        try:
+            self._handle_start_impl(message, user_id, chat_id)
+        except Exception as e:
+            logger.exception("Ошибка в /start: %s", e)
+            try:
+                self.bot.send_message(
+                    chat_id,
+                    "Произошла ошибка. Попробуйте позже или напишите /start снова.",
+                )
+            except Exception:
+                pass
+
+    def _handle_start_impl(self, message, user_id, chat_id):
+        """Внутренняя реализация /start (без обёртки try)."""
 
         # Проверяем блокировку
         user = execute_query(
@@ -85,8 +102,9 @@ class UserHandlers:
 
         # Обработка реферальной ссылки
         referral_code_param = None
-        if len(message.text.split()) > 1:
-            referral_code_param = message.text.split()[1]
+        text = message.text or ""
+        if len(text.split()) > 1:
+            referral_code_param = text.split()[1]
 
         if referral_code_param and referral_code_param.startswith('REF_'):
             referrer = execute_query(

@@ -35,9 +35,13 @@ def run_api():
 
 def run_bot():
     """Запуск Telegram-бота в текущем потоке."""
-    from bot import DatingBot
-    bot = DatingBot()
-    bot.run()
+    try:
+        from bot import DatingBot
+        bot = DatingBot()
+        bot.run()
+    except Exception as e:
+        logging.getLogger(__name__).exception("Бот завершился с ошибкой: %s", e)
+        raise
 
 
 def main():

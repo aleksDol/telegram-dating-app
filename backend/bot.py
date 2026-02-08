@@ -1,4 +1,5 @@
 # bot.py
+import logging
 import telebot
 from config import config
 from handlers.user_handlers import UserHandlers
@@ -8,10 +9,17 @@ from handlers.callback_handlers import CallbackHandler
 from database import db
 from services.admin import AdminService
 
+logger = logging.getLogger(__name__)
+
 
 class DatingBot:
     def __init__(self):
-        self.bot = telebot.TeleBot(config.BOT_TOKEN)
+        token = config.BOT_TOKEN
+        if not token or not str(token).strip():
+            raise ValueError(
+                "BOT_TOKEN не задан. Укажите BOT_TOKEN в .env или переменных окружения (токен от @BotFather)."
+            )
+        self.bot = telebot.TeleBot(token)
         # Общие состояния между callback и текстовыми сообщениями
         shared_user_state = {}
         shared_user_data = {}
