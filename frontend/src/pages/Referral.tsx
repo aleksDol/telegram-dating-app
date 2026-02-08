@@ -9,6 +9,7 @@ export default function Referral() {
   const [referralCode, setReferralCode] = useState('')
   const [referralsCount, setReferralsCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     fetchUser()
@@ -38,8 +39,16 @@ export default function Referral() {
 
   if (!user) return null
 
-  const botUsername = import.meta.env.VITE_BOT_USERNAME || (window as unknown as { __BOT_USERNAME?: string }).__BOT_USERNAME || 'YourBot'
+  const botUsername = import.meta.env.VITE_BOT_USERNAME || (window as unknown as { __BOT_USERNAME?: string }).__BOT_USERNAME || 'Spontime_bot'
   const link = `https://t.me/${botUsername}?start=${referralCode}`
+
+  const copyLink = () => {
+    if (!link) return
+    navigator.clipboard.writeText(link).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
 
   return (
     <>
@@ -62,7 +71,17 @@ export default function Referral() {
       <div className="card">
         <h2 className="section-title">Как приглашать</h2>
         <p className="card-desc">Отправьте друзьям ссылку. После регистрации по ссылке вы оба получите бонусные очки.</p>
-        {referralCode && <p className="referral-link">{link}</p>}
+        {referralCode && (
+          <button
+            type="button"
+            className="referral-link referral-link-btn"
+            onClick={copyLink}
+            title="Нажмите, чтобы скопировать"
+          >
+            {link}
+            {copied && <span className="referral-copied">Скопировано!</span>}
+          </button>
+        )}
       </div>
     </>
   )
