@@ -1,6 +1,8 @@
-# Stage 1: сборка
-# При лимите Docker Hub: docker login или переопределите образ: --build-arg NODE_IMAGE=...
+# Базовые образы: при лимите Docker Hub — docker login или --build-arg NODE_IMAGE=... NGINX_IMAGE=...
 ARG NODE_IMAGE=node:20-alpine
+ARG NGINX_IMAGE=nginx:alpine
+
+# Stage 1: сборка
 FROM ${NODE_IMAGE} AS builder
 
 WORKDIR /app
@@ -17,7 +19,6 @@ ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # Stage 2: раздача статики + nginx (прокси /api на backend)
-ARG NGINX_IMAGE=nginx:alpine
 FROM ${NGINX_IMAGE}
 
 COPY --from=builder /app/dist /usr/share/nginx/html
