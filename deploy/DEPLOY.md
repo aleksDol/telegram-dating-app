@@ -165,11 +165,27 @@ MINI_APP_URL=https://yourdomain.com
 
 ## 7. Обновление проекта
 
+### Обычное обновление (код + Docker)
+
 ```bash
-cd ~/telegram-dating-app
+cd ~/telegram-dating-app   # или ваш путь к проекту
 git pull
 docker compose up -d --build
 ```
+
+- **Конфиг nginx внутри Docker** (`frontend/nginx.conf`) обновляется сам: при `--build` пересобирается образ frontend, в нём уже новый конфиг. Перезапускать nginx на хосте не нужно.
+- **Файл в репозитории** `deploy/nginx-default-full.conf` тоже обновится при `git pull`, но это только шаблон в репо.
+
+### Если у вас Nginx на хосте (HTTPS, прокси на Docker)
+
+Реальный конфиг Nginx на сервере — это `/etc/nginx/sites-available/default`. Он **не** подтягивается из git и **не** перезапускается при `docker compose up`. После `git pull` нужно вручную скопировать шаблон и перезагрузить Nginx (например, после обновления лимита загрузки фото `client_max_body_size`):
+
+```bash
+sudo cp ~/telegram-dating-app/deploy/nginx-default-full.conf /etc/nginx/sites-available/default
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Путь `~/telegram-dating-app` замените на путь к проекту на вашем VPS.
 
 ## 8. Остановка и удаление
 

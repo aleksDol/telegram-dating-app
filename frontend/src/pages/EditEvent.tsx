@@ -5,6 +5,7 @@ import { api, isApiConfigured, API_BASE } from '../api/client'
 import { getDemoEventById } from '../demoData'
 import { CATEGORY_KEYS, TARGET_GENDERS } from '../constants'
 import type { Event as EventType } from '../types'
+import { compressImageForUpload } from '../utils/imageResize'
 
 function eventPhotoSrc(url: string | undefined): string {
   if (!url) return ''
@@ -109,12 +110,7 @@ export default function EditEvent() {
     try {
       let photoToSend: string | undefined
       if (photoFile) {
-        photoToSend = await new Promise<string>((resolve, reject) => {
-          const r = new FileReader()
-          r.onload = () => resolve(r.result as string)
-          r.onerror = () => reject(new Error('Не удалось прочитать фото'))
-          r.readAsDataURL(photoFile)
-        })
+        photoToSend = await compressImageForUpload(photoFile)
       }
       await api.updateEvent(event.id, {
         title: title.trim(),

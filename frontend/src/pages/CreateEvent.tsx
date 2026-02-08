@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { api, isApiConfigured } from '../api/client'
 import { CATEGORY_KEYS, TARGET_GENDERS } from '../constants'
+import { compressImageForUpload } from '../utils/imageResize'
 
 export default function CreateEvent() {
   const navigate = useNavigate()
@@ -44,12 +45,7 @@ export default function CreateEvent() {
     try {
       let photoDataUrl: string | undefined
       if (photoFile) {
-        photoDataUrl = await new Promise<string>((resolve, reject) => {
-          const r = new FileReader()
-          r.onload = () => resolve(r.result as string)
-          r.onerror = () => reject(new Error('Не удалось прочитать фото'))
-          r.readAsDataURL(photoFile)
-        })
+        photoDataUrl = await compressImageForUpload(photoFile)
       }
       await api.createEvent({
         title: title.trim(),
