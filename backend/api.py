@@ -46,6 +46,16 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def add_no_cache_headers(request, call_next):
+    """Запрещаем кеширование ответов API — данные должны быть актуальными."""
+    response = await call_next(request)
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
 def validate_init_data(init_data: str) -> dict | None:
     """Проверка initData от Telegram Web App. Возвращает распарсенные данные или None."""
     token = (config.BOT_TOKEN or "").strip()

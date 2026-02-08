@@ -87,7 +87,11 @@ async function request<T>(
       (headers as Record<string, string>)['X-Dev-User-Id'] = devUserId
     }
   }
-  const res = await fetch(url, { ...options, headers })
+  if (options.method === undefined || options.method === 'GET') {
+    (headers as Record<string, string>)['Cache-Control'] = 'no-cache'
+    ;(headers as Record<string, string>)['Pragma'] = 'no-cache'
+  }
+  const res = await fetch(url, { ...options, headers, cache: 'no-store' })
   if (!res.ok) {
     const err = await res.json().catch(() => ({})) as { detail?: string | { msg?: string }[] }
     const detail = err.detail
