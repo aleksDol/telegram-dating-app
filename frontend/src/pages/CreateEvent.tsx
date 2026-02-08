@@ -9,8 +9,7 @@ export default function CreateEvent() {
   const { user, fetchUser } = useApp()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [eventDate, setEventDate] = useState('')
-  const [eventTime, setEventTime] = useState('')
+  const [eventDateTime, setEventDateTime] = useState('')
   const [targetGender, setTargetGender] = useState('Все')
   const [category, setCategory] = useState('')
   const [city, setCity] = useState('')
@@ -32,8 +31,8 @@ export default function CreateEvent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim() || !description.trim() || !eventDate || !eventTime || !city) {
-      setError('Заполните название, описание, дату, время и город')
+    if (!title.trim() || !description.trim() || !eventDateTime || !city) {
+      setError('Заполните название, описание, дату и время, город')
       return
     }
     if (!isApiConfigured()) {
@@ -55,7 +54,7 @@ export default function CreateEvent() {
       await api.createEvent({
         title: title.trim(),
         description: description.trim(),
-        event_date: `${eventDate}T${eventTime}`,
+        event_date: eventDateTime,
         target_gender: targetGender,
         city,
         category: category || undefined,
@@ -115,22 +114,18 @@ export default function CreateEvent() {
         </label>
 
         <label className="label">Дата и время</label>
-        <div className="input-date-time-row">
-          <input
-            className="input"
-            type="date"
-            value={eventDate}
-            onChange={(e) => setEventDate(e.target.value)}
-            required
-          />
-          <input
-            className="input"
-            type="time"
-            value={eventTime}
-            onChange={(e) => setEventTime(e.target.value)}
-            required
-          />
-        </div>
+        <input
+          className="input input-datetime"
+          type="datetime-local"
+          value={eventDateTime}
+          onChange={(e) => setEventDateTime(e.target.value)}
+          min={(() => {
+            const d = new Date()
+            d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
+            return d.toISOString().slice(0, 16)
+          })()}
+          required
+        />
 
         <label className="label">Для кого</label>
         <select

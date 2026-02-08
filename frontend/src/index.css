@@ -1,8 +1,8 @@
 /* ===== Design system: романтичный светлый макет ===== */
 :root {
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-heading: 'Inter', var(--font);
-  --font-logo: 'Dancing Script', cursive;
+  --font: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Inter', 'Segoe UI', var(--font);
+  --font-logo: 'Dancing Script', 'Comic Sans MS', cursive;
   /* Фон светлый */
   --bg: #F8F9FA;
   --bg-card: #ffffff;
@@ -85,14 +85,20 @@
 .stagger-5 { animation-delay: 0.33s; }
 .stagger-6 { animation-delay: 0.4s; }
 
+html {
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 html, body, #root {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  font-family: var(--font);
+  font-family: var(--font) !important;
   background: var(--bg);
   color: var(--text);
-  -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 
@@ -2120,10 +2126,17 @@ button {
 }
 
 .create-event-page .form-create input[type="date"],
-.create-event-page .form-create input[type="time"] {
+.create-event-page .form-create input[type="time"],
+.create-event-page .form-create input[type="datetime-local"],
+.input-datetime {
   min-width: 0 !important;
   max-width: 100% !important;
   font-size: 16px;
+  font-family: var(--font);
+  cursor: pointer;
+}
+.create-event-page .form-create .input-datetime {
+  width: 100%;
 }
 
 /* Кнопка «Создать встречу»: градиент как на главной/логотипе + отступ снизу */
@@ -2399,9 +2412,25 @@ select.input {
 }
 
 .home-hero .app-logo-text {
+  font-family: var(--font-logo);
   color: #fff;
   -webkit-text-fill-color: #fff;
   background: none;
+}
+
+.home-hero,
+.home-quick-actions,
+.home-stats-cols,
+.home-cta,
+.home-recommendations {
+  font-family: var(--font);
+}
+.home-quick-btn,
+.home-stat-col,
+.home-cta-title,
+.home-cta-steps li,
+.home-rec-card {
+  font-family: var(--font-heading);
 }
 
 /* Быстрые действия — 2 кнопки (градиенты и тени) */
