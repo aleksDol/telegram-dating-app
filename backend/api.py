@@ -163,7 +163,9 @@ def _user_photos_list(row: dict) -> list:
         try:
             parsed = json.loads(raw)
             if isinstance(parsed, list):
-                return [str(p) for p in parsed if p]
+                result = [str(p) for p in parsed if p]
+                if result:
+                    return result
         except (json.JSONDecodeError, TypeError):
             pass
     single = row.get("photo")
@@ -422,14 +424,18 @@ def api_update_profile(body: UpdateProfileBody, user_id: int = Depends(get_user_
             if p.lower().startswith("data:"):
                 file_id = _upload_photo_to_telegram(user_id, p)
                 new_file_ids.append(file_id or p)
-            elif f"/api/photo/user/{user_id}/" in p:
+            elif f"/api/photo/user/{user_id}" in p:
+                # URL с индексом: /api/photo/user/123/0 или без индекса: /api/photo/user/123
                 parts = p.rstrip("/").split("/")
-                try:
-                    idx = int(parts[-1])
-                    if 0 <= idx < len(current_list):
-                        new_file_ids.append(current_list[idx])
-                except (ValueError, IndexError):
-                    pass
+                # Если в пути 6 частей (..., user, id, index) — последняя это индекс; иначе 0
+                idx = 0
+                if len(parts) >= 6 and parts[-1].isdigit():
+                    try:
+                        idx = int(parts[-1])
+                    except ValueError:
+                        pass
+                if 0 <= idx < len(current_list):
+                    new_file_ids.append(current_list[idx])
             else:
                 new_file_ids.append(p)
         photos_json = json.dumps(new_file_ids)

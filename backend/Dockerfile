@@ -1,5 +1,7 @@
 # Telegram Dating App — Backend (FastAPI + Bot)
-FROM python:3.12-slim
+# При лимите Docker Hub: docker login или --build-arg PYTHON_IMAGE=...
+ARG PYTHON_IMAGE=python:3.12-slim
+FROM ${PYTHON_IMAGE}
 
 WORKDIR /app
 
