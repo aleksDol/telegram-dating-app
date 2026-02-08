@@ -204,12 +204,12 @@
                 items: [{ label: "В системе", value: s.total_points }],
             },
         ];
-        let html = "";
+        var html = "";
         sections.forEach(function (sec) {
-            html += '<div class="stats-section"><h3 class="stats-section-title">' + escapeHtml(sec.title) + "</h3><div class="stats-section-cards">";
+            html += "<div class=\"stats-section\"><h3 class=\"stats-section-title\">" + escapeHtml(sec.title) + "</h3><div class=\"stats-section-cards\">";
             sec.items.forEach(function (i) {
-                const val = i.value != null ? Number(i.value).toLocaleString("ru") : "—";
-                html += '<div class="stat-card"><div class="label">' + escapeHtml(i.label) + '</div><div class="value">' + val + "</div></div>";
+                var val = i.value != null ? Number(i.value).toLocaleString("ru") : "—";
+                html += "<div class=\"stat-card\"><div class=\"label\">" + escapeHtml(i.label) + "</div><div class=\"value\">" + val + "</div></div>";
             });
             html += "</div></div>";
         });
