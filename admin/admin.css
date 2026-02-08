@@ -220,11 +220,31 @@ body {
     display: none;
 }
 
+.loading .error-msg {
+    color: #f87171;
+    font-size: 0.95rem;
+}
+
 /* Stats */
 .stats-grid {
+    max-width: 900px;
+}
+
+.stats-section {
+    margin-bottom: 1.75rem;
+}
+
+.stats-section-title {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #a5b4fc;
+}
+
+.stats-section-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.75rem;
 }
 
 .stat-card {

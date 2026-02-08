@@ -21,99 +21,92 @@ class AdminService:
         )
 
     @staticmethod
+    def _count(query, params=None):
+        """Безопасно возвращает count из fetchone (0 если нет строки)."""
+        row = execute_query(query, params or (), fetchone=True)
+        return (row.get("count") or 0) if row else 0
+
+    @staticmethod
+    def _total(query, params=None):
+        """Безопасно возвращает total/sum из fetchone (0 если нет строки или NULL)."""
+        row = execute_query(query, params or (), fetchone=True)
+        return (row.get("total") or 0) if row else 0
+
+    @staticmethod
     def get_admin_stats():
         """Получает полную статистику для админ-панели"""
         stats = {}
 
-        stats['total_users'] = execute_query(
-            "SELECT COUNT(*) as count FROM users WHERE is_banned = FALSE", fetchone=True
-        )['count']
-
-        stats['banned_users'] = execute_query(
-            "SELECT COUNT(*) as count FROM users WHERE is_banned = TRUE", fetchone=True
-        )['count']
-
+        stats['total_users'] = AdminService._count(
+            "SELECT COUNT(*) as count FROM users WHERE is_banned = FALSE"
+        )
+        stats['banned_users'] = AdminService._count(
+            "SELECT COUNT(*) as count FROM users WHERE is_banned = TRUE"
+        )
         stats['gender_stats'] = execute_query(
             "SELECT gender, COUNT(*) as count FROM users WHERE is_banned = FALSE GROUP BY gender",
             fetchall=True
-        )
+        ) or []
 
         today = datetime.now().strftime("%Y-%m-%d")
-        stats['new_users_today'] = execute_query(
+        stats['new_users_today'] = AdminService._count(
             "SELECT COUNT(*) as count FROM users WHERE DATE(reg_date::timestamp) = ? AND is_banned = FALSE",
-            (today,), fetchone=True
-        )['count']
+            (today,)
+        )
 
         week_ago = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
-        stats['active_users_week'] = execute_query(
+        stats['active_users_week'] = AdminService._count(
             "SELECT COUNT(*) as count FROM users WHERE last_active >= ? AND is_banned = FALSE",
-            (week_ago,), fetchone=True
-        )['count']
+            (week_ago,)
+        )
 
-        stats['total_events'] = execute_query(
-            "SELECT COUNT(*) as count FROM events WHERE is_hidden = FALSE", fetchone=True
-        )['count']
+        stats['total_events'] = AdminService._count(
+            "SELECT COUNT(*) as count FROM events WHERE is_hidden = FALSE"
+        )
+        stats['active_events'] = AdminService._count(
+            "SELECT COUNT(*) as count FROM events WHERE event_date > NOW() AND is_hidden = FALSE"
+        )
+        stats['hidden_events'] = AdminService._count(
+            "SELECT COUNT(*) as count FROM events WHERE is_hidden = TRUE"
+        )
 
-        stats['active_events'] = execute_query(
-            "SELECT COUNT(*) as count FROM events WHERE event_date > NOW() AND is_hidden = FALSE",
-            fetchone=True
-        )['count']
-
-        stats['hidden_events'] = execute_query(
-            "SELECT COUNT(*) as count FROM events WHERE is_hidden = TRUE",
-            fetchone=True
-        )['count']
-
-        stats['referral_users'] = execute_query(
-            "SELECT COUNT(*) as count FROM users WHERE referred_by IS NOT NULL AND is_banned = FALSE",
-            fetchone=True
-        )['count']
-
-        stats['total_referrals'] = execute_query(
-            "SELECT SUM(referrals_count) as total FROM users WHERE is_banned = FALSE",
-            fetchone=True
-        )['total'] or 0
+        stats['referral_users'] = AdminService._count(
+            "SELECT COUNT(*) as count FROM users WHERE referred_by IS NOT NULL AND is_banned = FALSE"
+        )
+        stats['total_referrals'] = AdminService._total(
+            "SELECT SUM(referrals_count) as total FROM users WHERE is_banned = FALSE"
+        )
 
         stats['top_referrers'] = execute_query(
             "SELECT name, referrals_count FROM users WHERE referrals_count > 0 AND is_banned = FALSE ORDER BY referrals_count DESC LIMIT 5",
             fetchall=True
-        )
-
+        ) or []
         stats['top_cities'] = execute_query(
             "SELECT city, COUNT(*) as count FROM users WHERE city IS NOT NULL AND city != '' AND is_banned = FALSE GROUP BY city ORDER BY count DESC LIMIT 5",
             fetchall=True
+        ) or []
+
+        stats['total_likes'] = AdminService._count("SELECT COUNT(*) as count FROM likes")
+        stats['mutual_likes'] = AdminService._count(
+            "SELECT COUNT(*) as count FROM likes WHERE mutual = TRUE"
+        )
+        stats['total_points'] = AdminService._total(
+            "SELECT SUM(points) as total FROM users WHERE is_banned = FALSE"
         )
 
-        stats['total_likes'] = execute_query(
-            "SELECT COUNT(*) as count FROM likes", fetchone=True
-        )['count']
-
-        stats['mutual_likes'] = execute_query(
-            "SELECT COUNT(*) as count FROM likes WHERE mutual = TRUE", fetchone=True
-        )['count']
-
-        stats['total_points'] = execute_query(
-            "SELECT SUM(points) as total FROM users WHERE is_banned = FALSE", fetchone=True
-        )['total'] or 0
-
-        hour_ago = (datetime.now() - timedelta(hours=1)
-                    ).strftime("%Y-%m-%d %H:%M:%S")
-        stats['online_now'] = execute_query(
+        hour_ago = (datetime.now() - timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S")
+        stats['online_now'] = AdminService._count(
             "SELECT COUNT(*) as count FROM users WHERE last_active >= ? AND is_banned = FALSE",
-            (hour_ago,), fetchone=True
-        )['count']
+            (hour_ago,)
+        )
 
-        stats['total_reports'] = execute_query(
-            "SELECT COUNT(*) as count FROM reports", fetchone=True
-        )['count']
-
-        stats['pending_reports'] = execute_query(
-            "SELECT COUNT(*) as count FROM reports WHERE status = 'pending'", fetchone=True
-        )['count']
-
-        stats['pending_appeals'] = execute_query(
-            "SELECT COUNT(*) as count FROM reports WHERE appeal_status = 'pending'", fetchone=True
-        )['count']
+        stats['total_reports'] = AdminService._count("SELECT COUNT(*) as count FROM reports")
+        stats['pending_reports'] = AdminService._count(
+            "SELECT COUNT(*) as count FROM reports WHERE status = 'pending'"
+        )
+        stats['pending_appeals'] = AdminService._count(
+            "SELECT COUNT(*) as count FROM reports WHERE appeal_status = 'pending'"
+        )
 
         return stats
 

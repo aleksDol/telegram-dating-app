@@ -94,46 +94,77 @@
         const loading = document.getElementById("stats-loading");
         const content = document.getElementById("stats-content");
         loading.classList.remove("hidden");
+        loading.textContent = "Загрузка…";
         content.classList.add("hidden");
+        content.innerHTML = "";
         try {
             const s = await api("/stats");
             loading.classList.add("hidden");
             content.innerHTML = renderStats(s);
             content.classList.remove("hidden");
         } catch (err) {
-            loading.textContent = "Ошибка: " + err.message;
+            loading.classList.remove("hidden");
+            loading.innerHTML = '<span class="error-msg">Ошибка: ' + escapeHtml(err.message) + '</span>';
         }
     }
 
     function renderStats(s) {
-        const items = [
-            { label: "Пользователей", value: s.total_users },
-            { label: "Заблокировано", value: s.banned_users },
-            { label: "Новых сегодня", value: s.new_users_today },
-            { label: "Активных за 7 дней", value: s.active_users_week },
-            { label: "Онлайн сейчас", value: s.online_now },
-            { label: "Событий всего", value: s.total_events },
-            { label: "Активных событий", value: s.active_events },
-            { label: "Скрытых событий", value: s.hidden_events },
-            { label: "Всего лайков", value: s.total_likes },
-            { label: "Взаимных симпатий", value: s.mutual_likes },
-            { label: "Жалоб всего", value: s.total_reports },
-            { label: "Ожидают рассмотрения", value: s.pending_reports },
-            { label: "Ожидают апелляции", value: s.pending_appeals },
-            { label: "Рефералов пришло", value: s.referral_users },
-            { label: "Всего приглашено", value: s.total_referrals },
-            { label: "Баллов в системе", value: s.total_points },
+        const sections = [
+            {
+                title: "Пользователи",
+                items: [
+                    { label: "Всего", value: s.total_users },
+                    { label: "Заблокировано", value: s.banned_users },
+                    { label: "Новых сегодня", value: s.new_users_today },
+                    { label: "Активных за 7 дней", value: s.active_users_week },
+                    { label: "Онлайн сейчас", value: s.online_now },
+                ],
+            },
+            {
+                title: "События",
+                items: [
+                    { label: "Всего", value: s.total_events },
+                    { label: "Активных", value: s.active_events },
+                    { label: "Скрытых", value: s.hidden_events },
+                ],
+            },
+            {
+                title: "Лайки",
+                items: [
+                    { label: "Всего лайков", value: s.total_likes },
+                    { label: "Взаимных симпатий", value: s.mutual_likes },
+                ],
+            },
+            {
+                title: "Жалобы",
+                items: [
+                    { label: "Всего", value: s.total_reports },
+                    { label: "Ожидают рассмотрения", value: s.pending_reports },
+                    { label: "Ожидают апелляции", value: s.pending_appeals },
+                ],
+            },
+            {
+                title: "Рефералы",
+                items: [
+                    { label: "Пришли по ссылкам", value: s.referral_users },
+                    { label: "Всего приглашено", value: s.total_referrals },
+                ],
+            },
+            {
+                title: "Баллы",
+                items: [{ label: "В системе", value: s.total_points }],
+            },
         ];
-        return items
-            .map(
-                (i) =>
-                    '<div class="stat-card"><div class="label">' +
-                    escapeHtml(i.label) +
-                    '</div><div class="value">' +
-                    (i.value != null ? Number(i.value).toLocaleString("ru") : "—") +
-                    "</div></div>"
-            )
-            .join("");
+        let html = "";
+        sections.forEach(function (sec) {
+            html += '<div class="stats-section"><h3 class="stats-section-title">' + escapeHtml(sec.title) + "</h3><div class="stats-section-cards">";
+            sec.items.forEach(function (i) {
+                const val = i.value != null ? Number(i.value).toLocaleString("ru") : "—";
+                html += '<div class="stat-card"><div class="label">' + escapeHtml(i.label) + '</div><div class="value">' + val + "</div></div>";
+            });
+            html += "</div></div>";
+        });
+        return html;
     }
 
     // User search

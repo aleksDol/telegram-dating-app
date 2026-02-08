@@ -998,19 +998,49 @@ def admin_api_auth(body: AdminLoginBody):
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-def _serialize_stats_value(v):
-    """RealDictRow и списки строк в JSON-сериализуемый вид."""
+def _to_json_value(v):
+    """Приводит значение к JSON-сериализуемому виду (Decimal, datetime и т.д.)."""
+    if v is None:
+        return None
+    if isinstance(v, (int, str, bool)):
+        return v
+    if isinstance(v, float):
+        return v
+    try:
+        from decimal import Decimal
+        if isinstance(v, Decimal):
+            return int(v) if v % 1 == 0 else float(v)
+    except Exception:
+        pass
+    if hasattr(v, "isoformat"):  # datetime, date
+        return str(v)
     if isinstance(v, list):
-        return [dict(row) for row in v]
+        return [_serialize_stats_value(x) for x in v]
     if hasattr(v, "keys") and not isinstance(v, dict):
-        return dict(v)
-    return v
+        return {kk: _to_json_value(vv) for kk, vv in dict(v).items()}
+    if isinstance(v, dict):
+        return {kk: _to_json_value(vv) for kk, vv in v.items()}
+    return str(v)
+
+
+def _serialize_stats_value(v):
+    """RealDictRow и списки строк в JSON-серизуемый вид."""
+    if isinstance(v, list):
+        return [_to_json_value(x) for x in v]
+    if hasattr(v, "keys") and not isinstance(v, dict):
+        return {kk: _to_json_value(vv) for kk, vv in dict(v).items()}
+    return _to_json_value(v)
 
 
 @app.get("/admin/api/stats")
 def admin_api_stats(_: None = Depends(get_admin_authorization)):
     """Статистика для админ-панели."""
-    stats = AdminService.get_admin_stats()
+    try:
+        stats = AdminService.get_admin_stats()
+    except Exception as e:
+        import logging
+        logging.getLogger("api").exception("Admin stats failed")
+        raise HTTPException(status_code=500, detail=str(e)) from e
     return {k: _serialize_stats_value(v) for k, v in stats.items()}
 
 
