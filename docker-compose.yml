@@ -38,13 +38,16 @@ services:
       MINI_APP_URL: ${MINI_APP_URL:-}
       ADDITIONAL_CORS_ORIGINS: ${ADDITIONAL_CORS_ORIGINS:-}
       ALLOW_DEV_USER_ID: ${ALLOW_DEV_USER_ID:-0}
+      LOGIN_ADMIN: ${LOGIN_ADMIN:-}
+      PASSWORD_ADMIN: ${PASSWORD_ADMIN:-}
+      TOKEN_ADMIN: ${TOKEN_ADMIN:-}
     expose:
       - "8000"
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
       args:
         # Пустой = тот же origin, nginx проксирует /api на backend
         VITE_API_URL: ${VITE_API_URL:-}

@@ -1,0 +1,368 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #1a1d23;
+    color: #e4e6eb;
+    min-height: 100vh;
+}
+
+#app {
+    min-height: 100vh;
+}
+
+.screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.screen.hidden {
+    display: none;
+}
+
+/* Login */
+#login-screen {
+    background: linear-gradient(145deg, #1a1d23 0%, #252930 100%);
+}
+
+.login-card {
+    width: 100%;
+    max-width: 380px;
+    padding: 2rem;
+    background: #252930;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.login-card h1 {
+    margin: 0 0 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.hint {
+    margin: 0 0 1.5rem;
+    font-size: 0.875rem;
+    color: #9ca3af;
+}
+
+#login-form label {
+    display: block;
+    margin-bottom: 1rem;
+}
+
+#login-form label span {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.875rem;
+    color: #9ca3af;
+}
+
+#login-form input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #3b4048;
+    border-radius: 8px;
+    background: #1a1d23;
+    color: #e4e6eb;
+}
+
+#login-form input:focus {
+    outline: none;
+    border-color: #6366f1;
+}
+
+#login-form button {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    background: #6366f1;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#login-form button:hover {
+    background: #5558e3;
+}
+
+.error {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: #f87171;
+}
+
+.error.hidden {
+    display: none;
+}
+
+/* Dashboard */
+#dashboard-screen {
+    align-items: stretch;
+    padding: 0;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: #252930;
+    border-bottom: 1px solid #3b4048;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #e4e6eb;
+    background: #3b4048;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: #4b5058;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid #6366f1;
+    color: #a5b4fc;
+}
+
+.btn-outline:hover {
+    background: rgba(99, 102, 241, 0.2);
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+}
+
+.btn-success {
+    background: #16a34a;
+    color: #fff;
+}
+
+.btn-success:hover {
+    background: #15803d;
+}
+
+.tabs {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.75rem 1.5rem;
+    background: #252930;
+    border-bottom: 1px solid #3b4048;
+}
+
+.tab {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: #9ca3af;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.tab:hover {
+    color: #e4e6eb;
+    background: #3b4048;
+}
+
+.tab.active {
+    color: #6366f1;
+    background: rgba(99, 102, 241, 0.15);
+}
+
+.tab-panel {
+    display: none;
+    flex: 1;
+    padding: 1.5rem;
+    overflow: auto;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+.loading {
+    padding: 2rem;
+    text-align: center;
+    color: #9ca3af;
+}
+
+.loading.hidden {
+    display: none;
+}
+
+/* Stats */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.stat-card {
+    padding: 1rem;
+    background: #252930;
+    border-radius: 10px;
+    border: 1px solid #3b4048;
+}
+
+.stat-card .label {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.35rem;
+}
+
+.stat-card .value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e4e6eb;
+}
+
+/* Users search */
+.search-bar {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.search-bar input {
+    flex: 1;
+    max-width: 320px;
+    padding: 0.6rem 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #3b4048;
+    border-radius: 8px;
+    background: #252930;
+    color: #e4e6eb;
+}
+
+.user-result {
+    margin-top: 1rem;
+}
+
+.user-card {
+    max-width: 560px;
+    padding: 1.5rem;
+    background: #252930;
+    border-radius: 12px;
+    border: 1px solid #3b4048;
+}
+
+.user-card h3 {
+    margin: 0 0 1rem;
+    font-size: 1.125rem;
+}
+
+.user-card .meta {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem 1.5rem;
+    font-size: 0.875rem;
+    color: #9ca3af;
+    margin-bottom: 1rem;
+}
+
+.user-card .meta span {
+    color: #e4e6eb;
+}
+
+.user-card .actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.user-card .photo-wrap {
+    margin-bottom: 1rem;
+}
+
+.user-card .photo-wrap img {
+    max-width: 120px;
+    max-height: 120px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+/* Reports */
+.reports-toolbar {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.reports-toolbar select {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    background: #252930;
+    border: 1px solid #3b4048;
+    border-radius: 8px;
+    color: #e4e6eb;
+}
+
+.reports-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.report-item {
+    padding: 1rem;
+    background: #252930;
+    border-radius: 10px;
+    border: 1px solid #3b4048;
+    font-size: 0.875rem;
+}
+
+.report-item .report-meta {
+    color: #9ca3af;
+    margin-bottom: 0.5rem;
+}
+
+.report-item .report-reason {
+    margin-top: 0.5rem;
+    color: #e4e6eb;
+}
+
+.report-item a {
+    color: #6366f1;
+    text-decoration: none;
+}
+
+.report-item a:hover {
+    text-decoration: underline;
+}
+
+.reports-list .empty {
+    color: #9ca3af;
+    padding: 2rem;
+}

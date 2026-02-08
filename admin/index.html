@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div id="app">
+        <div id="login-screen" class="screen">
+            <div class="login-card">
+                <h1>Вход в админ-панель</h1>
+                <p class="hint">Введите логин, пароль и токен из .env</p>
+                <form id="login-form">
+                    <label>
+                        <span>Логин</span>
+                        <input type="text" name="login" autocomplete="username" required>
+                    </label>
+                    <label>
+                        <span>Пароль</span>
+                        <input type="password" name="password" autocomplete="current-password" required>
+                    </label>
+                    <label>
+                        <span>Токен</span>
+                        <input type="password" name="token" autocomplete="off" required>
+                    </label>
+                    <button type="submit">Войти</button>
+                </form>
+                <p id="login-error" class="error hidden"></p>
+            </div>
+        </div>
+
+        <div id="dashboard-screen" class="screen hidden">
+            <header class="header">
+                <h1>Админ-панель</h1>
+                <button type="button" id="logout-btn" class="btn btn-outline">Выйти</button>
+            </header>
+            <nav class="tabs">
+                <button type="button" data-tab="stats" class="tab active">Статистика</button>
+                <button type="button" data-tab="users" class="tab">Пользователи</button>
+                <button type="button" data-tab="reports" class="tab">Жалобы</button>
+            </nav>
+
+            <section id="tab-stats" class="tab-panel active">
+                <div id="stats-loading" class="loading">Загрузка…</div>
+                <div id="stats-content" class="stats-grid hidden"></div>
+            </section>
+
+            <section id="tab-users" class="tab-panel">
+                <div class="search-bar">
+                    <input type="text" id="user-search" placeholder="ID или username пользователя">
+                    <button type="button" id="user-search-btn" class="btn">Найти</button>
+                </div>
+                <div id="user-result" class="user-result"></div>
+            </section>
+
+            <section id="tab-reports" class="tab-panel">
+                <div class="reports-toolbar">
+                    <select id="reports-status">
+                        <option value="pending">Ожидают</option>
+                        <option value="resolved">Рассмотрены</option>
+                    </select>
+                    <button type="button" id="reports-refresh" class="btn">Обновить</button>
+                </div>
+                <div id="reports-loading" class="loading hidden">Загрузка…</div>
+                <div id="reports-list" class="reports-list"></div>
+            </section>
+        </div>
+    </div>
+    <script src="admin.js"></script>
+</body>
+</html>

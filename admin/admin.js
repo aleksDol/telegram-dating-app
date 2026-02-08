@@ -1,0 +1,325 @@
+(function () {
+    const STORAGE_KEY = "admin_token";
+    const API_PREFIX = "/admin/api";
+
+    function getToken() {
+        return localStorage.getItem(STORAGE_KEY);
+    }
+
+    function setToken(token) {
+        if (token) localStorage.setItem(STORAGE_KEY, token);
+        else localStorage.removeItem(STORAGE_KEY);
+    }
+
+    async function api(path, options = {}) {
+        const token = getToken();
+        const headers = {
+            "Content-Type": "application/json",
+            ...(options.headers || {}),
+        };
+        if (token) headers["Authorization"] = "Bearer " + token;
+        const res = await fetch(API_PREFIX + path, { ...options, headers });
+        if (res.status === 401) {
+            setToken(null);
+            showLogin();
+            throw new Error("Сессия истекла");
+        }
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({ detail: res.statusText }));
+            throw new Error(err.detail || res.statusText);
+        }
+        return res.json();
+    }
+
+    function showLogin() {
+        document.getElementById("login-screen").classList.remove("hidden");
+        document.getElementById("dashboard-screen").classList.add("hidden");
+    }
+
+    function showDashboard() {
+        document.getElementById("login-screen").classList.add("hidden");
+        document.getElementById("dashboard-screen").classList.remove("hidden");
+        if (document.querySelector(".tab.active")) {
+            const tab = document.querySelector(".tab.active").dataset.tab;
+            openTab(tab);
+        }
+    }
+
+    // Login form
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const errEl = document.getElementById("login-error");
+        errEl.classList.add("hidden");
+        const form = e.target;
+        const login = form.login.value.trim();
+        const password = form.password.value.trim();
+        const token = form.token.value.trim();
+        try {
+            const data = await api("/auth", {
+                method: "POST",
+                body: JSON.stringify({ login, password, token }),
+            });
+            setToken(data.access_token);
+            showDashboard();
+        } catch (err) {
+            errEl.textContent = err.message || "Ошибка входа";
+            errEl.classList.remove("hidden");
+        }
+    });
+
+    // Logout
+    document.getElementById("logout-btn").addEventListener("click", () => {
+        setToken(null);
+        showLogin();
+    });
+
+    // Tabs
+    function openTab(tabId) {
+        document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+        const tabBtn = document.querySelector('.tab[data-tab="' + tabId + '"]');
+        const panel = document.getElementById("tab-" + tabId);
+        if (tabBtn) tabBtn.classList.add("active");
+        if (panel) panel.classList.add("active");
+        if (tabId === "stats") loadStats();
+        if (tabId === "reports") loadReports();
+    }
+
+    document.querySelectorAll(".tab").forEach((btn) => {
+        btn.addEventListener("click", () => openTab(btn.dataset.tab));
+    });
+
+    // Stats
+    async function loadStats() {
+        const loading = document.getElementById("stats-loading");
+        const content = document.getElementById("stats-content");
+        loading.classList.remove("hidden");
+        content.classList.add("hidden");
+        try {
+            const s = await api("/stats");
+            loading.classList.add("hidden");
+            content.innerHTML = renderStats(s);
+            content.classList.remove("hidden");
+        } catch (err) {
+            loading.textContent = "Ошибка: " + err.message;
+        }
+    }
+
+    function renderStats(s) {
+        const items = [
+            { label: "Пользователей", value: s.total_users },
+            { label: "Заблокировано", value: s.banned_users },
+            { label: "Новых сегодня", value: s.new_users_today },
+            { label: "Активных за 7 дней", value: s.active_users_week },
+            { label: "Онлайн сейчас", value: s.online_now },
+            { label: "Событий всего", value: s.total_events },
+            { label: "Активных событий", value: s.active_events },
+            { label: "Скрытых событий", value: s.hidden_events },
+            { label: "Всего лайков", value: s.total_likes },
+            { label: "Взаимных симпатий", value: s.mutual_likes },
+            { label: "Жалоб всего", value: s.total_reports },
+            { label: "Ожидают рассмотрения", value: s.pending_reports },
+            { label: "Ожидают апелляции", value: s.pending_appeals },
+            { label: "Рефералов пришло", value: s.referral_users },
+            { label: "Всего приглашено", value: s.total_referrals },
+            { label: "Баллов в системе", value: s.total_points },
+        ];
+        return items
+            .map(
+                (i) =>
+                    '<div class="stat-card"><div class="label">' +
+                    escapeHtml(i.label) +
+                    '</div><div class="value">' +
+                    (i.value != null ? Number(i.value).toLocaleString("ru") : "—") +
+                    "</div></div>"
+            )
+            .join("");
+    }
+
+    // User search
+    async function searchUser() {
+        const input = document.getElementById("user-search");
+        const resultEl = document.getElementById("user-result");
+        const q = (input.value || "").trim();
+        if (!q) {
+            resultEl.innerHTML = '<p class="empty">Введите ID или username</p>';
+            return;
+        }
+        resultEl.innerHTML = '<p class="loading">Поиск…</p>';
+        try {
+            const user = await api("/user/" + encodeURIComponent(q));
+            resultEl.innerHTML = renderUserCard(user);
+        } catch (err) {
+            resultEl.innerHTML = '<p class="error">' + escapeHtml(err.message) + "</p>";
+        }
+    }
+
+    document.getElementById("user-search-btn").addEventListener("click", searchUser);
+    document.getElementById("user-search").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            searchUser();
+        }
+    });
+
+    function renderUserCard(u) {
+        const id = u.user_id;
+        const banned = !!u.is_banned;
+        let photoHtml = "";
+        if (u.photo_url) {
+            photoHtml = '<div class="photo-wrap"><img src="' + escapeHtml(u.photo_url) + '" alt=""></div>';
+        }
+        let actions = "";
+        if (banned) {
+            actions =
+                '<button type="button" class="btn btn-success" data-action="unban" data-id="' +
+                id +
+                '">Разблокировать</button>';
+        } else {
+            actions =
+                '<button type="button" class="btn btn-danger" data-action="ban" data-id="' +
+                id +
+                '">Заблокировать</button>';
+        }
+        const rows = [
+            ["Имя", u.name],
+            ["ID", id],
+            ["Username", u.username ? "@" + u.username : "—"],
+            ["Возраст", u.age],
+            ["Пол", u.gender],
+            ["Город", u.city || "—"],
+            ["Статус", u.relationship_status || "—"],
+            ["Регистрация", u.reg_date ? u.reg_date.slice(0, 10) : "—"],
+            ["Очки", u.points],
+            ["Событий", u.events_count],
+            ["Лайков получено", u.likes_received],
+            ["Лайков поставлено", u.likes_given],
+            ["Взаимных", u.mutual_likes],
+            ["Рефералов", u.referrals_count],
+        ];
+        if (banned && u.ban_reason) {
+            rows.push(["Причина блокировки", u.ban_reason]);
+            if (u.banned_date) rows.push(["Дата блокировки", u.banned_date.slice(0, 10)]);
+        }
+        const meta = rows
+            .map(
+                (r) =>
+                    "<div><span>" +
+                    escapeHtml(r[0]) +
+                    ":</span> " +
+                    escapeHtml(String(r[1] ?? "—")) +
+                    "</div>"
+            )
+            .join("");
+        return (
+            '<div class="user-card" data-user-id="' +
+            id +
+            '">' +
+            photoHtml +
+            "<h3>" +
+            escapeHtml(u.name || "Без имени") +
+            "</h3>" +
+            '<div class="meta">' +
+            meta +
+            "</div>" +
+            '<div class="actions">' +
+            actions +
+            "</div>" +
+            "</div>"
+        );
+    }
+
+    document.getElementById("user-result").addEventListener("click", async (e) => {
+        const btn = e.target.closest("[data-action][data-id]");
+        if (!btn) return;
+        const action = btn.dataset.action;
+        const id = parseInt(btn.dataset.id, 10);
+        if (action === "ban") {
+            const reason = prompt("Причина блокировки:", "Нарушение правил");
+            if (reason == null) return;
+            try {
+                await api("/user/" + id + "/ban", {
+                    method: "POST",
+                    body: JSON.stringify({ reason: reason.trim() || "Блокировка через веб-админку" }),
+                });
+                searchUser();
+            } catch (err) {
+                alert(err.message);
+            }
+        } else if (action === "unban") {
+            try {
+                await api("/user/" + id + "/unban", { method: "POST" });
+                searchUser();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+    });
+
+    // Reports
+    async function loadReports() {
+        const status = document.getElementById("reports-status").value;
+        const loading = document.getElementById("reports-loading");
+        const list = document.getElementById("reports-list");
+        loading.classList.remove("hidden");
+        list.innerHTML = "";
+        try {
+            const data = await api("/reports?status=" + encodeURIComponent(status));
+            loading.classList.add("hidden");
+            if (!data.reports || data.reports.length === 0) {
+                list.innerHTML = '<p class="empty">Нет жалоб с выбранным статусом</p>';
+            } else {
+                list.innerHTML = data.reports
+                    .map(function (r) {
+                        const created = r.created ? r.created.slice(0, 16).replace("T", " ") : "";
+                        return (
+                            '<div class="report-item">' +
+                            '<div class="report-meta">#' +
+                            r.id +
+                            " · " +
+                            escapeHtml(created) +
+                            ' · Пользователь ID: <a href="#" data-user-id="' +
+                            r.reported_user_id +
+                            '">' +
+                            r.reported_user_id +
+                            "</a></div>" +
+                            '<div class="report-reason">' +
+                            escapeHtml(r.reason || "") +
+                            "</div>" +
+                            "</div>"
+                        );
+                    })
+                    .join("");
+            }
+        } catch (err) {
+            loading.classList.add("hidden");
+            list.innerHTML = '<p class="error">' + escapeHtml(err.message) + "</p>";
+        }
+    }
+
+    document.getElementById("reports-status").addEventListener("change", loadReports);
+    document.getElementById("reports-refresh").addEventListener("click", loadReports);
+    document.getElementById("reports-list").addEventListener("click", (e) => {
+        const a = e.target.closest("a[data-user-id]");
+        if (!a) return;
+        e.preventDefault();
+        const id = a.dataset.userId;
+        document.getElementById("user-search").value = id;
+        openTab("users");
+        setTimeout(searchUser, 100);
+    });
+
+    function escapeHtml(s) {
+        if (s == null) return "";
+        const div = document.createElement("div");
+        div.textContent = s;
+        return div.innerHTML;
+    }
+
+    // Init
+    if (getToken()) {
+        showDashboard();
+    } else {
+        showLogin();
+    }
+})();

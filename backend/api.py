@@ -8,10 +8,11 @@ import hashlib
 import json
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO
 from urllib.parse import parse_qsl
 
+import jwt
 import requests
 from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,6 +25,8 @@ from utils.helpers import generate_referral_code
 from services.achievements import AchievementService
 from services.notifications import NotificationService
 from services.recommendations import RecommendationService
+from services.admin import AdminService
+from services.reports import ReportService
 
 
 app = FastAPI(title="Dating Mini App API")
@@ -933,3 +936,158 @@ def api_referral(user_id: int = Depends(get_user_id)):
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+# --- Admin panel API (веб-админка: логин + пароль + токен из .env) ---
+
+ADMIN_JWT_ALGORITHM = "HS256"
+ADMIN_JWT_EXPIRY_HOURS = 24
+
+
+class AdminLoginBody(BaseModel):
+    login: str
+    password: str
+    token: str
+
+
+def _admin_issue_token():
+    payload = {"sub": "admin", "exp": datetime.utcnow() + timedelta(hours=ADMIN_JWT_EXPIRY_HOURS)}
+    return jwt.encode(
+        payload,
+        (config.TOKEN_ADMIN or "secret").encode("utf-8"),
+        algorithm=ADMIN_JWT_ALGORITHM,
+    )
+
+
+def _admin_verify_token(token: str) -> bool:
+    if not token or not config.TOKEN_ADMIN:
+        return False
+    try:
+        jwt.decode(
+            token,
+            config.TOKEN_ADMIN.encode("utf-8"),
+            algorithms=[ADMIN_JWT_ALGORITHM],
+        )
+        return True
+    except Exception:
+        return False
+
+
+def get_admin_authorization(
+    authorization: str | None = Header(None),
+) -> None:
+    """Проверяет JWT админа из заголовка Authorization: Bearer <token>."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Admin authorization required")
+    token = authorization[7:].strip()
+    if not _admin_verify_token(token):
+        raise HTTPException(status_code=401, detail="Invalid or expired admin token")
+
+
+@app.post("/admin/api/auth")
+def admin_api_auth(body: AdminLoginBody):
+    """Вход в админку: логин, пароль и токен из .env."""
+    login = (body.login or "").strip()
+    password = (body.password or "").strip()
+    token = (body.token or "").strip()
+    if not all([config.LOGIN_ADMIN, config.PASSWORD_ADMIN, config.TOKEN_ADMIN]):
+        raise HTTPException(status_code=503, detail="Admin credentials not configured")
+    if login != config.LOGIN_ADMIN or password != config.PASSWORD_ADMIN or token != config.TOKEN_ADMIN:
+        raise HTTPException(status_code=401, detail="Invalid login, password or token")
+    access_token = _admin_issue_token()
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+def _serialize_stats_value(v):
+    """RealDictRow и списки строк в JSON-сериализуемый вид."""
+    if isinstance(v, list):
+        return [dict(row) for row in v]
+    if hasattr(v, "keys") and not isinstance(v, dict):
+        return dict(v)
+    return v
+
+
+@app.get("/admin/api/stats")
+def admin_api_stats(_: None = Depends(get_admin_authorization)):
+    """Статистика для админ-панели."""
+    stats = AdminService.get_admin_stats()
+    return {k: _serialize_stats_value(v) for k, v in stats.items()}
+
+
+def _admin_user_row_to_dict(row, base_url: str = ""):
+    """Преобразует строку пользователя в dict для JSON; photo — URL если file_id."""
+    if not row:
+        return None
+    d = dict(row)
+    uid = d.get("user_id")
+    photo = d.get("photo")
+    if photo and not (str(photo).startswith("http") or str(photo).startswith("data:")):
+        d["photo_url"] = f"{base_url}/api/photo/user/{uid}" if uid else None
+    else:
+        d["photo_url"] = photo
+    return d
+
+
+@app.get("/admin/api/user/{identifier}")
+def admin_api_user(
+    identifier: str,
+    _: None = Depends(get_admin_authorization),
+):
+    """Поиск пользователя по ID или username."""
+    user = AdminService.get_user_full_info(identifier)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return _admin_user_row_to_dict(user)
+
+
+class AdminBanBody(BaseModel):
+    reason: str | None = None
+
+
+@app.post("/admin/api/user/{user_id:int}/ban")
+def admin_api_ban_user(
+    user_id: int,
+    body: AdminBanBody,
+    _: None = Depends(get_admin_authorization),
+):
+    """Заблокировать пользователя (reason в body). banned_by=0 для веб-админа."""
+    reason = (body.reason or "").strip() or "Блокировка через веб-админку"
+    if ReportService.ban_user(user_id, reason, 0):
+        return {"ok": True}
+    raise HTTPException(status_code=400, detail="Ban failed")
+
+
+@app.post("/admin/api/user/{user_id:int}/unban")
+def admin_api_unban_user(
+    user_id: int,
+    _: None = Depends(get_admin_authorization),
+):
+    """Разблокировать пользователя."""
+    if ReportService.unban_user(user_id):
+        return {"ok": True}
+    raise HTTPException(status_code=400, detail="Unban failed")
+
+
+@app.get("/admin/api/reports")
+def admin_api_reports(
+    status: str = "pending",
+    _: None = Depends(get_admin_authorization),
+):
+    """Список жалоб по статусу (pending, resolved и т.д.)."""
+    reports = ReportService.get_reports_by_status(status)
+    return {"reports": [dict(r) for r in reports]}
+
+
+@app.get("/admin/api/events")
+def admin_api_user_events(
+    user_id: int,
+    _: None = Depends(get_admin_authorization),
+):
+    """События пользователя (для админки)."""
+    rows = execute_query(
+        """SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.photo, e.created, e.is_hidden
+           FROM events e WHERE e.user_id = ? ORDER BY e.created DESC""",
+        (user_id,),
+        fetchall=True,
+    )
+    return {"events": [dict(r) for r in rows]}

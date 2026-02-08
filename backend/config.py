@@ -11,6 +11,11 @@ class Config:
     ADMINS = [int(admin_id) for admin_id in os.getenv(
         'ADMINS', '').split(',') if admin_id]
     BROADCAST_LIMIT = int(os.getenv('BROADCAST_LIMIT', 1000))
+
+    # Веб-админка (логин, пароль, токен для входа)
+    LOGIN_ADMIN = (os.getenv('LOGIN_ADMIN') or '').strip()
+    PASSWORD_ADMIN = (os.getenv('PASSWORD_ADMIN') or '').strip()
+    TOKEN_ADMIN = (os.getenv('TOKEN_ADMIN') or '').strip()
     # PostgreSQL
     DATABASE_URL = os.getenv(
         'DATABASE_URL',

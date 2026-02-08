@@ -7,10 +7,10 @@ FROM ${NODE_IMAGE} AS builder
 
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
+COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci
 
-COPY . .
+COPY frontend/ .
 
 # Для деплоя за одним доменом: API на том же origin (/api). Переопределите при сборке при необходимости.
 ARG VITE_API_URL=
@@ -18,11 +18,13 @@ ENV VITE_API_URL=$VITE_API_URL
 
 RUN npm run build
 
-# Stage 2: раздача статики + nginx (прокси /api на backend)
+# Stage 2: раздача статики + nginx (прокси /api и /admin/api на backend)
 FROM ${NGINX_IMAGE}
 
 COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Админ-панель (на том же домене: /admin)
+COPY admin /usr/share/nginx/html/admin
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
