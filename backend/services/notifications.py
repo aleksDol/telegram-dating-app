@@ -226,3 +226,26 @@ class NotificationService:
             )
         except:
             pass
+
+    @staticmethod
+    def send_referral_registration_notification(referrer_user_id: int, new_user_name: str, referrals_count: int, bot=None):
+        """Уведомление пригласившему, что по его ссылке зарегистрировался новый пользователь (из Mini App)."""
+        if not config.BOT_TOKEN:
+            _log.warning("BOT_TOKEN не задан — уведомление рефереру не отправлено")
+            return
+        try:
+            bot = bot or NotificationService._get_bot(None)
+        except Exception as e:
+            _log.exception("Не удалось создать бота для уведомления рефереру: %s", e)
+            return
+        try:
+            bot.send_message(
+                int(referrer_user_id),
+                f"🎉 *Ваш друг {escape_markdown(new_user_name)} зарегистрировался по вашей ссылке!*\n\n"
+                f"💰 Вы получили +100 очков\n"
+                f"👥 Всего приглашено: {referrals_count}\n\n"
+                f"💎 Теперь у вас {referrals_count} приглашенных друзей!",
+                parse_mode='Markdown',
+            )
+        except Exception as e:
+            _log.warning("Не удалось отправить уведомление рефереру (user_id=%s): %s", referrer_user_id, e)

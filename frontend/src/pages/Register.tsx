@@ -99,7 +99,7 @@ export default function Register() {
   }
 
   return (
-    <>
+    <div className="register-page">
       {isApiConfigured() ? null : (
         <div className="register-demo-bar">
           <span>Нет бэкенда или не работает?</span>
@@ -108,7 +108,9 @@ export default function Register() {
           </button>
         </div>
       )}
-      <h1 className="page-title">Регистрация</h1>
+      <header className="register-hero">
+        <h1 className="register-hero-title">Регистрация</h1>
+      </header>
 
       {step === 'name' && (
         <>
@@ -151,16 +153,18 @@ export default function Register() {
       {step === 'gender' && (
         <>
           <label className="label">Пол</label>
-          {GENDERS.map((g) => (
-            <button
-              key={g}
-              className="btn btn-secondary"
-              style={{ display: 'block', width: '100%', marginBottom: 8 }}
-              onClick={() => { setGender(g); next() }}
-            >
-              {g}
-            </button>
-          ))}
+          <div className="register-option-buttons">
+            {GENDERS.map((g) => (
+              <button
+                key={g}
+                type="button"
+                className="btn register-btn-option"
+                onClick={() => { setGender(g); next() }}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
         </>
       )}
 
@@ -197,16 +201,18 @@ export default function Register() {
       {step === 'relationship' && (
         <>
           <label className="label">Статус отношений</label>
-          {RELATIONSHIP_STATUSES.map((s) => (
-            <button
-              key={s}
-              className="btn btn-secondary"
-              style={{ display: 'block', width: '100%', marginBottom: 8 }}
-              onClick={() => { setRelationship(s); next() }}
-            >
-              {s}
-            </button>
-          ))}
+          <div className="register-option-buttons">
+            {RELATIONSHIP_STATUSES.map((s) => (
+              <button
+                key={s}
+                type="button"
+                className="btn register-btn-option"
+                onClick={() => { setRelationship(s); next() }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
         </>
       )}
 
@@ -228,44 +234,45 @@ export default function Register() {
       {step === 'photo' && (
         <>
           <label className="label">Фото (обязательно)</label>
-          <p className="text-muted" style={{ marginBottom: 8, fontSize: 14 }}>
-            Загрузите фото или вставьте ссылку на изображение. Без фото регистрация невозможна.
+          <p className="text-muted register-photo-hint">
+            Загрузите своё фото. Без фото регистрация невозможна.
           </p>
-          <input
-            className="input"
-            type="file"
-            accept="image/*"
-            capture="user"
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) {
-                const reader = new FileReader()
-                reader.onload = () => {
-                  const dataUrl = reader.result as string
-                  setPhoto(dataUrl)
+          <label className="register-photo-picker">
+            <input
+              type="file"
+              accept="image/*"
+              capture="user"
+              className="register-photo-input"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) {
+                  const reader = new FileReader()
+                  reader.onload = () => {
+                    const dataUrl = reader.result as string
+                    setPhoto(dataUrl)
+                  }
+                  reader.readAsDataURL(file)
                 }
-                reader.readAsDataURL(file)
-              }
-            }}
-            style={{ marginBottom: 8 }}
-          />
-          <input
-            className="input"
-            value={photo.startsWith('data:') ? '' : photo}
-            onChange={(e) => setPhoto(e.target.value.trim())}
-            placeholder="Или вставьте URL фото"
-            style={{ marginBottom: 8 }}
-          />
-          {photo && (
-            <div style={{ marginBottom: 12, textAlign: 'center' }}>
-              <img
-                src={photo}
-                alt="Ваше фото"
-                style={{ maxWidth: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 8 }}
-                onError={() => setPhoto('')}
-              />
-            </div>
-          )}
+              }}
+            />
+            {photo ? (
+              <span className="register-photo-preview-wrap">
+                <img
+                  src={photo}
+                  alt="Ваше фото"
+                  className="register-photo-preview"
+                  onError={() => setPhoto('')}
+                />
+                <span className="register-photo-change">Изменить фото</span>
+              </span>
+            ) : (
+              <span className="register-photo-placeholder">
+                <span className="register-photo-icon" aria-hidden>📷</span>
+                <span className="register-photo-text">Выбрать фото</span>
+                <span className="register-photo-sub">С телефона откроется камера</span>
+              </span>
+            )}
+          </label>
           <button
             className="btn btn-primary btn-lg block-btn"
             onClick={handleRegister}
@@ -289,6 +296,6 @@ export default function Register() {
           )}
         </>
       )}
-    </>
+    </div>
   )
 }

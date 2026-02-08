@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
-import { api, isApiConfigured } from '../api/client'
+import { api, isApiConfigured, API_BASE } from '../api/client'
 import { getDemoEventById } from '../demoData'
 import { CATEGORY_KEYS, TARGET_GENDERS } from '../constants'
 import type { Event as EventType } from '../types'
+
+function eventPhotoSrc(url: string | undefined): string {
+  if (!url) return ''
+  if (url.startsWith('data:') || url.startsWith('http')) return url
+  return API_BASE + url
+}
 
 export default function EditEvent() {
   const { id } = useParams<{ id: string }>()
@@ -18,6 +24,8 @@ export default function EditEvent() {
   const [targetGender, setTargetGender] = useState('Все')
   const [category, setCategory] = useState('')
   const [city, setCity] = useState('')
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState('')
@@ -99,6 +107,15 @@ export default function EditEvent() {
     setSaving(true)
     setError('')
     try {
+      let photoToSend: string | undefined
+      if (photoFile) {
+        photoToSend = await new Promise<string>((resolve, reject) => {
+          const r = new FileReader()
+          r.onload = () => resolve(r.result as string)
+          r.onerror = () => reject(new Error('Не удалось прочитать фото'))
+          r.readAsDataURL(photoFile)
+        })
+      }
       await api.updateEvent(event.id, {
         title: title.trim(),
         description: description.trim(),
@@ -106,6 +123,7 @@ export default function EditEvent() {
         target_gender: targetGender,
         city,
         category: category || undefined,
+        photo: photoToSend,
       })
       navigate(`/event/${event.id}`, { replace: true })
     } catch (e) {
@@ -208,6 +226,41 @@ export default function EditEvent() {
             <option key={k} value={k}>{k}</option>
           ))}
         </select>
+
+        <label className="label">Фото события</label>
+        <label className="input-photo-placeholder create-event-photo">
+          <input
+            type="file"
+            accept="image/*"
+            className="input-photo-input"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              setPhotoFile(file ?? null)
+              if (file) {
+                const r = new FileReader()
+                r.onload = () => setPhotoDataUrl(r.result as string)
+                r.readAsDataURL(file)
+              } else {
+                setPhotoDataUrl(null)
+              }
+            }}
+          />
+          {photoDataUrl ? (
+            <span className="input-photo-preview-wrap">
+              <img src={photoDataUrl} alt="" className="input-photo-preview" />
+              <span className="input-photo-text">Изменить фото</span>
+            </span>
+          ) : event.photo ? (
+            <span className="input-photo-preview-wrap">
+              <img src={eventPhotoSrc(event.photo)} alt="" className="input-photo-preview" />
+              <span className="input-photo-text">Изменить фото</span>
+            </span>
+          ) : (
+            <span className="input-photo-text">
+              {photoFile ? photoFile.name : 'Выбрать фото встречи'}
+            </span>
+          )}
+        </label>
 
         {error && <p className="text-error">{error}</p>}
         <div className="form-actions">

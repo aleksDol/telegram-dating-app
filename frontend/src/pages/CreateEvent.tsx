@@ -43,6 +43,15 @@ export default function CreateEvent() {
     setLoading(true)
     setError('')
     try {
+      let photoDataUrl: string | undefined
+      if (photoFile) {
+        photoDataUrl = await new Promise<string>((resolve, reject) => {
+          const r = new FileReader()
+          r.onload = () => resolve(r.result as string)
+          r.onerror = () => reject(new Error('Не удалось прочитать фото'))
+          r.readAsDataURL(photoFile)
+        })
+      }
       await api.createEvent({
         title: title.trim(),
         description: description.trim(),
@@ -50,6 +59,7 @@ export default function CreateEvent() {
         target_gender: targetGender,
         city,
         category: category || undefined,
+        photo: photoDataUrl,
       })
       navigate('/my-events')
     } catch (e) {

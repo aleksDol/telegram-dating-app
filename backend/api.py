@@ -203,6 +203,7 @@ class CreateEventBody(BaseModel):
     target_gender: str
     city: str
     category: str | None = None
+    photo: str | None = None
 
 
 def _row_to_user(row: dict) -> dict:
@@ -253,10 +254,25 @@ def _row_to_public_user(row: dict) -> dict:
     }
 
 
+def _event_photo_url(event_id: int, event_photo: str | None) -> str | None:
+    """URL фото события (картинка встречи)."""
+    if not event_photo or not event_photo.strip():
+        return None
+    if event_photo.startswith("data:") or event_photo.startswith("http"):
+        return event_photo
+    return f"/api/photo/event/{event_id}"
+
+
 def _row_to_event(row: dict) -> dict:
+    event_id = row["id"]
+    user_id = row["user_id"]
+    event_photo = row.get("event_photo")
+    user_photo = row.get("user_photo")
+    if user_photo is None:
+        user_photo = row.get("photo")
     return {
-        "id": row["id"],
-        "user_id": row["user_id"],
+        "id": event_id,
+        "user_id": user_id,
         "title": row["title"],
         "description": row["description"],
         "event_date": row["event_date"],
@@ -268,7 +284,8 @@ def _row_to_event(row: dict) -> dict:
         "name": row.get("name"),
         "age": row.get("age"),
         "gender": row.get("gender"),
-        "photo": _photo_for_response(row["user_id"], row.get("photo")),
+        "photo": _event_photo_url(event_id, event_photo),
+        "organizer_photo": _photo_for_response(user_id, user_photo),
         "purpose": row.get("purpose"),
         "relationship_status": row.get("relationship_status"),
         "likes_count": row.get("likes_count"),
@@ -329,6 +346,23 @@ def _stream_photo_by_file_id(file_id: str):
     )
 
 
+@app.get("/api/photo/event/{event_id:int}")
+def api_get_event_photo(event_id: int):
+    """Отдаёт фото события (картинка встречи) по file_id."""
+    row = execute_query(
+        "SELECT photo FROM events WHERE id = ?", (event_id,), fetchone=True
+    )
+    if not row or not (row.get("photo") or "").strip():
+        raise HTTPException(status_code=404, detail="Event photo not found")
+    photo = row["photo"].strip()
+    if photo.startswith("data:") or photo.startswith("http"):
+        raise HTTPException(status_code=400, detail="Legacy event photo format")
+    try:
+        return _stream_photo_by_file_id(photo)
+    except requests.RequestException:
+        raise HTTPException(status_code=502, detail="Failed to fetch photo")
+
+
 @app.get("/api/photo/user/{profile_user_id:int}")
 @app.get("/api/photo/user/{profile_user_id:int}/{photo_index:int}")
 def api_get_user_photo(profile_user_id: int, photo_index: int | None = None):
@@ -386,12 +420,43 @@ def api_register(
         ),
         commit=True,
     )
-    if body.referred_by:
+    # Реферал: из body или из pending_referral (если пользователь зашёл по ссылке в боте)
+    referred_by_id = body.referred_by
+    if referred_by_id is None:
+        pending = execute_query(
+            "SELECT referral_code FROM pending_referral WHERE user_id = ?",
+            (user_id,), fetchone=True
+        )
+        if pending and pending.get("referral_code"):
+            referrer = execute_query(
+                "SELECT user_id FROM users WHERE referral_code = ? AND is_banned = FALSE",
+                (pending["referral_code"],), fetchone=True
+            )
+            if referrer and referrer["user_id"] != user_id:
+                referred_by_id = referrer["user_id"]
+                execute_query(
+                    "UPDATE users SET referred_by = ? WHERE user_id = ?",
+                    (referred_by_id, user_id), commit=True
+                )
+        execute_query(
+            "DELETE FROM pending_referral WHERE user_id = ?",
+            (user_id,), commit=True
+        )
+    if referred_by_id:
         AchievementService.update_user_points(user_id, 50, "за регистрацию по приглашению")
-        AchievementService.update_user_points(body.referred_by, 100, "за приглашение пользователя")
+        AchievementService.update_user_points(referred_by_id, 100, "за приглашение пользователя")
         execute_query(
             "UPDATE users SET referrals_count = referrals_count + 1 WHERE user_id = ?",
-            (body.referred_by,), commit=True
+            (referred_by_id,), commit=True
+        )
+        referrer_stats = execute_query(
+            "SELECT name, referrals_count FROM users WHERE user_id = ?",
+            (referred_by_id,), fetchone=True
+        )
+        NotificationService.send_referral_registration_notification(
+            referred_by_id,
+            body.name.strip() or "новый пользователь",
+            referrer_stats["referrals_count"] if referrer_stats else 1,
         )
     row = execute_query("SELECT * FROM users WHERE user_id = ?", (user_id,), fetchone=True)
     return {"user": _row_to_user(row)}
@@ -484,7 +549,8 @@ def api_get_events(
 @app.get("/api/events/{event_id:int}")
 def api_get_event(event_id: int, user_id: int = Depends(get_user_id)):
     row = execute_query(
-        """SELECT e.*, u.name, u.age, u.gender, u.photo, u.purpose, u.relationship_status
+        """SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.photo AS event_photo, e.created, e.is_hidden,
+                  u.name, u.age, u.gender, u.photo AS user_photo, u.purpose, u.relationship_status
            FROM events e JOIN users u ON e.user_id = u.user_id
            WHERE e.id = ? AND e.is_hidden = FALSE AND u.is_banned = FALSE""",
         (event_id,), fetchone=True
@@ -503,12 +569,19 @@ def api_create_event(body: CreateEventBody, user_id: int = Depends(get_user_id))
     event_date = body.event_date
     if "T" in event_date:
         event_date = event_date.replace("T", " ").rstrip("Z")[:19]
+    event_photo_value = None
+    if body.photo and body.photo.strip():
+        if body.photo.strip().lower().startswith("data:"):
+            event_photo_value = _upload_photo_to_telegram(user_id, body.photo.strip())
+            event_photo_value = event_photo_value or body.photo.strip()
+        else:
+            event_photo_value = body.photo.strip()
     event_id = execute_query(
-        """INSERT INTO events (user_id, title, description, event_date, target_gender, city, category, created)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id""",
+        """INSERT INTO events (user_id, title, description, event_date, target_gender, city, category, photo, created)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id""",
         (
             user_id, body.title.strip(), body.description.strip(), event_date,
-            body.target_gender, city, body.category,
+            body.target_gender, city, body.category, event_photo_value,
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         ),
         commit=True,
@@ -525,7 +598,8 @@ def api_create_event(body: CreateEventBody, user_id: int = Depends(get_user_id))
     if events_count == 1:
         AchievementService.unlock_achievement(user_id, "first_event")
     row = execute_query(
-        """SELECT e.*, u.name, u.age, u.gender, u.photo, u.purpose, u.relationship_status
+        """SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.photo AS event_photo, e.created, e.is_hidden,
+                  u.name, u.age, u.gender, u.photo AS user_photo, u.purpose, u.relationship_status
            FROM events e JOIN users u ON e.user_id = u.user_id WHERE e.id = ?""",
         (event_id,), fetchone=True
     )
@@ -540,14 +614,30 @@ def api_update_event(event_id: int, body: CreateEventBody, user_id: int = Depend
     event_date = body.event_date
     if "T" in event_date:
         event_date = event_date.replace("T", " ").rstrip("Z")[:19]
-    execute_query(
-        """UPDATE events SET title = ?, description = ?, event_date = ?, target_gender = ?, city = ?, category = ?
-           WHERE id = ?""",
-        (body.title.strip(), body.description.strip(), event_date, body.target_gender, body.city, body.category, event_id),
-        commit=True,
-    )
+    event_photo_value = None
+    if body.photo is not None:
+        if body.photo and body.photo.strip():
+            if body.photo.strip().lower().startswith("data:"):
+                event_photo_value = _upload_photo_to_telegram(user_id, body.photo.strip())
+                event_photo_value = event_photo_value or body.photo.strip()
+            else:
+                event_photo_value = body.photo.strip()
+    if event_photo_value is not None:
+        execute_query(
+            "UPDATE events SET title = ?, description = ?, event_date = ?, target_gender = ?, city = ?, category = ?, photo = ? WHERE id = ?",
+            (body.title.strip(), body.description.strip(), event_date, body.target_gender, body.city, body.category, event_photo_value, event_id),
+            commit=True,
+        )
+    else:
+        execute_query(
+            """UPDATE events SET title = ?, description = ?, event_date = ?, target_gender = ?, city = ?, category = ?
+               WHERE id = ?""",
+            (body.title.strip(), body.description.strip(), event_date, body.target_gender, body.city, body.category, event_id),
+            commit=True,
+        )
     row = execute_query(
-        """SELECT e.*, u.name, u.age, u.gender, u.photo, u.purpose, u.relationship_status
+        """SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.photo AS event_photo, e.created, e.is_hidden,
+                  u.name, u.age, u.gender, u.photo AS user_photo, u.purpose, u.relationship_status
            FROM events e JOIN users u ON e.user_id = u.user_id WHERE e.id = ?""",
         (event_id,), fetchone=True
     )
@@ -572,9 +662,16 @@ def api_my_events(user_id: int = Depends(get_user_id)):
     )
     events = []
     for r in rows:
+        r = dict(r)
+        r["event_photo"] = r.get("photo")
         u = execute_query("SELECT name, age, gender, photo, purpose, relationship_status FROM users WHERE user_id = ?", (r["user_id"],), fetchone=True)
         if u:
-            r = dict(r, **u)
+            r["user_photo"] = u.get("photo")
+            r["name"] = u.get("name")
+            r["age"] = u.get("age")
+            r["gender"] = u.get("gender")
+            r["purpose"] = u.get("purpose")
+            r["relationship_status"] = u.get("relationship_status")
         events.append(_row_to_event(r))
     return {"events": events}
 
@@ -673,15 +770,15 @@ def api_get_pending_likes(user_id: int = Depends(get_user_id)):
         event_row = None
         if r.get("event_id"):
             event_row = execute_query(
-                """SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.created,
-                          u.name, u.age, u.gender, u.photo, u.purpose, u.relationship_status
+                """SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.photo AS event_photo, e.created, e.is_hidden,
+                          u.name, u.age, u.gender, u.photo AS user_photo, u.purpose, u.relationship_status
                    FROM events e JOIN users u ON e.user_id = u.user_id WHERE e.id = ?""",
                 (r["event_id"],), fetchone=True
             )
         liker_dict = None
         if liker:
             liker_dict = _row_to_public_user(liker)
-            liker_dict["username"] = liker.get("username")
+            # username не отдаём в pending — контакт виден только при матчинге
         event_dict = _row_to_event(event_row) if event_row else None
         result.append({
             "like_id": r["like_id"],
@@ -716,8 +813,8 @@ def api_get_likes_matches(user_id: int = Depends(get_user_id)):
         event_dict = None
         if r.get("event_id"):
             event_row = execute_query(
-                """SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.created,
-                          u.name, u.age, u.gender, u.photo, u.purpose, u.relationship_status
+                """SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.photo AS event_photo, e.created, e.is_hidden,
+                          u.name, u.age, u.gender, u.photo AS user_photo, u.purpose, u.relationship_status
                    FROM events e JOIN users u ON e.user_id = u.user_id WHERE e.id = ?""",
                 (r["event_id"],), fetchone=True
             )

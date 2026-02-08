@@ -87,10 +87,15 @@ class Database:
                     target_gender TEXT DEFAULT 'Все',
                     city TEXT,
                     category TEXT,
+                    photo TEXT,
                     created TEXT,
                     is_hidden BOOLEAN DEFAULT FALSE
                 )
             """)
+                try:
+                    cursor.execute("ALTER TABLE events ADD COLUMN photo TEXT")
+                except Exception:
+                    pass
 
                 cursor.execute("""
                 CREATE TABLE IF NOT EXISTS likes (
@@ -154,6 +159,14 @@ class Database:
                     action TEXT,
                     details TEXT,
                     created TEXT
+                )
+            """)
+
+                cursor.execute("""
+                CREATE TABLE IF NOT EXISTS pending_referral (
+                    user_id BIGINT PRIMARY KEY,
+                    referral_code TEXT NOT NULL,
+                    created_at TEXT
                 )
             """)
 

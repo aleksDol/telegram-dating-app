@@ -1,13 +1,19 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
-import { api, isApiConfigured } from '../api/client'
+import { api, isApiConfigured, API_BASE } from '../api/client'
 import { FILTER_LABELS } from '../constants'
 import { getDemoEventsForFeed } from '../demoData'
 import Logo from '../components/Logo'
 import type { Event as EventType } from '../types'
 
 const FILTERS = ['new', 'popular', 'nearby', 'today', 'tomorrow', 'for_me', 'random', 'interest'] as const
+
+function eventPhotoSrc(url: string | undefined): string {
+  if (!url) return ''
+  if (url.startsWith('data:') || url.startsWith('http')) return url
+  return API_BASE + url
+}
 const SWIPE_THRESHOLD = 80
 const CARD_EXIT_DURATION_MS = 450
 
@@ -382,7 +388,7 @@ function EventCard({
         onKeyDown={(e) => e.key === 'Enter' && navigate(`/event/${ev.id}`)}
       >
         {ev.photo ? (
-          <img src={ev.photo} alt="" />
+          <img src={eventPhotoSrc(ev.photo)} alt="" />
         ) : (
           <div className="event-card-image-placeholder">
             {ev.category?.slice(0, 2) || '🎉'}
@@ -406,8 +412,27 @@ function EventCard({
             }
           }}
         >
-          <div className="event-author-avatar-placeholder">
-            {(ev.name ?? '?').slice(0, 1)}
+          <div className="event-author-avatar-wrap">
+            {(ev.organizer_photo || ev.user_id) ? (
+              <img
+                src={eventPhotoSrc(ev.organizer_photo || `/api/photo/user/${ev.user_id}`)}
+                alt=""
+                className="event-author-avatar"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                  const wrap = e.currentTarget.closest('.event-author-avatar-wrap')
+                  const placeholder = wrap?.querySelector('.event-author-avatar-placeholder') as HTMLElement
+                  if (placeholder) placeholder.style.display = 'flex'
+                }}
+              />
+            ) : null}
+            <div
+              className="event-author-avatar-placeholder"
+              style={{ display: (ev.organizer_photo || ev.user_id) ? 'none' : 'flex' }}
+              aria-hidden
+            >
+              {(ev.name ?? '?').slice(0, 1)}
+            </div>
           </div>
           <div className="event-author-info">
             <span className="event-author-name">{ev.name ?? 'Пользователь'}</span>

@@ -3,7 +3,7 @@
  * Set VITE_API_URL in .env (e.g. https://your-api.com) when backend REST API is ready.
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || ''
+export const API_BASE = import.meta.env.VITE_API_URL || ''
 
 function getTelegramWebApp(): { initData: string } | null {
   const tg = (window as unknown as { Telegram?: { WebApp?: { initData: string } } }).Telegram
@@ -130,6 +130,7 @@ export const api = {
     target_gender: string
     city: string
     category?: string
+    photo?: string
   }) => request<{ event: import('../types').Event }>('/api/events', { method: 'POST', body: JSON.stringify(data) }),
   updateEvent: (id: number, data: Partial<import('../types').Event>) =>
     request<{ event: import('../types').Event }>(`/api/events/${id}`, { method: 'PUT', body: JSON.stringify(data) }),

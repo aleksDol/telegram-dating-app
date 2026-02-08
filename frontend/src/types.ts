@@ -35,7 +35,10 @@ export interface Event {
   name?: string
   age?: number
   gender?: string
+  /** Фото события (картинка встречи) */
   photo?: string
+  /** Фото организатора (аватар в блоке «Кто создал») */
+  organizer_photo?: string
   purpose?: string
   relationship_status?: string
   likes_count?: number

@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
-import { api, isApiConfigured } from '../api/client'
+import { api, isApiConfigured, API_BASE } from '../api/client'
 import { getDemoEventById } from '../demoData'
 import type { Event as EventType } from '../types'
+
+function eventPhotoSrc(url: string | undefined): string {
+  if (!url) return ''
+  if (url.startsWith('data:') || url.startsWith('http')) return url
+  return API_BASE + url
+}
 
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>()
@@ -98,6 +104,11 @@ export default function EventDetail() {
         {event.category && <span className="page-badge">{event.category}</span>}
         <h1 className="page-title">{event.title}</h1>
       </div>
+      {event.photo && (
+        <div className="event-detail-photo-wrap">
+          <img src={eventPhotoSrc(event.photo)} alt="" className="event-detail-photo" />
+        </div>
+      )}
       <div
         className="event-detail-author card"
         role="button"
@@ -105,13 +116,28 @@ export default function EventDetail() {
         onClick={() => navigate(`/profile/${event.user_id}`, { state: { fromEventId: event.id } })}
         onKeyDown={(e) => e.key === 'Enter' && navigate(`/profile/${event.user_id}`, { state: { fromEventId: event.id } })}
       >
-        {event.photo ? (
-          <img src={event.photo} alt="" className="event-detail-author-avatar" />
-        ) : (
-          <div className="event-detail-author-avatar-placeholder">
+        <div className="event-detail-author-avatar-wrap">
+          {(event.organizer_photo || event.user_id) ? (
+            <img
+              src={eventPhotoSrc(event.organizer_photo || `/api/photo/user/${event.user_id}`)}
+              alt=""
+              className="event-detail-author-avatar"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+                const wrap = e.currentTarget.closest('.event-detail-author-avatar-wrap')
+                const placeholder = wrap?.querySelector('.event-detail-author-avatar-placeholder') as HTMLElement
+                if (placeholder) placeholder.style.display = 'flex'
+              }}
+            />
+          ) : null}
+          <div
+            className="event-detail-author-avatar-placeholder"
+            style={{ display: (event.organizer_photo || event.user_id) ? 'none' : 'flex' }}
+            aria-hidden
+          >
             {(event.name ?? '?').slice(0, 1)}
           </div>
-        )}
+        </div>
         <div className="event-detail-author-info">
           <span className="event-detail-author-name">{event.name ?? 'Пользователь'}</span>
           <p className="event-detail-author-meta">{event.age} лет · {event.gender} · {event.city}</p>

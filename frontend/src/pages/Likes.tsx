@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
-import { api, isApiConfigured } from '../api/client'
+import { api, isApiConfigured, API_BASE } from '../api/client'
 import Logo from '../components/Logo'
 import type { PendingLike as PendingLikeType, LikeMatch as LikeMatchType } from '../types'
+
+function photoSrc(url: string | undefined): string {
+  if (!url) return ''
+  if (url.startsWith('data:') || url.startsWith('http')) return url
+  return API_BASE + url
+}
 
 export default function Likes() {
   const navigate = useNavigate()
@@ -135,7 +141,7 @@ export default function Likes() {
                     style={{ marginBottom: 8 }}
                   >
                     {item.user?.photo ? (
-                      <img src={item.user.photo} alt="" className="event-author-avatar" />
+                      <img src={photoSrc(item.user.photo)} alt="" className="event-author-avatar" />
                     ) : (
                       <div className="event-author-avatar-placeholder">
                         {(item.user?.name ?? '?').slice(0, 1)}
@@ -195,7 +201,7 @@ export default function Likes() {
                     style={{ marginBottom: 12 }}
                   >
                     {item.liker?.photo ? (
-                      <img src={item.liker.photo} alt="" className="event-author-avatar" />
+                      <img src={photoSrc(item.liker.photo)} alt="" className="event-author-avatar" />
                     ) : (
                       <div className="event-author-avatar-placeholder">
                         {(item.liker?.name ?? '?').slice(0, 1)}
@@ -205,8 +211,10 @@ export default function Likes() {
                       <span className="event-author-name">{item.liker?.name ?? 'Пользователь'}</span>
                       <span className="event-author-meta">
                         {item.liker?.age} · {item.liker?.city ?? '—'}
-                        {item.liker?.username ? ` · @${item.liker.username}` : ''}
                       </span>
+                      <p className="text-muted" style={{ margin: '4px 0 0', fontSize: 12 }}>
+                        Контакт (ник) виден после взаимности
+                      </p>
                     </div>
                     <span className="event-author-arrow">→</span>
                   </div>

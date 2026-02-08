@@ -294,6 +294,213 @@ button {
   text-decoration: underline;
 }
 
+/* ===== Register page: как на главной (градиент, шрифты, кнопки) ===== */
+.register-page {
+  padding: 0 var(--page-padding) var(--page-padding);
+}
+
+.register-hero {
+  padding: 1.25rem var(--page-padding) 1.5rem;
+  margin: 0 calc(-1 * var(--page-padding)) 1.5rem;
+  background: var(--gradient-logo);
+  color: #fff;
+  text-align: center;
+}
+
+.register-hero-title {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.02em;
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+}
+
+.register-page .label {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.register-page .btn-primary {
+  background: var(--gradient-logo);
+  background-size: 200% 200%;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4), 0 2px 8px rgba(0,0,0,0.08);
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
+  margin-top: 12px;
+}
+
+.register-page .btn-primary:hover:not(:disabled) {
+  background-position: 100% 50%;
+  box-shadow: 0 10px 28px rgba(124, 58, 237, 0.45), 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+.register-page .btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.register-option-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.register-btn-option {
+  display: block;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-align: center;
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+  color: var(--text);
+  border: 2px solid rgba(108, 99, 255, 0.25);
+  box-shadow: 0 4px 16px rgba(45, 55, 72, 0.08), inset 0 1px 0 rgba(255,255,255,0.8);
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease, border-color 0.2s;
+}
+
+.register-btn-option:hover {
+  background: linear-gradient(180deg, #f8f9fa 0%, #fff 100%);
+  border-color: rgba(108, 99, 255, 0.4);
+  box-shadow: 0 6px 22px rgba(45, 55, 72, 0.12), 0 0 0 1px rgba(108, 99, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.register-page .input {
+  font-family: var(--font);
+  border-radius: var(--radius);
+  border: 2px solid rgba(108, 99, 255, 0.2);
+  margin-bottom: 12px;
+}
+
+.register-page .input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* Фото-пикер на странице регистрации — акцент в стиле главной */
+.register-page .register-photo-picker {
+  border-color: rgba(124, 58, 237, 0.35);
+  background: linear-gradient(145deg, rgba(124, 58, 237, 0.08) 0%, rgba(255, 255, 255, 0.6) 100%);
+}
+
+.register-page .register-photo-picker:hover {
+  border-color: #7c3aed;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.2);
+}
+
+.register-page .register-photo-text,
+.register-page .register-photo-change {
+  color: #7c3aed;
+}
+
+/* ===== Register: выбор фото (без ссылки) ===== */
+.register-photo-hint {
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.register-photo-picker {
+  display: block;
+  position: relative;
+  min-height: 180px;
+  margin-bottom: 16px;
+  border: 2px dashed rgba(108, 99, 255, 0.35);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(145deg, var(--accent-soft) 0%, rgba(255, 255, 255, 0.5) 100%);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.register-photo-picker:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 20px var(--accent-soft);
+}
+
+.register-photo-picker:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.register-photo-input {
+  position: absolute;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.register-photo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  padding: 24px;
+  gap: 8px;
+}
+
+.register-photo-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  filter: grayscale(0.2);
+}
+
+.register-photo-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.register-photo-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.register-photo-preview-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  padding: 12px;
+}
+
+.register-photo-preview {
+  max-width: 100%;
+  max-height: 200px;
+  width: auto;
+  height: auto;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+}
+
+.register-photo-change {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.register-photo-picker:hover .register-photo-change {
+  text-decoration: underline;
+}
+
 /* ===== Demo banner ===== */
 .demo-banner {
   display: flex;
@@ -1274,6 +1481,21 @@ button {
   text-decoration: underline;
 }
 
+.event-author-avatar-wrap {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.event-author-avatar-wrap .event-author-avatar,
+.event-author-avatar-wrap .event-author-avatar-placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .event-author-avatar,
 .event-author-avatar-placeholder {
   width: 40px;
@@ -1485,6 +1707,21 @@ button {
   outline: none;
 }
 
+.event-detail-author-avatar-wrap {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.event-detail-author-avatar-wrap .event-detail-author-avatar,
+.event-detail-author-avatar-wrap .event-detail-author-avatar-placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .event-detail-author-avatar,
 .event-detail-author-avatar-placeholder {
   width: 56px;
@@ -1530,12 +1767,18 @@ button {
   font-size: 1.25rem;
 }
 
+.event-detail-photo-wrap {
+  margin-bottom: 1rem;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
 .event-detail-photo {
   width: 100%;
   max-height: 220px;
   object-fit: cover;
   border-radius: var(--radius-sm);
-  margin-bottom: 1rem;
+  display: block;
   border: 1px solid rgba(232, 121, 249, 0.15);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
@@ -1764,6 +2007,20 @@ button {
 .create-event-page .form-create .input-photo-placeholder:has(.input-photo-input:focus) {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.input-photo-preview-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-photo-preview {
+  max-width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
 }
 
 /* Дата и время — два поля в ряд на мобильном, не убегают за экран */

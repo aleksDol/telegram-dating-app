@@ -98,7 +98,7 @@ class UserHandlers:
                 logger.warning("check_achievements при /start: %s", e, exc_info=True)
             return
 
-        # Обработка реферальной ссылки
+        # Обработка реферальной ссылки (регистрация только в Mini App)
         referral_code_param = None
         text = message.text or ""
         if len(text.split()) > 1:
@@ -111,31 +111,35 @@ class UserHandlers:
             )
 
             if referrer and referrer['user_id'] != user_id:
-                self.user_data[user_id] = {'referred_by': referrer['user_id']}
-
+                # Сохраняем реферальный код для последующей регистрации в Mini App
+                execute_query(
+                    """INSERT INTO pending_referral (user_id, referral_code, created_at)
+                       VALUES (?, ?, ?)
+                       ON CONFLICT (user_id) DO UPDATE SET referral_code = EXCLUDED.referral_code, created_at = EXCLUDED.created_at""",
+                    (user_id, referral_code_param, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+                    commit=True,
+                )
                 self.bot.send_message(
                     chat_id,
                     f"👋 Вы зашли по приглашению *{referrer['name']}*\n\n"
-                    f"🎁 После регистрации вы получите *50 бонусных очков!*\n\n"
-                    f"Для регистрации введи своё имя:",
-                    parse_mode='Markdown'
+                    f"🎁 После регистрации в приложении вы получите *50 бонусных очков!*\n\n"
+                    f"📱 Зарегистрируйтесь в приложении по кнопке ниже:",
+                    parse_mode='Markdown',
+                    reply_markup=get_start_webapp_keyboard(),
                 )
-                self.user_state[user_id] = 'waiting_name'
                 return
 
         # Скрываем клавиатуру для незарегистрированных пользователей
         remove_keyboard = self._remove_keyboard()
-        
-        # Приветственное сообщение с фото
+        webapp_markup = get_start_webapp_keyboard()
+
+        # Приветственное сообщение: регистрация только в Mini App
         welcome_text = (
             "Хочешь куда-то сходить но не знаешь с кем — создай встречу. Бот покажет её людям рядом.\n\n"
             "Откликнутся — идите. Никакой лишней болтовни.\n\n"
-            "👉 *Как тебя зовут?*"
+            "📱 *Регистрация только в приложении* — нажмите кнопку ниже."
         )
-        
-        # Кнопка открытия Mini App
-        webapp_markup = get_start_webapp_keyboard()
-        # Отправляем фото из папки images, если оно есть
+
         import os
         image_path = os.path.join('images', 'Spon.png')
         if os.path.exists(image_path):
@@ -157,10 +161,9 @@ class UserHandlers:
                 chat_id, welcome_text, parse_mode='Markdown', reply_markup=remove_keyboard)
         self.bot.send_message(
             chat_id,
-            "📱 Или откройте приложение:",
+            "📱 Откройте приложение:",
             reply_markup=webapp_markup,
         )
-        self.user_state[user_id] = 'waiting_name'
 
     def handle_text(self, message):
         """Обработка текстовых сообщений"""
@@ -272,19 +275,18 @@ class UserHandlers:
             self.event_handlers.handle_create_event(user_id, chat_id, text)
             return
 
-        # Обработка состояний регистрации
-        if state == 'waiting_name':
-            self._handle_waiting_name(user_id, chat_id, text)
-        elif state == 'waiting_age':
-            self._handle_waiting_age(user_id, chat_id, text)
-        elif state == 'waiting_gender':
-            self._handle_waiting_gender(user_id, chat_id, text)
-        elif state == 'waiting_city':
-            self._handle_waiting_city(user_id, chat_id, text)
-        elif state == 'confirm_city':
-            self._handle_confirm_city(user_id, chat_id, text)
-        elif state == 'waiting_relationship':
-            self._handle_waiting_relationship(user_id, chat_id, text)
+        # Регистрация только в Mini App — редирект из любых состояний регистрации
+        if state in ('waiting_name', 'waiting_age', 'waiting_gender', 'waiting_city', 'confirm_city', 'waiting_relationship'):
+            if user_id in self.user_state:
+                del self.user_state[user_id]
+            if user_id in self.user_data:
+                del self.user_data[user_id]
+            self.bot.send_message(
+                chat_id,
+                "📱 Регистрация теперь только в приложении. Нажмите кнопку ниже:",
+                reply_markup=get_start_webapp_keyboard(),
+            )
+            return
 
         # Обработка редактирования профиля
         elif state == 'edit_purpose':
@@ -1036,7 +1038,7 @@ class UserHandlers:
             )
 
     def handle_photo(self, message):
-        """Обработка фотографий"""
+        """Обработка фотографий. Фото из Mini App не обрабатываем — удаляем из чата."""
         user_id = message.from_user.id
         chat_id = message.chat.id
         state = self.user_state.get(user_id)
@@ -1045,10 +1047,25 @@ class UserHandlers:
             photo_id = message.photo[-1].file_id
 
             if state == 'waiting_photo':
-                username = message.from_user.username or ""
-                self._handle_registration_photo(user_id, chat_id, photo_id, username)
+                # Регистрация только в Mini App
+                if user_id in self.user_state:
+                    del self.user_state[user_id]
+                if user_id in self.user_data:
+                    del self.user_data[user_id]
+                self.bot.send_message(
+                    chat_id,
+                    "📱 Регистрация теперь только в приложении. Нажмите кнопку ниже:",
+                    reply_markup=get_start_webapp_keyboard(),
+                )
             elif state == 'edit_photo':
                 self._handle_edit_photo(user_id, chat_id, photo_id)
+            return
+
+        # Фото прислано не в сценарии бота (например, из Mini App при сохранении) — удаляем из чата
+        try:
+            self.bot.delete_message(chat_id, message.message_id)
+        except Exception as e:
+            logger.debug("Не удалось удалить фото в чате: %s", e)
 
     def _handle_registration_photo(self, user_id, chat_id, photo_id, username=""):
         """Обработка фото при регистрации"""

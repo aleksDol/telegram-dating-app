@@ -38,7 +38,8 @@ class RecommendationService:
         if not preferred_categories:
             # Если нет предпочтений, показываем случайные события
             recommendations = execute_query(
-                '''SELECT e.*, u.name, u.age, u.gender, u.photo
+                '''SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.photo AS event_photo, e.created, e.is_hidden,
+                          u.name, u.age, u.gender, u.photo AS user_photo
                     FROM events e 
                     JOIN users u ON e.user_id = u.user_id 
                     WHERE (e.event_date::timestamp) > NOW()
@@ -52,7 +53,8 @@ class RecommendationService:
         else:
             # Показываем события из предпочитаемых категорий
             placeholders = ','.join(['?'] * len(preferred_categories))
-            query = f'''SELECT e.*, u.name, u.age, u.gender, u.photo
+            query = f'''SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.photo AS event_photo, e.created, e.is_hidden,
+                          u.name, u.age, u.gender, u.photo AS user_photo
                     FROM events e 
                     JOIN users u ON e.user_id = u.user_id 
                     WHERE (e.event_date::timestamp) > NOW()
@@ -82,8 +84,8 @@ class RecommendationService:
         current_city = current_user['city']
 
         base_query = '''
-            SELECT e.id, e.title, e.description, e.event_date, e.user_id, e.target_gender, e.city, e.category,
-                   u.name, u.age, u.gender, u.relationship_status, u.photo, u.purpose
+            SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.photo AS event_photo, e.created, e.is_hidden,
+                   u.name, u.age, u.gender, u.relationship_status, u.photo AS user_photo, u.purpose
             FROM events e 
             JOIN users u ON e.user_id = u.user_id 
             WHERE (e.event_date::timestamp) > NOW()
@@ -110,8 +112,8 @@ class RecommendationService:
             params.extend([current_gender, current_gender, current_city])
         elif filter_type == 'popular':
             query = '''
-                SELECT e.id, e.title, e.description, e.event_date, e.user_id, e.target_gender, e.city, e.category,
-                       u.name, u.age, u.gender, u.relationship_status, u.photo, u.purpose,
+                SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.photo AS event_photo, e.created, e.is_hidden,
+                       u.name, u.age, u.gender, u.relationship_status, u.photo AS user_photo, u.purpose,
                        COUNT(l.id) as likes_count
                 FROM events e 
                 JOIN users u ON e.user_id = u.user_id 
@@ -121,7 +123,7 @@ class RecommendationService:
                 AND e.id NOT IN (SELECT event_id FROM likes WHERE from_user = ?)
                 AND e.is_hidden = FALSE
                 AND u.is_banned = FALSE
-                GROUP BY e.id, u.user_id, u.name, u.age, u.gender, u.relationship_status, u.photo, u.purpose
+                GROUP BY e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.photo, e.created, e.is_hidden, u.name, u.age, u.gender, u.relationship_status, u.photo, u.purpose
                 ORDER BY likes_count DESC
             '''
         elif filter_type == 'nearby':
