@@ -125,7 +125,12 @@
                     </label>
                     <label>
                         <span>Текст сообщения</span>
-                        <textarea id="broadcast-text" rows="6" placeholder="Введите текст рассылки (подпись к фото или просто текст)..."></textarea>
+                        <div class="broadcast-format-toolbar">
+                            <button type="button" id="broadcast-format-bold" class="btn-format" title="Жирный">Ж</button>
+                            <button type="button" id="broadcast-format-italic" class="btn-format" title="Курсив">К</button>
+                            <button type="button" id="broadcast-format-link" class="btn-format" title="Ссылка">🔗</button>
+                        </div>
+                        <textarea id="broadcast-text" rows="6" placeholder="Введите текст рассылки. Выделите фрагмент и нажмите Ж/К/🔗 для форматирования (жирный, курсив, ссылка)."></textarea>
                     </label>
                     <div class="broadcast-actions">
                         <button type="button" id="broadcast-preview-btn" class="btn">Предпросмотр</button>

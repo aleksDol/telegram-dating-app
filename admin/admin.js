@@ -569,6 +569,41 @@
         });
     }
 
+    function broadcastWrapTag(openTag, closeTag) {
+        var ta = document.getElementById("broadcast-text");
+        if (!ta) return;
+        var start = ta.selectionStart;
+        var end = ta.selectionEnd;
+        var text = ta.value;
+        var selected = text.slice(start, end);
+        var before = text.slice(0, start);
+        var after = text.slice(end);
+        ta.value = before + openTag + selected + closeTag + after;
+        ta.selectionStart = start;
+        ta.selectionEnd = start + openTag.length + selected.length + closeTag.length;
+        ta.focus();
+    }
+
+    document.getElementById("broadcast-format-bold").addEventListener("click", function () {
+        broadcastWrapTag("<b>", "</b>");
+    });
+    document.getElementById("broadcast-format-italic").addEventListener("click", function () {
+        broadcastWrapTag("<i>", "</i>");
+    });
+    document.getElementById("broadcast-format-link").addEventListener("click", function () {
+        var ta = document.getElementById("broadcast-text");
+        if (!ta) return;
+        var start = ta.selectionStart;
+        var end = ta.selectionEnd;
+        var selected = ta.value.slice(start, end);
+        var url = prompt("Введите URL ссылки:", "https://");
+        if (url == null) return;
+        url = url.trim();
+        if (!url) return;
+        if (!url.startsWith("http://") && !url.startsWith("https://")) url = "https://" + url;
+        broadcastWrapTag('<a href="' + url.replace(/"/g, "&quot;") + '">', "</a>");
+    });
+
     document.getElementById("broadcast-preview-btn").addEventListener("click", async function () {
         var textEl = document.getElementById("broadcast-text");
         var genderEl = document.getElementById("broadcast-gender");
