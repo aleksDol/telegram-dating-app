@@ -1,6 +1,11 @@
 (function () {
+    "use strict";
     const STORAGE_KEY = "admin_token";
     const API_PREFIX = "/admin/api";
+
+    function ready() {
+        window.AdminPanelReady = true;
+    }
 
     function getToken() {
         return localStorage.getItem(STORAGE_KEY);
@@ -51,28 +56,42 @@
     }
 
     // Login form
-    document.getElementById("login-form").addEventListener("submit", async (e) => {
+    var loginForm = document.getElementById("login-form");
+    if (!loginForm) {
+        console.error("Admin: #login-form not found");
+        return;
+    }
+    loginForm.addEventListener("submit", async function (e) {
         e.preventDefault();
         e.stopPropagation();
-        const errEl = document.getElementById("login-error");
-        const btn = document.getElementById("login-btn");
-        errEl.classList.add("hidden");
-        errEl.textContent = "";
-        const form = e.target;
-        const login = (form.login || document.getElementById("input-login")).value.trim();
-        const password = (form.password || document.getElementById("input-password")).value.trim();
-        const token = (form.token || document.getElementById("input-token")).value.trim();
+        var errEl = document.getElementById("login-error");
+        var btn = document.getElementById("login-btn");
+        if (errEl) {
+            errEl.classList.add("hidden");
+            errEl.textContent = "";
+        }
+        var form = e.target;
+        var loginInput = form.querySelector('[name="login"]') || document.getElementById("input-login");
+        var passwordInput = form.querySelector('[name="password"]') || document.getElementById("input-password");
+        var tokenInput = form.querySelector('[name="token"]') || document.getElementById("input-token");
+        var login = loginInput ? loginInput.value.trim() : "";
+        var password = passwordInput ? passwordInput.value.trim() : "";
+        var token = tokenInput ? tokenInput.value.trim() : "";
         if (!login || !password || !token) {
-            errEl.textContent = "Заполните все поля";
-            errEl.classList.remove("hidden");
+            if (errEl) {
+                errEl.textContent = "Заполните все поля";
+                errEl.classList.remove("hidden");
+            }
             return;
         }
-        btn.disabled = true;
-        btn.textContent = "Вход…";
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = "Вход…";
+        }
         try {
-            const data = await api("/auth", {
+            var data = await api("/auth", {
                 method: "POST",
-                body: JSON.stringify({ login, password, token }),
+                body: JSON.stringify({ login: login, password: password, token: token }),
             });
             if (!data || !data.access_token) {
                 throw new Error("Сервер не вернул токен");
@@ -80,17 +99,22 @@
             setToken(data.access_token);
             showDashboard();
         } catch (err) {
-            let msg = err.message || "Ошибка входа";
-            if (msg.indexOf("fetch") !== -1 || msg === "Failed to fetch" || msg.indexOf("NetworkError") !== -1) {
+            var msg = err.message || "Ошибка входа";
+            if (msg.indexOf("fetch") !== -1 || msg === "Failed to fetch" || msg.indexOf("NetworkError") !== -1 || msg.indexOf("Сеть") !== -1) {
                 msg = "Не удалось подключиться к серверу. Убедитесь, что бэкенд запущен и админка открыта с того же домена (например https://ваш-домен.ru/admin или http://localhost:8080/admin).";
             }
-            errEl.textContent = msg;
-            errEl.classList.remove("hidden");
+            if (errEl) {
+                errEl.textContent = msg;
+                errEl.classList.remove("hidden");
+            }
         } finally {
-            btn.disabled = false;
-            btn.textContent = "Войти";
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = "Войти";
+            }
         }
     });
+    ready();
 
     // Logout
     document.getElementById("logout-btn").addEventListener("click", () => {

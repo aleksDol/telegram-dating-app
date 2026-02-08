@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Админ-панель</title>
-    <link rel="stylesheet" href="/admin/admin.css">
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
     <div id="app">
@@ -68,6 +68,57 @@
             </section>
         </div>
     </div>
-    <script src="/admin/admin.js"></script>
+    <script src="admin.js"></script>
+    <script>
+        // Резервный вход: если admin.js не загрузился, форма всё равно отправит запрос и покажет ошибку
+        (function () {
+            var form = document.getElementById("login-form");
+            if (!form) return;
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (window.AdminPanelReady) return;
+                var loginEl = form.querySelector('[name="login"]');
+                var passwordEl = form.querySelector('[name="password"]');
+                var tokenEl = form.querySelector('[name="token"]');
+                var login = loginEl ? loginEl.value.trim() : "";
+                var password = passwordEl ? passwordEl.value.trim() : "";
+                var token = tokenEl ? tokenEl.value.trim() : "";
+                if (!login || !password || !token) {
+                    var err = document.getElementById("login-error");
+                    if (err) { err.textContent = "Заполните все поля"; err.classList.remove("hidden"); }
+                    return;
+                }
+                var err = document.getElementById("login-error");
+                var btn = document.getElementById("login-btn");
+                if (err) { err.classList.add("hidden"); err.textContent = ""; }
+                if (btn) { btn.disabled = true; btn.textContent = "Вход…"; }
+                fetch("/admin/api/auth", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ login: login, password: password, token: token })
+                }).then(function (r) {
+                    return r.json().catch(function () { return {}; }).then(function (b) {
+                        return { ok: r.ok, status: r.status, body: b };
+                    });
+                }).then(function (x) {
+                    if (btn) { btn.disabled = false; btn.textContent = "Войти"; }
+                    if (x.ok && x.body && x.body.access_token) {
+                        try { localStorage.setItem("admin_token", x.body.access_token); } catch (z) {}
+                        window.location.reload();
+                    } else if (err) {
+                        err.textContent = (x.body && x.body.detail) ? x.body.detail : ("Ошибка входа (код " + x.status + ")");
+                        err.classList.remove("hidden");
+                    }
+                }).catch(function () {
+                    if (btn) { btn.disabled = false; btn.textContent = "Войти"; }
+                    if (err) {
+                        err.textContent = "Не удалось подключиться к серверу. Откройте админку с того же домена (например http://localhost:8080/admin/).";
+                        err.classList.remove("hidden");
+                    }
+                });
+            });
+        })();
+    </script>
 </body>
 </html>
