@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { api, isApiConfigured, API_BASE } from '../api/client'
 import Logo from '../components/Logo'
@@ -16,6 +16,15 @@ function photoSrc(url: string | undefined): string {
 function telegramChatLink(userId: number, username?: string | null): string {
   if (username && username.trim()) return `https://t.me/${username.trim()}`
   return `tg://user?id=${userId}`
+}
+
+/** Список URL фото пользователя для просмотра (все фото или одно). */
+function userPhotosForViewer(
+  photo: string | undefined,
+  photos: string[] | undefined
+): string[] {
+  const list = photos?.length ? photos : photo ? [photo] : []
+  return list.map((u) => photoSrc(u)).filter(Boolean)
 }
 
 export default function Likes() {
@@ -138,22 +147,21 @@ export default function Likes() {
                       </p>
                     </div>
                   )}
-                  <div
+                  <Link
+                    to={item.user ? `/profile/${item.user.user_id}` : '#'}
+                    state={{ fromLikes: true }}
                     className="event-card-author"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => item.user && navigate(`/profile/${item.user.user_id}`, { state: { fromLikes: true } })}
-                    onKeyDown={(e) =>
-                      e.key === 'Enter' && item.user && navigate(`/profile/${item.user.user_id}`, { state: { fromLikes: true } })
-                    }
-                    style={{ marginBottom: 8 }}
+                    style={{ marginBottom: 8, textDecoration: 'none', color: 'inherit' }}
+                    onClick={(e) => !item.user && e.preventDefault()}
                   >
                     <button
                       type="button"
                       className="event-author-avatar-wrap event-author-avatar-btn"
                       onClick={(e) => {
+                        e.preventDefault()
                         e.stopPropagation()
-                        if (item.user?.photo) setPhotoViewerPhotos([photoSrc(item.user.photo)])
+                        const urls = userPhotosForViewer(item.user?.photo, item.user?.photos)
+                        if (urls.length) setPhotoViewerPhotos(urls)
                       }}
                       aria-label="Увеличить фото"
                     >
@@ -173,7 +181,7 @@ export default function Likes() {
                       </span>
                     </div>
                     <span className="event-author-arrow">→</span>
-                  </div>
+                  </Link>
                   <a
                     href={telegramChatLink(item.user_id, item.user?.username)}
                     target="_blank"
@@ -220,22 +228,21 @@ export default function Likes() {
                       </div>
                     )}
                   </div>
-                  <div
+                  <Link
+                    to={item.liker ? `/profile/${item.liker.user_id}` : '#'}
+                    state={{ fromLikes: true }}
                     className="event-card-author"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => item.liker && navigate(`/profile/${item.liker.user_id}`, { state: { fromLikes: true } })}
-                    onKeyDown={(e) =>
-                      e.key === 'Enter' && item.liker && navigate(`/profile/${item.liker.user_id}`, { state: { fromLikes: true } })
-                    }
-                    style={{ marginBottom: 12 }}
+                    style={{ marginBottom: 12, textDecoration: 'none', color: 'inherit' }}
+                    onClick={(e) => !item.liker && e.preventDefault()}
                   >
                     <button
                       type="button"
                       className="event-author-avatar-wrap event-author-avatar-btn"
                       onClick={(e) => {
+                        e.preventDefault()
                         e.stopPropagation()
-                        if (item.liker?.photo) setPhotoViewerPhotos([photoSrc(item.liker.photo)])
+                        const urls = userPhotosForViewer(item.liker?.photo, item.liker?.photos)
+                        if (urls.length) setPhotoViewerPhotos(urls)
                       }}
                       aria-label="Увеличить фото"
                     >
@@ -257,7 +264,7 @@ export default function Likes() {
                       </p>
                     </div>
                     <span className="event-author-arrow">→</span>
-                  </div>
+                  </Link>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <button
                       type="button"

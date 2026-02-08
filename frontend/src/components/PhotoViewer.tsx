@@ -14,6 +14,7 @@ export default function PhotoViewer({ photos, initialIndex = 0, onClose }: Photo
   const [index, setIndex] = useState(Math.min(initialIndex, Math.max(0, photos.length - 1)))
   const touchStartX = useRef(0)
   const touchStartY = useRef(0)
+  const mouseDown = useRef(false)
 
   const goPrev = useCallback(() => {
     setIndex((i) => (i <= 0 ? i : i - 1))
@@ -39,6 +40,33 @@ export default function PhotoViewer({ photos, initialIndex = 0, onClose }: Photo
     },
     [goPrev, goNext]
   )
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    mouseDown.current = true
+    touchStartX.current = e.clientX
+    touchStartY.current = e.clientY
+  }, [])
+  const onMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!mouseDown.current) return
+      const dx = e.clientX - touchStartX.current
+      const dy = e.clientY - touchStartY.current
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > SWIPE_THRESHOLD) {
+        if (dx > 0) goPrev()
+        else goNext()
+        mouseDown.current = false
+        touchStartX.current = e.clientX
+        touchStartY.current = e.clientY
+      }
+    },
+    [goPrev, goNext]
+  )
+  const onMouseUp = useCallback(() => {
+    mouseDown.current = false
+  }, [])
+  const onMouseLeave = useCallback(() => {
+    mouseDown.current = false
+  }, [])
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -75,6 +103,10 @@ export default function PhotoViewer({ photos, initialIndex = 0, onClose }: Photo
         className="photo-viewer-content"
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+        onMouseLeave={onMouseLeave}
         onClick={(e) => e.stopPropagation()}
       >
         {photos.length > 1 && index > 0 && (
