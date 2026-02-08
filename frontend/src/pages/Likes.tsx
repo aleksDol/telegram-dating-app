@@ -189,14 +189,6 @@ export default function Likes() {
                       <span className="event-author-arrow">→</span>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    style={{ marginTop: 8, width: '100%' }}
-                    onClick={() => item.user && navigate(`/profile/${item.user.user_id}`, { state: { fromLikes: true } })}
-                  >
-                    Открыть профиль
-                  </button>
                   <a
                     href={telegramChatLink(item.user_id, item.user?.username)}
                     target="_blank"
@@ -220,15 +212,11 @@ export default function Likes() {
         </section>
       )}
 
-      {!loading && (() => {
-        const matchUserIds = new Set(matches.map((m) => m.user_id))
-        const pendingOnly = likes.filter((item) => !item.liker?.user_id || !matchUserIds.has(item.liker.user_id))
-        if (pendingOnly.length === 0) return null
-        return (
+      {!loading && likes.length > 0 && (
         <section>
           <h2 className="page-subtitle" style={{ marginBottom: 12 }}>Новые лайки</h2>
           <div className="event-list">
-            {pendingOnly.map((item) => (
+            {likes.map((item) => (
               <div key={item.like_id} className="card event-card">
                 <div className="event-card-footer" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
                   <div
@@ -289,14 +277,6 @@ export default function Likes() {
                       <span className="event-author-arrow">→</span>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    style={{ marginTop: 8, width: '100%' }}
-                    onClick={() => item.liker && navigate(`/profile/${item.liker.user_id}`, { state: { fromLikes: true } })}
-                  >
-                    Открыть профиль
-                  </button>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <button
                       type="button"
@@ -320,8 +300,7 @@ export default function Likes() {
             ))}
           </div>
         </section>
-        )
-      })()}
+      )}
       {photoViewerPhotos && photoViewerPhotos.length > 0 && (
         <PhotoViewer photos={photoViewerPhotos} onClose={() => setPhotoViewerPhotos(null)} />
       )}

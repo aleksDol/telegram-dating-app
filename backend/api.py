@@ -511,14 +511,16 @@ def api_update_profile(body: UpdateProfileBody, user_id: int = Depends(get_user_
                 new_file_ids.append(file_id or p)
             elif f"/api/photo/user/{user_id}" in p:
                 # URL с индексом: /api/photo/user/123/0 или без индекса: /api/photo/user/123
-                parts = p.rstrip("/").split("/")
-                # Если в пути 6 частей (..., user, id, index) — последняя это индекс; иначе 0
+                # Берём последний сегмент пути (без query), это индекс фото
+                parts = p.split("?")[0].rstrip("/").split("/")
                 idx = 0
-                if len(parts) >= 6 and parts[-1].isdigit():
-                    try:
-                        idx = int(parts[-1])
-                    except ValueError:
-                        pass
+                if len(parts) >= 6:
+                    last = parts[-1]
+                    if last.isdigit():
+                        try:
+                            idx = int(last)
+                        except ValueError:
+                            pass
                 if 0 <= idx < len(current_list):
                     new_file_ids.append(current_list[idx])
             else:

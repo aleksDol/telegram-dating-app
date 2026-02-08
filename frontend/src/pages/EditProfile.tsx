@@ -66,8 +66,8 @@ export default function EditProfile() {
     setPhotos((prev) => [...prev, dataUrl].slice(0, MAX_PHOTOS))
   }
 
-  const handleRemovePhoto = (photoUrl: string) => {
-    setPhotos((prev) => prev.filter((p) => p !== photoUrl))
+  const handleRemovePhoto = (index: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== index))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -217,7 +217,7 @@ export default function EditProfile() {
                   <button
                     type="button"
                     className="profile-photo-slot-remove"
-                    onClick={() => handleRemovePhoto(photos[i])}
+                    onClick={() => handleRemovePhoto(i)}
                     title="Удалить фото"
                     aria-label="Удалить фото"
                   >
