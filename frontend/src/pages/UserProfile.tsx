@@ -65,6 +65,12 @@ export default function UserProfile() {
       .finally(() => setLoading(false))
   }, [userId, isDemo, useDemoEvents])
 
+  const profilePhotos = useMemo(() => {
+    if (!profile) return []
+    const list = profile.photos?.length ? profile.photos : (profile.photo ? [profile.photo] : [])
+    return list.map(resolvePhotoUrl).filter(Boolean)
+  }, [profile])
+
   if (userId && currentUser && String(currentUser.user_id) === userId) {
     navigate('/profile', { replace: true })
     return (
@@ -114,11 +120,6 @@ export default function UserProfile() {
   }
 
   const isMyProfile = Boolean(currentUser && currentUser.user_id === profile.user_id)
-
-  const profilePhotos = useMemo(() => {
-    const list = profile.photos?.length ? profile.photos : (profile.photo ? [profile.photo] : [])
-    return list.map(resolvePhotoUrl).filter(Boolean)
-  }, [profile?.photo, profile?.photos])
 
   return (
     <>

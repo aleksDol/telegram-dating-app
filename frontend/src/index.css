@@ -2015,6 +2015,8 @@ button {
   max-width: 100%;
   min-width: 0;
   overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .create-event-page .form-create .label {
@@ -2125,18 +2127,45 @@ button {
   box-sizing: border-box;
 }
 
+/* Обёртка поля «Дата» — не даёт нативному инпуту вылезать за границы на мобильном */
+.create-event-page .form-create .input-date-wrap {
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.create-event-page .form-create .input-date-wrap .input-date,
 .create-event-page .form-create input[type="date"],
 .create-event-page .form-create input[type="time"],
 .create-event-page .form-create input[type="datetime-local"],
 .input-datetime {
   min-width: 0 !important;
   max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
   font-size: 16px;
   font-family: var(--font);
   cursor: pointer;
+  display: block;
 }
+
+.create-event-page .form-create .input-date-wrap .input-date {
+  margin-bottom: 0;
+}
+
 .create-event-page .form-create .input-datetime {
   width: 100%;
+}
+
+@media (max-width: 480px) {
+  .create-event-page .form-create .input-date-wrap {
+    width: 100%;
+  }
+  .create-event-page .form-create input[type="date"],
+  .create-event-page .form-create .input-date {
+    max-width: 100%;
+  }
 }
 
 /* Кнопка «Создать встречу»: градиент как на главной/логотипе + отступ снизу */
@@ -2202,6 +2231,8 @@ select.input {
   align-items: center;
   justify-content: center;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  overflow: hidden;
+  touch-action: none;
 }
 .photo-viewer-close {
   position: absolute;
@@ -2231,13 +2262,36 @@ select.input {
   justify-content: center;
   position: relative;
   min-height: 0;
+  overflow: hidden;
+  touch-action: none;
 }
+
+.photo-viewer-track {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+.photo-viewer-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
 .photo-viewer-img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
   user-select: none;
   -webkit-user-select: none;
+  pointer-events: none;
 }
 .photo-viewer-arrow {
   position: absolute;

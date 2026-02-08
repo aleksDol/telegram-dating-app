@@ -114,14 +114,16 @@ export default function CreateEvent() {
         </label>
 
         <label className="label">Дата</label>
-        <input
-          className="input input-date"
-          type="date"
-          value={eventDate}
-          onChange={(e) => setEventDate(e.target.value)}
-          min={new Date().toISOString().slice(0, 10)}
-          required
-        />
+        <div className="input-date-wrap">
+          <input
+            className="input input-date"
+            type="date"
+            value={eventDate}
+            onChange={(e) => setEventDate(e.target.value)}
+            min={new Date().toISOString().slice(0, 10)}
+            required
+          />
+        </div>
 
         <label className="label">Для кого</label>
         <select

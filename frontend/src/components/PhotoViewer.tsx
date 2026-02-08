@@ -15,6 +15,7 @@ export default function PhotoViewer({ photos, initialIndex = 0, onClose }: Photo
   const touchStartX = useRef(0)
   const touchStartY = useRef(0)
   const mouseDown = useRef(false)
+  const contentRef = useRef<HTMLDivElement>(null)
 
   const goPrev = useCallback(() => {
     setIndex((i) => (i <= 0 ? i : i - 1))
@@ -78,9 +79,19 @@ export default function PhotoViewer({ photos, initialIndex = 0, onClose }: Photo
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [onClose, goPrev, goNext])
 
-  if (photos.length === 0) return null
+  useEffect(() => {
+    const el = contentRef.current
+    if (!el) return
+    const onTouchMove = (e: TouchEvent) => {
+      const dx = Math.abs(e.touches[0].clientX - touchStartX.current)
+      const dy = Math.abs(e.touches[0].clientY - touchStartY.current)
+      if (dx > dy && dx > 15) e.preventDefault()
+    }
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    return () => el.removeEventListener('touchmove', onTouchMove)
+  }, [])
 
-  const currentPhoto = photos[index]
+  if (photos.length === 0) return null
 
   return (
     <div
@@ -100,6 +111,7 @@ export default function PhotoViewer({ photos, initialIndex = 0, onClose }: Photo
       </button>
 
       <div
+        ref={contentRef}
         className="photo-viewer-content"
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
@@ -119,7 +131,13 @@ export default function PhotoViewer({ photos, initialIndex = 0, onClose }: Photo
             ‹
           </button>
         )}
-        <img src={currentPhoto} alt="" className="photo-viewer-img" draggable={false} />
+        <div className="photo-viewer-track" style={{ transform: `translateX(-${index * 100}%)` }}>
+          {photos.map((src, i) => (
+            <div key={i} className="photo-viewer-slide">
+              <img src={src} alt="" className="photo-viewer-img" draggable={false} />
+            </div>
+          ))}
+        </div>
         {photos.length > 1 && index < photos.length - 1 && (
           <button
             type="button"
