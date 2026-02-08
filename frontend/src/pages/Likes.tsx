@@ -3,12 +3,19 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { api, isApiConfigured, API_BASE } from '../api/client'
 import Logo from '../components/Logo'
+import PhotoViewer from '../components/PhotoViewer'
 import type { PendingLike as PendingLikeType, LikeMatch as LikeMatchType } from '../types'
 
 function photoSrc(url: string | undefined): string {
   if (!url) return ''
   if (url.startsWith('data:') || url.startsWith('http')) return url
   return API_BASE + url
+}
+
+/** Ссылка на чат с пользователем в Telegram (по username или tg://user?id=). */
+function telegramChatLink(userId: number, username?: string | null): string {
+  if (username && username.trim()) return `https://t.me/${username.trim()}`
+  return `tg://user?id=${userId}`
 }
 
 export default function Likes() {
@@ -20,6 +27,7 @@ export default function Likes() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [respondingId, setRespondingId] = useState<number | null>(null)
+  const [photoViewerPhotos, setPhotoViewerPhotos] = useState<string[] | null>(null)
 
   useEffect(() => {
     fetchUser()
@@ -134,19 +142,29 @@ export default function Likes() {
                     className="event-card-author"
                     role="button"
                     tabIndex={0}
-                    onClick={() => item.user && navigate(`/profile/${item.user.user_id}`)}
+                    onClick={() => item.user && navigate(`/profile/${item.user.user_id}`, { state: { fromLikes: true } })}
                     onKeyDown={(e) =>
-                      e.key === 'Enter' && item.user && navigate(`/profile/${item.user.user_id}`)
+                      e.key === 'Enter' && item.user && navigate(`/profile/${item.user.user_id}`, { state: { fromLikes: true } })
                     }
                     style={{ marginBottom: 8 }}
                   >
-                    {item.user?.photo ? (
-                      <img src={photoSrc(item.user.photo)} alt="" className="event-author-avatar" />
-                    ) : (
-                      <div className="event-author-avatar-placeholder">
-                        {(item.user?.name ?? '?').slice(0, 1)}
-                      </div>
-                    )}
+                    <button
+                      type="button"
+                      className="event-author-avatar-wrap event-author-avatar-btn"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (item.user?.photo) setPhotoViewerPhotos([photoSrc(item.user.photo)])
+                      }}
+                      aria-label="Увеличить фото"
+                    >
+                      {item.user?.photo ? (
+                        <img src={photoSrc(item.user.photo)} alt="" className="event-author-avatar" />
+                      ) : (
+                        <div className="event-author-avatar-placeholder">
+                          {(item.user?.name ?? '?').slice(0, 1)}
+                        </div>
+                      )}
+                    </button>
                     <div className="event-author-info">
                       <span className="event-author-name">{item.user?.name ?? 'Пользователь'}</span>
                       <span className="event-author-meta">
@@ -156,6 +174,18 @@ export default function Likes() {
                     </div>
                     <span className="event-author-arrow">→</span>
                   </div>
+                  <a
+                    href={telegramChatLink(item.user_id, item.user?.username)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-primary"
+                    style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, textDecoration: 'none' }}
+                  >
+                    ✉️ Написать в Telegram
+                  </a>
+                  <p className="text-muted" style={{ marginTop: 8, fontSize: 12 }}>
+                    Сообщите, что вы из SponTime, чтобы не вводить в заблуждение
+                  </p>
                 </div>
               </div>
             ))}
@@ -194,19 +224,29 @@ export default function Likes() {
                     className="event-card-author"
                     role="button"
                     tabIndex={0}
-                    onClick={() => item.liker && navigate(`/profile/${item.liker.user_id}`)}
+                    onClick={() => item.liker && navigate(`/profile/${item.liker.user_id}`, { state: { fromLikes: true } })}
                     onKeyDown={(e) =>
-                      e.key === 'Enter' && item.liker && navigate(`/profile/${item.liker.user_id}`)
+                      e.key === 'Enter' && item.liker && navigate(`/profile/${item.liker.user_id}`, { state: { fromLikes: true } })
                     }
                     style={{ marginBottom: 12 }}
                   >
-                    {item.liker?.photo ? (
-                      <img src={photoSrc(item.liker.photo)} alt="" className="event-author-avatar" />
-                    ) : (
-                      <div className="event-author-avatar-placeholder">
-                        {(item.liker?.name ?? '?').slice(0, 1)}
-                      </div>
-                    )}
+                    <button
+                      type="button"
+                      className="event-author-avatar-wrap event-author-avatar-btn"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (item.liker?.photo) setPhotoViewerPhotos([photoSrc(item.liker.photo)])
+                      }}
+                      aria-label="Увеличить фото"
+                    >
+                      {item.liker?.photo ? (
+                        <img src={photoSrc(item.liker.photo)} alt="" className="event-author-avatar" />
+                      ) : (
+                        <div className="event-author-avatar-placeholder">
+                          {(item.liker?.name ?? '?').slice(0, 1)}
+                        </div>
+                      )}
+                    </button>
                     <div className="event-author-info">
                       <span className="event-author-name">{item.liker?.name ?? 'Пользователь'}</span>
                       <span className="event-author-meta">
@@ -243,6 +283,9 @@ export default function Likes() {
         </section>
         )
       })()}
+      {photoViewerPhotos && photoViewerPhotos.length > 0 && (
+        <PhotoViewer photos={photoViewerPhotos} onClose={() => setPhotoViewerPhotos(null)} />
+      )}
     </>
   )
 }

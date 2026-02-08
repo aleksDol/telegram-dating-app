@@ -1,21 +1,31 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
-import { api, isApiConfigured } from '../api/client'
+import { api, isApiConfigured, API_BASE } from '../api/client'
 import { getDemoUserByUserId } from '../demoData'
+import PhotoViewer from '../components/PhotoViewer'
 import type { User } from '../types'
 
-type LocationState = { fromEventId?: number } | null
+function resolvePhotoUrl(url: string): string {
+  if (!url) return ''
+  if (url.startsWith('data:') || url.startsWith('http')) return url
+  return API_BASE + url
+}
+
+type LocationState = { fromEventId?: number; fromLikes?: boolean } | null
 
 export default function UserProfile() {
   const { userId } = useParams<{ userId: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const fromEventId = (location.state as LocationState)?.fromEventId
+  const locationState = location.state as LocationState
+  const fromEventId = locationState?.fromEventId
+  const fromLikes = locationState?.fromLikes
   const { user: currentUser, fetchUser, isDemo, useDemoEvents } = useApp()
   const [profile, setProfile] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [photoViewerOpen, setPhotoViewerOpen] = useState(false)
 
   useEffect(() => {
     fetchUser()
@@ -85,19 +95,36 @@ export default function UserProfile() {
 
   const isMyProfile = currentUser.user_id === profile.user_id
 
+  const profilePhotos = useMemo(() => {
+    const list = profile.photos?.length ? profile.photos : (profile.photo ? [profile.photo] : [])
+    return list.map(resolvePhotoUrl).filter(Boolean)
+  }, [profile?.photo, profile?.photos])
+
   return (
     <>
       <DemoBanner />
-      {fromEventId != null && (
+      {(fromEventId != null || fromLikes) && (
         <div className="page-header" style={{ marginBottom: 8 }}>
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={() => navigate(`/event/${fromEventId}`)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-          >
-            ← Вернуться к встрече
-          </button>
+          {fromEventId != null && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => navigate(`/event/${fromEventId}`)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            >
+              ← Вернуться к встрече
+            </button>
+          )}
+          {fromLikes && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => navigate('/likes')}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            >
+              ← Назад к лайкам
+            </button>
+          )}
         </div>
       )}
       <div className="page-header">
@@ -105,9 +132,19 @@ export default function UserProfile() {
       </div>
       <div className="card profile-card">
         {profile.photo ? (
-          <img src={profile.photo} alt="" className="profile-avatar" />
+          <button
+            type="button"
+            className="profile-avatar-btn"
+            onClick={() => profilePhotos.length > 0 && setPhotoViewerOpen(true)}
+            aria-label="Увеличить фото"
+          >
+            <img src={resolvePhotoUrl(profile.photo)} alt="" className="profile-avatar" />
+          </button>
         ) : (
           <div className="profile-avatar-placeholder">{profile.name.slice(0, 1)}</div>
+        )}
+        {photoViewerOpen && profilePhotos.length > 0 && (
+          <PhotoViewer photos={profilePhotos} onClose={() => setPhotoViewerOpen(false)} />
         )}
         <h2 className="profile-name">{profile.name}</h2>
         <p className="profile-meta">{profile.age} лет · {profile.gender} · {profile.city}</p>

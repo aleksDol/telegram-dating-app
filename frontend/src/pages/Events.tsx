@@ -5,6 +5,7 @@ import { api, isApiConfigured, API_BASE } from '../api/client'
 import { FILTER_LABELS } from '../constants'
 import { getDemoEventsForFeed } from '../demoData'
 import Logo from '../components/Logo'
+import PhotoViewer from '../components/PhotoViewer'
 import type { Event as EventType } from '../types'
 
 const FILTERS = ['new', 'popular', 'nearby', 'today', 'tomorrow', 'for_me', 'random', 'interest'] as const
@@ -48,6 +49,7 @@ export default function Events() {
   const [exitDirection, setExitDirection] = useState<'left' | 'right' | null>(null)
   const [exitStartOffset, setExitStartOffset] = useState(0)
   const [exitAnimateToEnd, setExitAnimateToEnd] = useState(false)
+  const [photoViewerPhotos, setPhotoViewerPhotos] = useState<string[] | null>(null)
 
   useEffect(() => {
     fetchUser()
@@ -299,7 +301,7 @@ export default function Events() {
               <>
                 {events[currentIndex + 1] && (
                   <div className="events-tinder-card-wrap events-tinder-card-enter" key={`enter-${events[currentIndex + 1].id}`}>
-                    <EventCard event={events[currentIndex + 1]} navigate={navigate} />
+                    <EventCard event={events[currentIndex + 1]} navigate={navigate} onAvatarClick={setPhotoViewerPhotos} />
                   </div>
                 )}
                 <div
@@ -313,7 +315,7 @@ export default function Events() {
                     transition: 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease-out',
                   }}
                 >
-                  {currentEvent && <EventCard event={currentEvent} navigate={navigate} />}
+                  {currentEvent && <EventCard event={currentEvent} navigate={navigate} onAvatarClick={setPhotoViewerPhotos} />}
                 </div>
               </>
             ) : (
@@ -338,7 +340,7 @@ export default function Events() {
                 {swipeOffset < -40 && (
                   <span className="events-tinder-badge events-tinder-badge-skip">Пропустить</span>
                 )}
-                {currentEvent && <EventCard event={currentEvent} navigate={navigate} />}
+                {currentEvent && <EventCard event={currentEvent} navigate={navigate} onAvatarClick={setPhotoViewerPhotos} />}
               </div>
             )}
           </div>
@@ -367,6 +369,9 @@ export default function Events() {
           </p>
         </div>
       )}
+      {photoViewerPhotos && photoViewerPhotos.length > 0 && (
+        <PhotoViewer photos={photoViewerPhotos} onClose={() => setPhotoViewerPhotos(null)} />
+      )}
     </>
   )
 }
@@ -374,9 +379,11 @@ export default function Events() {
 function EventCard({
   event: ev,
   navigate,
+  onAvatarClick,
 }: {
   event: EventType
   navigate: (to: string, opts?: { state?: { fromEventId: number } }) => void
+  onAvatarClick?: (photos: string[]) => void
 }) {
   return (
     <div className="card event-card">
@@ -412,7 +419,17 @@ function EventCard({
             }
           }}
         >
-          <div className="event-author-avatar-wrap">
+          <button
+            type="button"
+            className="event-author-avatar-wrap event-author-avatar-btn"
+            onClick={(e) => {
+              e.stopPropagation()
+              if (ev.organizer_photo || ev.user_id) {
+                onAvatarClick?.([eventPhotoSrc(ev.organizer_photo || `/api/photo/user/${ev.user_id}`)])
+              }
+            }}
+            aria-label="Увеличить фото"
+          >
             {(ev.organizer_photo || ev.user_id) ? (
               <img
                 src={eventPhotoSrc(ev.organizer_photo || `/api/photo/user/${ev.user_id}`)}
@@ -433,7 +450,7 @@ function EventCard({
             >
               {(ev.name ?? '?').slice(0, 1)}
             </div>
-          </div>
+          </button>
           <div className="event-author-info">
             <span className="event-author-name">{ev.name ?? 'Пользователь'}</span>
             <span className="event-author-meta">{ev.age} · {ev.city}</span>

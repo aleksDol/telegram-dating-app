@@ -116,7 +116,7 @@ def get_user_id(telegram_user: dict = Depends(get_telegram_user_from_init_data))
 
 
 def _upload_photo_to_telegram(chat_id: int, data_url: str) -> str | None:
-    """Загружает фото из data URL в Telegram и возвращает file_id (короткая строка для БД)."""
+    """Загружает фото из data URL в Telegram и возвращает file_id. Сообщение в чат не оставляем — удаляем сразу."""
     token = (config.BOT_TOKEN or "").strip()
     if not token or not data_url.strip().lower().startswith("data:"):
         return None
@@ -139,10 +139,20 @@ def _upload_photo_to_telegram(chat_id: int, data_url: str) -> str | None:
             data = r.json()
             if not data.get("ok"):
                 return None
-            photos = data.get("result", {}).get("photo", [])
+            result = data.get("result", {})
+            photos = result.get("photo", [])
             if not photos:
                 return None
-            return photos[-1].get("file_id")
+            file_id = photos[-1].get("file_id")
+            message_id = result.get("message_id")
+            if message_id is not None:
+                delete_url = f"https://api.telegram.org/bot{token}/deleteMessage"
+                requests.post(
+                    delete_url,
+                    json={"chat_id": chat_id, "message_id": message_id},
+                    timeout=10,
+                )
+            return file_id
     except Exception:
         return None
 

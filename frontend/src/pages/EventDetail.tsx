@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { api, isApiConfigured, API_BASE } from '../api/client'
 import { getDemoEventById } from '../demoData'
+import PhotoViewer from '../components/PhotoViewer'
 import type { Event as EventType } from '../types'
 
 function eventPhotoSrc(url: string | undefined): string {
@@ -18,6 +19,7 @@ export default function EventDetail() {
   const [event, setEvent] = useState<EventType | null>(null)
   const [loading, setLoading] = useState(true)
   const [liking, setLiking] = useState(false)
+  const [photoViewerPhotos, setPhotoViewerPhotos] = useState<string[] | null>(null)
 
   useEffect(() => {
     fetchUser()
@@ -105,9 +107,14 @@ export default function EventDetail() {
         <h1 className="page-title">{event.title}</h1>
       </div>
       {event.photo && (
-        <div className="event-detail-photo-wrap">
+        <button
+          type="button"
+          className="event-detail-photo-wrap event-detail-photo-btn"
+          onClick={() => setPhotoViewerPhotos([eventPhotoSrc(event.photo!)])}
+          aria-label="Увеличить фото"
+        >
           <img src={eventPhotoSrc(event.photo)} alt="" className="event-detail-photo" />
-        </div>
+        </button>
       )}
       <div
         className="event-detail-author card"
@@ -116,7 +123,16 @@ export default function EventDetail() {
         onClick={() => navigate(`/profile/${event.user_id}`, { state: { fromEventId: event.id } })}
         onKeyDown={(e) => e.key === 'Enter' && navigate(`/profile/${event.user_id}`, { state: { fromEventId: event.id } })}
       >
-        <div className="event-detail-author-avatar-wrap">
+        <button
+          type="button"
+          className="event-detail-author-avatar-wrap event-detail-author-avatar-btn"
+          onClick={(e) => {
+            e.stopPropagation()
+            const url = event.organizer_photo || `/api/photo/user/${event.user_id}`
+            setPhotoViewerPhotos([eventPhotoSrc(url)])
+          }}
+          aria-label="Увеличить фото"
+        >
           {(event.organizer_photo || event.user_id) ? (
             <img
               src={eventPhotoSrc(event.organizer_photo || `/api/photo/user/${event.user_id}`)}
@@ -137,7 +153,7 @@ export default function EventDetail() {
           >
             {(event.name ?? '?').slice(0, 1)}
           </div>
-        </div>
+        </button>
         <div className="event-detail-author-info">
           <span className="event-detail-author-name">{event.name ?? 'Пользователь'}</span>
           <p className="event-detail-author-meta">{event.age} лет · {event.gender} · {event.city}</p>
@@ -180,6 +196,9 @@ export default function EventDetail() {
           </>
         )}
       </div>
+      {photoViewerPhotos && photoViewerPhotos.length > 0 && (
+        <PhotoViewer photos={photoViewerPhotos} onClose={() => setPhotoViewerPhotos(null)} />
+      )}
     </>
   )
 }
