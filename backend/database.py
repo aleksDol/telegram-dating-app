@@ -45,11 +45,14 @@ class Database:
                 raise
 
     def create_tables(self):
-        """Создание всех таблиц (PostgreSQL)."""
+        """Создание всех таблиц (PostgreSQL). При включённом autocommit каждый запрос
+        в своей транзакции — неудачный ALTER не переводит соединение в aborted."""
         with self.get_connection() as conn:
             cursor = conn.cursor()
-
-            cursor.execute("""
+            old_autocommit = conn.autocommit
+            conn.autocommit = True
+            try:
+                cursor.execute("""
                 CREATE TABLE IF NOT EXISTS users (
                     user_id BIGINT PRIMARY KEY,
                     username TEXT,
@@ -184,6 +187,8 @@ class Database:
                     appeal_text TEXT
                 )
             """)
+            finally:
+                conn.autocommit = old_autocommit
 
     def execute_query(self, query, params=(), fetchone=False, fetchall=False, commit=False):
         """Выполнение SQL. Плейсхолдеры: ? заменяются на %s для PostgreSQL."""
