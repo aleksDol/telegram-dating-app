@@ -32,10 +32,8 @@ export default function UserProfile() {
   }, [fetchUser])
 
   useEffect(() => {
-    if (!currentUser && !userId) return
-    if (userLoading) return
-    if (!currentUser) return
-    const id = userId ? parseInt(userId, 10) : NaN
+    if (!userId) return
+    const id = parseInt(userId, 10)
     if (Number.isNaN(id)) {
       setLoading(false)
       setError('Неверный профиль')
@@ -63,9 +61,18 @@ export default function UserProfile() {
         setProfile(null)
       })
       .finally(() => setLoading(false))
-  }, [userId, isDemo, useDemoEvents, currentUser, userLoading])
+  }, [userId, isDemo, useDemoEvents])
 
-  if (userLoading) {
+  if (userId && currentUser && String(currentUser.user_id) === userId) {
+    navigate('/profile', { replace: true })
+    return (
+      <div className="screen-center">
+        <div className="loader" />
+        <p className="text-muted">Переход в профиль...</p>
+      </div>
+    )
+  }
+  if (userLoading && !profile) {
     return (
       <div className="screen-center">
         <div className="loader" />
@@ -73,13 +80,14 @@ export default function UserProfile() {
       </div>
     )
   }
-  if (!currentUser) {
+  if (!currentUser && !profile && !loading) {
     navigate('/', { replace: true })
-    return null
-  }
-  if (userId && String(currentUser.user_id) === userId) {
-    navigate('/profile', { replace: true })
-    return null
+    return (
+      <div className="screen-center">
+        <div className="loader" />
+        <p className="text-muted">Перенаправление...</p>
+      </div>
+    )
   }
 
   if (loading) {
@@ -103,7 +111,7 @@ export default function UserProfile() {
     )
   }
 
-  const isMyProfile = currentUser.user_id === profile.user_id
+  const isMyProfile = Boolean(currentUser && currentUser.user_id === profile.user_id)
 
   const profilePhotos = useMemo(() => {
     const list = profile.photos?.length ? profile.photos : (profile.photo ? [profile.photo] : [])

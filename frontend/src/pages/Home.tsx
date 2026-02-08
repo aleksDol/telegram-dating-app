@@ -1,8 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { DEMO_USER_ID } from '../context/AppContext'
-import { isApiConfigured } from '../api/client'
+import { isApiConfigured, api } from '../api/client'
 import Logo from '../components/Logo'
 import type { User } from '../types'
 
@@ -31,10 +31,22 @@ function WaveSvg() {
 export default function Home() {
   const navigate = useNavigate()
   const { user, loading, fetchUser, setUser } = useApp()
+  const [myEventsCount, setMyEventsCount] = useState(0)
 
   useEffect(() => {
     fetchUser()
   }, [fetchUser])
+
+  useEffect(() => {
+    if (!user || !isApiConfigured()) {
+      setMyEventsCount(0)
+      return
+    }
+    api
+      .getMyEvents()
+      .then((res) => setMyEventsCount(res.events?.length ?? 0))
+      .catch(() => setMyEventsCount(0))
+  }, [user])
 
   if (loading) {
     return (
@@ -116,7 +128,7 @@ export default function Home() {
       {/* Статистика — 3 колонки с подписями */}
       <div className="home-stats-cols animate-in stagger-2">
         <Link to="/my-events" className="home-stat-col">
-          <span className="home-stat-num">17</span>
+          <span className="home-stat-num">{myEventsCount}</span>
           <span className="home-stat-emoji">💫</span>
           <span className="home-stat-label">Мои встречи</span>
         </Link>

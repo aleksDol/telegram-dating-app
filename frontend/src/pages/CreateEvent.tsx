@@ -9,7 +9,7 @@ export default function CreateEvent() {
   const { user, fetchUser } = useApp()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [eventDateTime, setEventDateTime] = useState('')
+  const [eventDate, setEventDate] = useState('')
   const [targetGender, setTargetGender] = useState('Все')
   const [category, setCategory] = useState('')
   const [city, setCity] = useState('')
@@ -31,8 +31,8 @@ export default function CreateEvent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim() || !description.trim() || !eventDateTime || !city) {
-      setError('Заполните название, описание, дату и время, город')
+    if (!title.trim() || !description.trim() || !eventDate || !city) {
+      setError('Заполните название, описание, дату и город')
       return
     }
     if (!isApiConfigured()) {
@@ -54,7 +54,7 @@ export default function CreateEvent() {
       await api.createEvent({
         title: title.trim(),
         description: description.trim(),
-        event_date: eventDateTime,
+        event_date: eventDate,
         target_gender: targetGender,
         city,
         category: category || undefined,
@@ -113,17 +113,13 @@ export default function CreateEvent() {
           </span>
         </label>
 
-        <label className="label">Дата и время</label>
+        <label className="label">Дата</label>
         <input
-          className="input input-datetime"
-          type="datetime-local"
-          value={eventDateTime}
-          onChange={(e) => setEventDateTime(e.target.value)}
-          min={(() => {
-            const d = new Date()
-            d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
-            return d.toISOString().slice(0, 16)
-          })()}
+          className="input input-date"
+          type="date"
+          value={eventDate}
+          onChange={(e) => setEventDate(e.target.value)}
+          min={new Date().toISOString().slice(0, 10)}
           required
         />
 
