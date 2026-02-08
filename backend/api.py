@@ -321,7 +321,7 @@ def api_get_user_profile(
 ):
     """Публичный профиль пользователя по id (для перехода из карточки события)."""
     row = execute_query(
-        "SELECT user_id, name, age, gender, city, relationship_status, photo, purpose FROM users WHERE user_id = ? AND (is_banned = FALSE OR is_banned IS NULL)",
+        "SELECT user_id, name, age, gender, city, relationship_status, photo, photos, purpose FROM users WHERE user_id = ? AND (is_banned = FALSE OR is_banned IS NULL)",
         (profile_user_id,),
         fetchone=True,
     )
@@ -773,7 +773,7 @@ def api_get_pending_likes(user_id: int = Depends(get_user_id)):
     result = []
     for r in rows:
         liker = execute_query(
-            """SELECT user_id, name, age, gender, city, relationship_status, photo, purpose, username
+            """SELECT user_id, name, age, gender, city, relationship_status, photo, photos, purpose, username
                FROM users WHERE user_id = ? AND is_banned = FALSE""",
             (r["from_user"],), fetchone=True
         )
@@ -816,7 +816,7 @@ def api_get_likes_matches(user_id: int = Depends(get_user_id)):
             continue
         seen.add(other_id)
         other = execute_query(
-            """SELECT user_id, name, age, gender, city, relationship_status, photo, purpose, username
+            """SELECT user_id, name, age, gender, city, relationship_status, photo, photos, purpose, username
                FROM users WHERE user_id = ? AND is_banned = FALSE""",
             (other_id,), fetchone=True
         )

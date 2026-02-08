@@ -21,7 +21,7 @@ export default function UserProfile() {
   const locationState = location.state as LocationState
   const fromEventId = locationState?.fromEventId
   const fromLikes = locationState?.fromLikes
-  const { user: currentUser, fetchUser, isDemo, useDemoEvents } = useApp()
+  const { user: currentUser, fetchUser, loading: userLoading, isDemo, useDemoEvents } = useApp()
   const [profile, setProfile] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -33,6 +33,8 @@ export default function UserProfile() {
 
   useEffect(() => {
     if (!currentUser && !userId) return
+    if (userLoading) return
+    if (!currentUser) return
     const id = userId ? parseInt(userId, 10) : NaN
     if (Number.isNaN(id)) {
       setLoading(false)
@@ -61,8 +63,16 @@ export default function UserProfile() {
         setProfile(null)
       })
       .finally(() => setLoading(false))
-  }, [userId, isDemo, useDemoEvents, currentUser])
+  }, [userId, isDemo, useDemoEvents, currentUser, userLoading])
 
+  if (userLoading) {
+    return (
+      <div className="screen-center">
+        <div className="loader" />
+        <p className="text-muted">Загрузка...</p>
+      </div>
+    )
+  }
   if (!currentUser) {
     navigate('/', { replace: true })
     return null

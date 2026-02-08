@@ -952,6 +952,38 @@ button {
   background: rgba(45, 55, 72, 0.02);
 }
 
+.profile-photo-slot-edit-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.profile-photo-slot-edit-wrap .profile-photo-slot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.profile-photo-slot-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border: none;
+  padding: 0;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.profile-photo-slot-remove:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
 .profile-photo-slot-img {
   width: 100%;
   height: 100%;
@@ -2487,7 +2519,13 @@ select.input {
   align-items: center;
   justify-content: center;
   margin-bottom: 1rem;
-  font-size: 3rem;
+  overflow: hidden;
+}
+.home-cta-illus-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .home-cta-steps {

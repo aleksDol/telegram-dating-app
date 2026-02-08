@@ -6,6 +6,8 @@ import { isApiConfigured } from '../api/client'
 import Logo from '../components/Logo'
 import type { User } from '../types'
 
+import heroPageImg from '../img/hero-page.jpeg'
+
 const MOCK_USER: User = {
   user_id: DEMO_USER_ID,
   name: 'Гость',
@@ -134,7 +136,9 @@ export default function Home() {
       <section className="home-cta animate-in stagger-3">
         <div className="home-cta-card">
           <h2 className="home-cta-title">🎯 Не знаешь, с чего начать?</h2>
-          <div className="home-cta-illus">✨</div>
+          <div className="home-cta-illus">
+            <img src={heroPageImg} alt="" className="home-cta-illus-img" />
+          </div>
           <ul className="home-cta-steps">
             <li data-step="1.">Создай встречу</li>
             <li data-step="2.">Пригласи людей</li>
