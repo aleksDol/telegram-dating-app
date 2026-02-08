@@ -131,6 +131,7 @@
         if (tabBtn) tabBtn.classList.add("active");
         if (panel) panel.classList.add("active");
         if (tabId === "stats") loadStats();
+        if (tabId === "funnel") loadFunnel();
         if (tabId === "reports") loadReports();
         if (tabId === "users") loadRecentUsers();
     }
@@ -215,6 +216,74 @@
             html += "</div></div>";
         });
         return html;
+    }
+
+    // Воронка
+    async function loadFunnel() {
+        const loading = document.getElementById("funnel-loading");
+        const content = document.getElementById("funnel-content");
+        if (!loading || !content) return;
+        loading.classList.remove("hidden");
+        loading.textContent = "Загрузка воронки…";
+        content.classList.add("hidden");
+        try {
+            const data = await api("/funnel");
+            loading.classList.add("hidden");
+            content.classList.remove("hidden");
+            const tbodyIds = {
+                started_not_registered: "funnel-started",
+                registered_no_events: "funnel-registered",
+                created_events: "funnel-events",
+                has_matching: "funnel-matching",
+            };
+            for (const [key, tbodyId] of Object.entries(tbodyIds)) {
+                const tbody = document.getElementById(tbodyId);
+                const list = data[key] || [];
+                if (!tbody) continue;
+                if (list.length === 0) {
+                    tbody.innerHTML = "<tr><td colspan=\"4\" class=\"funnel-empty\">Нет пользователей</td></tr>";
+                } else {
+                    tbody.innerHTML = list
+                        .map(function (u) {
+                            const name = escapeHtml((u.name || "").trim() || "—");
+                            const gender = escapeHtml((u.gender || "").trim() || "—");
+                            const city = escapeHtml((u.city || "").trim() || "—");
+                            return (
+                                "<tr data-user-id=\"" +
+                                u.user_id +
+                                "\"><td>" +
+                                escapeHtml(String(u.user_id)) +
+                                "</td><td>" +
+                                name +
+                                "</td><td>" +
+                                gender +
+                                "</td><td>" +
+                                city +
+                                "</td></tr>"
+                            );
+                        })
+                        .join("");
+                }
+            }
+        } catch (err) {
+            loading.classList.remove("hidden");
+            loading.innerHTML = '<span class="error-msg">Ошибка: ' + escapeHtml(err.message) + "</span>";
+        }
+    }
+
+    var funnelContent = document.getElementById("funnel-content");
+    if (funnelContent) {
+        funnelContent.addEventListener("click", function (e) {
+            var row = e.target.closest("tr[data-user-id]");
+            if (row) {
+                var id = row.getAttribute("data-user-id");
+                if (id) {
+                    document.getElementById("user-search").value = id;
+                    openTab("users");
+                    setTimeout(searchUser, 100);
+                }
+            }
+        });
     }
 
     // Последние пользователи

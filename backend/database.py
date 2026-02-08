@@ -195,6 +195,15 @@ class Database:
                     appeal_text TEXT
                 )
                 """)
+
+                cursor.execute("""
+                CREATE TABLE IF NOT EXISTS bot_starts (
+                    user_id BIGINT PRIMARY KEY,
+                    username TEXT,
+                    first_name TEXT,
+                    started_at TEXT
+                )
+                """)
             finally:
                 conn.autocommit = old_autocommit
 

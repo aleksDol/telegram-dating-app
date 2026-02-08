@@ -129,6 +129,20 @@ class UserHandlers:
                 )
                 return
 
+        # Воронка: сохраняем тех, кто нажал /start, но ещё не в users
+        try:
+            first_name = (message.from_user.first_name or "").strip() if message.from_user else ""
+            username = (message.from_user.username or "").strip() if message.from_user else ""
+            execute_query(
+                """INSERT INTO bot_starts (user_id, username, first_name, started_at)
+                   VALUES (?, ?, ?, ?)
+                   ON CONFLICT (user_id) DO UPDATE SET username = EXCLUDED.username, first_name = EXCLUDED.first_name, started_at = EXCLUDED.started_at""",
+                (user_id, username, first_name, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+                commit=True,
+            )
+        except Exception as e:
+            logger.warning("bot_starts insert failed: %s", e)
+
         # Скрываем клавиатуру для незарегистрированных пользователей
         remove_keyboard = self._remove_keyboard()
         webapp_markup = get_start_webapp_keyboard()

@@ -1,11 +1,30 @@
 # services/broadcast.py
+import base64
 import json
+import re
 import time
 import threading
 from datetime import datetime, timedelta
+from io import BytesIO
 from database import execute_query
 from config import config
 import telebot
+
+
+def _decode_photo_base64(data_url):
+    """Из data URL (data:image/...;base64,...) извлекает байты изображения."""
+    if not data_url or not isinstance(data_url, str):
+        return None
+    data_url = data_url.strip()
+    if not data_url.lower().startswith("data:image"):
+        return None
+    try:
+        match = re.match(r"data:image/[^;]+;base64,(.+)", data_url, re.DOTALL | re.IGNORECASE)
+        if not match:
+            return None
+        return base64.b64decode(match.group(1))
+    except Exception:
+        return None
 
 
 class BroadcastService:
@@ -117,6 +136,21 @@ class BroadcastService:
                             caption=broadcast.get('caption', '') or None,
                             parse_mode='Markdown' if (broadcast.get('caption') or '') else None
                         )
+                    elif broadcast['content_type'] == 'photo_base64':
+                        # Фото хранится как data URL — декодируем и отправляем напрямую (без чата админа)
+                        raw = _decode_photo_base64(broadcast['content'])
+                        if raw:
+                            buf = BytesIO(raw)
+                            buf.seek(0)
+                            bot.send_photo(
+                                user_id,
+                                buf,
+                                caption=broadcast.get('caption', '') or None,
+                                parse_mode='Markdown' if (broadcast.get('caption') or '') else None
+                            )
+                        else:
+                            failed += 1
+                            continue
                     elif broadcast['content_type'] == 'link':
                         bot.send_message(
                             user_id, f"[Ссылка]({broadcast['content']})", parse_mode='Markdown'

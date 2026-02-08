@@ -1086,6 +1086,113 @@ def admin_api_users_recent(
     return {"users": [{"user_id": r["user_id"], "name": r.get("name"), "city": r.get("city") or "", "reg_date": r.get("reg_date")} for r in rows]}
 
 
+@app.get("/admin/api/funnel")
+def admin_api_funnel(_: None = Depends(get_admin_authorization)):
+    """Воронка: 4 группы пользователей, в каждой последние 10 (ID, имя, пол, город)."""
+    limit = 10
+
+    # 1. Нажали Start, но не зарегистрировались (нет в users)
+    started_rows = execute_query(
+        """SELECT b.user_id, b.first_name, b.started_at
+           FROM bot_starts b
+           WHERE b.user_id NOT IN (SELECT user_id FROM users)
+           ORDER BY b.started_at DESC NULLS LAST
+           LIMIT ?""",
+        (limit,),
+        fetchall=True,
+    )
+    started_not_registered = [
+        {
+            "user_id": r["user_id"],
+            "name": (r.get("first_name") or "").strip() or "—",
+            "gender": "—",
+            "city": "—",
+        }
+        for r in started_rows
+    ]
+
+    # 2. Зарегистрировались, но не создали ни одного события
+    reg_no_events = execute_query(
+        """SELECT u.user_id, u.name, u.gender, u.city
+           FROM users u
+           WHERE u.is_banned = FALSE
+             AND NOT EXISTS (SELECT 1 FROM events e WHERE e.user_id = u.user_id AND e.is_hidden = FALSE)
+           ORDER BY u.reg_date DESC NULLS LAST, u.user_id DESC
+           LIMIT ?""",
+        (limit,),
+        fetchall=True,
+    )
+    registered_no_events = [
+        {
+            "user_id": r["user_id"],
+            "name": (r.get("name") or "").strip() or "—",
+            "gender": (r.get("gender") or "").strip() or "—",
+            "city": (r.get("city") or "").strip() or "—",
+        }
+        for r in reg_no_events
+    ]
+
+    # 3. Создали хотя бы одно событие
+    created_events = execute_query(
+        """SELECT u.user_id, u.name, u.gender, u.city
+           FROM users u
+           WHERE u.is_banned = FALSE
+             AND EXISTS (SELECT 1 FROM events e WHERE e.user_id = u.user_id AND e.is_hidden = FALSE)
+           ORDER BY (SELECT MAX(e.created) FROM events e WHERE e.user_id = u.user_id AND e.is_hidden = FALSE) DESC NULLS LAST, u.user_id DESC
+           LIMIT ?""",
+        (limit,),
+        fetchall=True,
+    )
+    created_events_list = [
+        {
+            "user_id": r["user_id"],
+            "name": (r.get("name") or "").strip() or "—",
+            "gender": (r.get("gender") or "").strip() or "—",
+            "city": (r.get("city") or "").strip() or "—",
+        }
+        for r in created_events
+    ]
+
+    # 4. Получили хотя бы один матчинг (взаимный лайк), порядок по последнему mutual
+    mutual_user_ids = execute_query(
+        """SELECT u.user_id
+           FROM users u
+           WHERE u.is_banned = FALSE
+             AND (EXISTS (SELECT 1 FROM likes l WHERE l.mutual = TRUE AND l.from_user = u.user_id)
+                  OR EXISTS (SELECT 1 FROM likes l WHERE l.mutual = TRUE AND l.to_user = u.user_id))
+           ORDER BY (SELECT MAX(l2.created) FROM likes l2 WHERE (l2.from_user = u.user_id OR l2.to_user = u.user_id) AND l2.mutual = TRUE) DESC NULLS LAST
+           LIMIT ?""",
+        (limit,),
+        fetchall=True,
+    )
+    has_matching_list = []
+    if mutual_user_ids:
+        ids = [r["user_id"] for r in mutual_user_ids]
+        placeholders = ",".join("?" * len(ids))
+        rows = execute_query(
+            f"SELECT user_id, name, gender, city FROM users WHERE user_id IN ({placeholders})",
+            tuple(ids),
+            fetchall=True,
+        )
+        by_id = {r["user_id"]: r for r in rows}
+        for uid in ids:
+            r = by_id.get(uid)
+            if r:
+                has_matching_list.append({
+                    "user_id": r["user_id"],
+                    "name": (r.get("name") or "").strip() or "—",
+                    "gender": (r.get("gender") or "").strip() or "—",
+                    "city": (r.get("city") or "").strip() or "—",
+                })
+
+    return {
+        "started_not_registered": started_not_registered,
+        "registered_no_events": registered_no_events,
+        "created_events": created_events_list,
+        "has_matching": has_matching_list,
+    }
+
+
 @app.get("/admin/api/user/{identifier}")
 def admin_api_user(
     identifier: str,
@@ -1197,18 +1304,9 @@ def admin_api_broadcast_send(
     caption = ""
 
     if photo_data and photo_data.lower().startswith("data:image"):
-        # Загружаем фото в Telegram, чтобы получить file_id (отправляем первому админу и сразу удаляем сообщение)
-        admin_chat_id = config.ADMINS[0] if config.ADMINS else None
-        if not admin_chat_id:
-            raise HTTPException(status_code=400, detail="Нет админа в ADMINS для загрузки фото")
-        file_id, upload_err = _upload_photo_to_telegram(admin_chat_id, photo_data)
-        if not file_id:
-            raise HTTPException(
-                status_code=400,
-                detail=upload_err or "Не удалось загрузить фото в Telegram",
-            )
-        content_type = "photo"
-        content = file_id
+        # Сохраняем фото как base64 — отправка получателям без использования чата админа (избегаем "chat not found")
+        content_type = "photo_base64"
+        content = photo_data
         caption = text
 
     broadcast_id = execute_query(

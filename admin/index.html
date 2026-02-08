@@ -38,6 +38,7 @@
             </header>
             <nav class="tabs">
                 <button type="button" data-tab="stats" class="tab active">Статистика</button>
+                <button type="button" data-tab="funnel" class="tab">Воронка</button>
                 <button type="button" data-tab="users" class="tab">Пользователи</button>
                 <button type="button" data-tab="reports" class="tab">Жалобы</button>
                 <button type="button" data-tab="broadcast" class="tab">Рассылка</button>
@@ -46,6 +47,39 @@
             <section id="tab-stats" class="tab-panel active">
                 <div id="stats-loading" class="loading">Загрузка…</div>
                 <div id="stats-content" class="stats-grid hidden"></div>
+            </section>
+
+            <section id="tab-funnel" class="tab-panel">
+                <div id="funnel-loading" class="loading">Загрузка воронки…</div>
+                <div id="funnel-content" class="funnel-content hidden">
+                    <div class="funnel-intro">Пользователи по этапам. В каждой группе — последние 10.</div>
+                    <div class="funnel-grid">
+                        <div class="funnel-card" data-stage="started_not_registered">
+                            <h3 class="funnel-card-title">Нажали Start, но не зарегистрировались</h3>
+                            <div class="funnel-table-wrap">
+                                <table class="funnel-table"><thead><tr><th>ID</th><th>Имя</th><th>Пол</th><th>Город</th></tr></thead><tbody id="funnel-started"></tbody></table>
+                            </div>
+                        </div>
+                        <div class="funnel-card" data-stage="registered_no_events">
+                            <h3 class="funnel-card-title">Зарегистрировались, но не создали события</h3>
+                            <div class="funnel-table-wrap">
+                                <table class="funnel-table"><thead><tr><th>ID</th><th>Имя</th><th>Пол</th><th>Город</th></tr></thead><tbody id="funnel-registered"></tbody></table>
+                            </div>
+                        </div>
+                        <div class="funnel-card" data-stage="created_events">
+                            <h3 class="funnel-card-title">Создали события</h3>
+                            <div class="funnel-table-wrap">
+                                <table class="funnel-table"><thead><tr><th>ID</th><th>Имя</th><th>Пол</th><th>Город</th></tr></thead><tbody id="funnel-events"></tbody></table>
+                            </div>
+                        </div>
+                        <div class="funnel-card" data-stage="has_matching">
+                            <h3 class="funnel-card-title">Получили хотя бы один матчинг</h3>
+                            <div class="funnel-table-wrap">
+                                <table class="funnel-table"><thead><tr><th>ID</th><th>Имя</th><th>Пол</th><th>Город</th></tr></thead><tbody id="funnel-matching"></tbody></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <section id="tab-users" class="tab-panel">
