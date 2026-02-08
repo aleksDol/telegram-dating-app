@@ -18,7 +18,7 @@ import requests
 from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from config import config
 from database import execute_query
@@ -144,6 +144,17 @@ def _upload_photo_to_telegram(chat_id: int, data_url: str) -> tuple[str | None, 
         raw = base64.b64decode(b64)
         if len(raw) > 10 * 1024 * 1024:  # 10 MB лимит Telegram для фото
             return None, "Файл слишком большой (макс. 10 МБ)"
+        # Проверка magic bytes — только реальные изображения (защита от подмены типа файла)
+        if not raw or len(raw) < 12:
+            return None, "Неверный формат изображения"
+        if raw[:2] == b"\xff\xd8":
+            pass  # JPEG
+        elif raw[:8] == b"\x89PNG\r\n\x1a\n":
+            pass  # PNG
+        elif raw[:4] == b"RIFF" and raw[8:12] == b"WEBP":
+            pass  # WebP
+        else:
+            return None, "Допустимые форматы: JPEG, PNG, WebP"
         ext = "jpg" if "jpeg" in content_type or "jpg" in content_type else "png"
         url = f"https://api.telegram.org/bot{token}/sendPhoto"
         with requests.post(
@@ -205,35 +216,44 @@ def _user_photos_list(row: dict) -> list:
 
 # --- Pydantic models ---
 
+# Лимиты длины полей — защита от DoS и переполнения
+MAX_LEN_NAME = 100
+MAX_LEN_CITY = 100
+MAX_LEN_PURPOSE = 200
+MAX_LEN_TITLE = 200
+MAX_LEN_DESCRIPTION = 2000
+AGE_MIN, AGE_MAX = 18, 120
+
+
 class RegisterBody(BaseModel):
-    name: str
-    age: int
-    gender: str
-    city: str
-    relationship_status: str
+    name: str = Field(..., min_length=1, max_length=MAX_LEN_NAME)
+    age: int = Field(..., ge=AGE_MIN, le=AGE_MAX)
+    gender: str = Field(..., max_length=50)
+    city: str = Field(..., min_length=1, max_length=MAX_LEN_CITY)
+    relationship_status: str = Field(..., max_length=100)
     photo: str  # обязательно: data URL (base64) или URL фото
-    purpose: str | None = None
+    purpose: str | None = Field(None, max_length=MAX_LEN_PURPOSE)
     referred_by: int | None = None
 
 
 class UpdateProfileBody(BaseModel):
-    name: str | None = None
-    age: int | None = None
-    gender: str | None = None
-    city: str | None = None
-    relationship_status: str | None = None
+    name: str | None = Field(None, min_length=1, max_length=MAX_LEN_NAME)
+    age: int | None = Field(None, ge=AGE_MIN, le=AGE_MAX)
+    gender: str | None = Field(None, max_length=50)
+    city: str | None = Field(None, max_length=MAX_LEN_CITY)
+    relationship_status: str | None = Field(None, max_length=100)
     photo: str | None = None
     photos: list[str] | None = None
-    purpose: str | None = None
+    purpose: str | None = Field(None, max_length=MAX_LEN_PURPOSE)
 
 
 class CreateEventBody(BaseModel):
-    title: str
-    description: str
-    event_date: str
-    target_gender: str
-    city: str
-    category: str | None = None
+    title: str = Field(..., min_length=1, max_length=MAX_LEN_TITLE)
+    description: str = Field(..., min_length=1, max_length=MAX_LEN_DESCRIPTION)
+    event_date: str = Field(..., max_length=50)
+    target_gender: str = Field(..., max_length=50)
+    city: str = Field(..., max_length=MAX_LEN_CITY)
+    category: str | None = Field(None, max_length=100)
     photo: str | None = None
 
 

@@ -12,7 +12,7 @@ import telebot
 
 
 def _decode_photo_base64(data_url):
-    """Из data URL (data:image/...;base64,...) извлекает байты изображения."""
+    """Из data URL (data:image/...;base64,...) извлекает байты изображения. Проверяет magic bytes."""
     if not data_url or not isinstance(data_url, str):
         return None
     data_url = data_url.strip()
@@ -22,7 +22,17 @@ def _decode_photo_base64(data_url):
         match = re.match(r"data:image/[^;]+;base64,(.+)", data_url, re.DOTALL | re.IGNORECASE)
         if not match:
             return None
-        return base64.b64decode(match.group(1))
+        raw = base64.b64decode(match.group(1))
+        if not raw or len(raw) < 12:
+            return None
+        # Проверка magic bytes — только реальные изображения
+        if raw[:2] == b"\xff\xd8":
+            return raw  # JPEG
+        if raw[:8] == b"\x89PNG\r\n\x1a\n":
+            return raw  # PNG
+        if raw[:4] == b"RIFF" and len(raw) >= 12 and raw[8:12] == b"WEBP":
+            return raw  # WebP
+        return None
     except Exception:
         return None
 
@@ -177,10 +187,18 @@ class BroadcastService:
                             failed += 1
                             continue
                     elif broadcast['content_type'] == 'link':
-                        body = _escape_html_for_telegram(f'<a href="{broadcast["content"]}">Ссылка</a>')
-                        bot.send_message(
-                            user_id, body, parse_mode='HTML'
-                        )
+                        # Разрешаем только http(s) — защита от javascript:/data: в href
+                        link = (broadcast.get("content") or "").strip()
+                        if link.startswith("https://") or link.startswith("http://"):
+                            # Экранируем кавычки в URL, чтобы не сломать атрибут href (для & сработает _escape_html_for_telegram)
+                            link_safe = link.replace('"', "&quot;")
+                            body = _escape_html_for_telegram(f'<a href="{link_safe}">Ссылка</a>')
+                            bot.send_message(
+                                user_id, body, parse_mode='HTML'
+                            )
+                        else:
+                            failed += 1
+                            continue
 
                     sent += 1
 
