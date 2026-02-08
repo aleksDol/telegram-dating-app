@@ -1060,6 +1060,26 @@ def _admin_user_row_to_dict(row, base_url: str = ""):
     return d
 
 
+@app.get("/admin/api/users/recent")
+def admin_api_users_recent(
+    limit: int = 10,
+    _: None = Depends(get_admin_authorization),
+):
+    """Последние зарегистрированные пользователи (ID, город, имя)."""
+    if limit < 1 or limit > 100:
+        limit = 10
+    rows = execute_query(
+        """SELECT user_id, name, city, reg_date
+           FROM users
+           WHERE is_banned = FALSE
+           ORDER BY reg_date DESC NULLS LAST, user_id DESC
+           LIMIT ?""",
+        (limit,),
+        fetchall=True,
+    )
+    return {"users": [{"user_id": r["user_id"], "name": r.get("name"), "city": r.get("city") or "", "reg_date": r.get("reg_date")} for r in rows]}
+
+
 @app.get("/admin/api/user/{identifier}")
 def admin_api_user(
     identifier: str,
@@ -1130,6 +1150,7 @@ def admin_api_user_events(
 class AdminBroadcastBody(BaseModel):
     text: str
     gender: str = "all"  # "all" | "Мужской" | "Женский"
+    photo: str | None = None  # опционально: data URL (data:image/...;base64,...) для рассылки с фото
 
 
 @app.post("/admin/api/broadcast/preview")
@@ -1151,7 +1172,7 @@ def admin_api_broadcast_send(
     body: AdminBroadcastBody,
     _: None = Depends(get_admin_authorization),
 ):
-    """Создать рассылку и запустить отправку (admin_id=0 — без уведомлений в Telegram)."""
+    """Создать рассылку и запустить отправку (admin_id=0 — без уведомлений в Telegram). Поддерживает текст и опционально фото (data URL)."""
     text = (body.text or "").strip()
     if not text:
         raise HTTPException(status_code=400, detail="Текст сообщения не может быть пустым")
@@ -1164,11 +1185,28 @@ def admin_api_broadcast_send(
     if total == 0:
         raise HTTPException(status_code=400, detail="Нет получателей по выбранному сегменту")
 
+    photo_data = (body.photo or "").strip() or None
+    content_type = "text"
+    content = text
+    caption = ""
+
+    if photo_data and photo_data.lower().startswith("data:image"):
+        # Загружаем фото в Telegram, чтобы получить file_id (отправляем первому админу и сразу удаляем сообщение)
+        admin_chat_id = config.ADMINS[0] if config.ADMINS else None
+        if not admin_chat_id:
+            raise HTTPException(status_code=400, detail="Нет админа в ADMINS для загрузки фото")
+        file_id = _upload_photo_to_telegram(admin_chat_id, photo_data)
+        if not file_id:
+            raise HTTPException(status_code=400, detail="Не удалось загрузить фото в Telegram")
+        content_type = "photo"
+        content = file_id
+        caption = text
+
     broadcast_id = execute_query(
         """INSERT INTO admin_broadcasts
            (admin_id, content_type, content, caption, filters, created, status)
            VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id""",
-        (0, "text", text, "", json.dumps(filters), datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "pending"),
+        (0, content_type, content, caption, json.dumps(filters), datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "pending"),
         commit=True,
     )
     if not isinstance(broadcast_id, int):

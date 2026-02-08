@@ -278,6 +278,51 @@ body {
     color: #e4e6eb;
 }
 
+/* Последние пользователи */
+.users-recent-block {
+    margin-bottom: 1.5rem;
+}
+
+.users-recent-title {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #a5b4fc;
+}
+
+.users-recent-list {
+    margin-top: 0.5rem;
+}
+
+.users-recent-table {
+    width: 100%;
+    max-width: 480px;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.users-recent-table th,
+.users-recent-table td {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border: 1px solid #3b4048;
+}
+
+.users-recent-table th {
+    background: #252930;
+    color: #9ca3af;
+    font-weight: 600;
+}
+
+.users-recent-table tbody tr {
+    background: #252930;
+    cursor: pointer;
+}
+
+.users-recent-table tbody tr:hover {
+    background: #2d3139;
+}
+
 /* Users search */
 .search-bar {
     display: flex;
@@ -463,4 +508,26 @@ body {
 
 .broadcast-preview.hidden {
     display: none;
+}
+
+.broadcast-photo-preview {
+    margin-top: 0.5rem;
+}
+
+.broadcast-photo-preview img {
+    max-width: 200px;
+    max-height: 150px;
+    border-radius: 8px;
+    object-fit: contain;
+    border: 1px solid #3b4048;
+}
+
+.broadcast-photo-preview.hidden {
+    display: none;
+}
+
+.btn-small {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.8rem;
+    margin-top: 0.35rem;
 }

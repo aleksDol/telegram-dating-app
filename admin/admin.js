@@ -132,6 +132,7 @@
         if (panel) panel.classList.add("active");
         if (tabId === "stats") loadStats();
         if (tabId === "reports") loadReports();
+        if (tabId === "users") loadRecentUsers();
     }
 
     document.querySelectorAll(".tab").forEach((btn) => {
@@ -214,6 +215,70 @@
             html += "</div></div>";
         });
         return html;
+    }
+
+    // Последние пользователи
+    async function loadRecentUsers() {
+        var loadingEl = document.getElementById("users-recent-loading");
+        var listEl = document.getElementById("users-recent-list");
+        if (!listEl) return;
+        if (loadingEl) {
+            loadingEl.classList.remove("hidden");
+            loadingEl.textContent = "Загрузка…";
+        }
+        listEl.innerHTML = "";
+        try {
+            var data = await api("/users/recent?limit=10");
+            if (loadingEl) loadingEl.classList.add("hidden");
+            if (!data.users || data.users.length === 0) {
+                listEl.innerHTML = "<p class=\"empty\">Нет пользователей</p>";
+                return;
+            }
+            listEl.innerHTML = "<table class=\"users-recent-table\"><thead><tr><th>ID</th><th>Город</th><th>Имя</th></tr></thead><tbody>" +
+                data.users.map(function (u) {
+                    var city = (u.city || "").trim() || "—";
+                    var name = (u.name || "").trim() || "—";
+                    return "<tr data-user-id=\"" + u.user_id + "\"><td>" + escapeHtml(String(u.user_id)) + "</td><td>" + escapeHtml(city) + "</td><td>" + escapeHtml(name) + "</td></tr>";
+                }).join("") +
+                "</tbody></table>";
+        } catch (err) {
+            if (loadingEl) loadingEl.classList.add("hidden");
+            listEl.innerHTML = "<p class=\"error\">" + escapeHtml(err.message) + "</p>";
+        }
+    }
+
+    var userResultEl = document.getElementById("user-result");
+    if (userResultEl) {
+        userResultEl.addEventListener("click", function (e) {
+            var btn = e.target.closest("[data-action][data-id]");
+            if (!btn) return;
+            var action = btn.dataset.action;
+            var id = parseInt(btn.dataset.id, 10);
+            if (action === "ban") {
+                var reason = prompt("Причина блокировки:", "Нарушение правил");
+                if (reason == null) return;
+                api("/user/" + id + "/ban", {
+                    method: "POST",
+                    body: JSON.stringify({ reason: reason.trim() || "Блокировка через веб-админку" }),
+                }).then(function () { searchUser(); }).catch(function (err) { alert(err.message); });
+            } else if (action === "unban") {
+                api("/user/" + id + "/unban", { method: "POST" }).then(function () { searchUser(); }).catch(function (err) { alert(err.message); });
+            }
+        });
+    }
+
+    var usersRecentListEl = document.getElementById("users-recent-list");
+    if (usersRecentListEl) {
+        usersRecentListEl.addEventListener("click", function (e) {
+            var row = e.target.closest("tr[data-user-id]");
+            if (row) {
+                var id = row.getAttribute("data-user-id");
+                if (id) {
+                    document.getElementById("user-search").value = id;
+                    searchUser();
+                }
+            }
+        });
     }
 
     // User search
@@ -392,6 +457,49 @@
     // Рассылка
     var broadcastPreviewEl = document.getElementById("broadcast-preview");
     var broadcastErrorEl = document.getElementById("broadcast-error");
+    var broadcastPhotoDataUrl = null;
+
+    var broadcastPhotoInput = document.getElementById("broadcast-photo");
+    var broadcastPhotoPreviewEl = document.getElementById("broadcast-photo-preview");
+    var broadcastPhotoClearBtn = document.getElementById("broadcast-photo-clear");
+    if (broadcastPhotoInput) {
+        broadcastPhotoInput.addEventListener("change", function () {
+            var file = this.files && this.files[0];
+            broadcastPhotoDataUrl = null;
+            if (broadcastPhotoPreviewEl) {
+                broadcastPhotoPreviewEl.classList.add("hidden");
+                broadcastPhotoPreviewEl.innerHTML = "";
+            }
+            if (broadcastPhotoClearBtn) broadcastPhotoClearBtn.classList.add("hidden");
+            if (!file || !file.type.match(/^image\/(jpeg|png|webp)$/i)) return;
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                broadcastPhotoDataUrl = e.target.result;
+                if (broadcastPhotoPreviewEl) {
+                    var img = document.createElement("img");
+                    img.src = broadcastPhotoDataUrl;
+                    img.alt = "Превью";
+                    broadcastPhotoPreviewEl.innerHTML = "";
+                    broadcastPhotoPreviewEl.appendChild(img);
+                    broadcastPhotoPreviewEl.classList.remove("hidden");
+                }
+                if (broadcastPhotoClearBtn) broadcastPhotoClearBtn.classList.remove("hidden");
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+    if (broadcastPhotoClearBtn) {
+        broadcastPhotoClearBtn.addEventListener("click", function () {
+            broadcastPhotoDataUrl = null;
+            if (broadcastPhotoInput) broadcastPhotoInput.value = "";
+            if (broadcastPhotoPreviewEl) {
+                broadcastPhotoPreviewEl.classList.add("hidden");
+                broadcastPhotoPreviewEl.innerHTML = "";
+            }
+            broadcastPhotoClearBtn.classList.add("hidden");
+        });
+    }
+
     document.getElementById("broadcast-preview-btn").addEventListener("click", async function () {
         var textEl = document.getElementById("broadcast-text");
         var genderEl = document.getElementById("broadcast-gender");
@@ -445,15 +553,24 @@
             btn.textContent = "Отправка…";
         }
         try {
+            var payload = { text: text, gender: gender };
+            if (broadcastPhotoDataUrl) payload.photo = broadcastPhotoDataUrl;
             var data = await api("/broadcast/send", {
                 method: "POST",
-                body: JSON.stringify({ text: text, gender: gender }),
+                body: JSON.stringify(payload),
             });
             if (broadcastPreviewEl) {
                 broadcastPreviewEl.textContent = "Рассылка #" + (data.broadcast_id || "") + " запущена. Получателей: " + (data.total_recipients || 0).toLocaleString("ru") + ". Сообщения отправляются в фоне.";
                 broadcastPreviewEl.classList.remove("hidden");
             }
             if (textEl) textEl.value = "";
+            broadcastPhotoDataUrl = null;
+            if (broadcastPhotoInput) broadcastPhotoInput.value = "";
+            if (broadcastPhotoPreviewEl) {
+                broadcastPhotoPreviewEl.classList.add("hidden");
+                broadcastPhotoPreviewEl.innerHTML = "";
+            }
+            if (broadcastPhotoClearBtn) broadcastPhotoClearBtn.classList.add("hidden");
         } catch (err) {
             if (broadcastErrorEl) {
                 broadcastErrorEl.textContent = err.message || "Ошибка отправки";

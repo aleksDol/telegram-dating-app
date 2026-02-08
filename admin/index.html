@@ -49,6 +49,11 @@
             </section>
 
             <section id="tab-users" class="tab-panel">
+                <div class="users-recent-block">
+                    <h3 class="users-recent-title">Последние 10 пользователей</h3>
+                    <div id="users-recent-loading" class="loading hidden">Загрузка…</div>
+                    <div id="users-recent-list" class="users-recent-list"></div>
+                </div>
                 <div class="search-bar">
                     <input type="text" id="user-search" placeholder="ID или username пользователя">
                     <button type="button" id="user-search-btn" class="btn">Найти</button>
@@ -79,8 +84,14 @@
                         </select>
                     </label>
                     <label>
+                        <span>Фото (необязательно)</span>
+                        <input type="file" id="broadcast-photo" accept="image/jpeg,image/png,image/webp">
+                        <div id="broadcast-photo-preview" class="broadcast-photo-preview hidden"></div>
+                        <button type="button" id="broadcast-photo-clear" class="btn btn-small hidden">Убрать фото</button>
+                    </label>
+                    <label>
                         <span>Текст сообщения</span>
-                        <textarea id="broadcast-text" rows="6" placeholder="Введите текст рассылки..."></textarea>
+                        <textarea id="broadcast-text" rows="6" placeholder="Введите текст рассылки (подпись к фото или просто текст)..."></textarea>
                     </label>
                     <div class="broadcast-actions">
                         <button type="button" id="broadcast-preview-btn" class="btn">Предпросмотр</button>
