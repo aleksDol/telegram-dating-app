@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, NavLink, useLocation } from 'react-router-dom'
 import { useTelegram } from './hooks/useTelegram'
 import { AppProvider } from './context/AppContext'
+import ErrorBoundary from './components/ErrorBoundary'
 import Home from './pages/Home'
 import Register from './pages/Register'
 import Profile from './pages/Profile'
@@ -61,14 +62,15 @@ export default function App() {
 
   return (
     <AppProvider>
+    <ErrorBoundary>
     <BrowserRouter>
       <div className="app">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/profile" element={<Profile />} />
           <Route path="/profile/edit" element={<EditProfile />} />
           <Route path="/profile/:userId" element={<UserProfile />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/events" element={<Events />} />
           <Route path="/events/:filter" element={<Events />} />
           <Route path="/likes" element={<Likes />} />
@@ -83,6 +85,7 @@ export default function App() {
       </div>
       <Nav />
     </BrowserRouter>
+    </ErrorBoundary>
     </AppProvider>
   )
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
+import { useTelegram } from '../hooks/useTelegram'
 import { api, isApiConfigured, API_BASE } from '../api/client'
 import Logo from '../components/Logo'
 import PhotoViewer from '../components/PhotoViewer'
@@ -31,6 +32,7 @@ export default function Likes() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, loading: userLoading, fetchUser } = useApp()
+  const { openExternalLink } = useTelegram()
   const [likes, setLikes] = useState<PendingLikeType[]>([])
   const [matches, setMatches] = useState<LikeMatchType[]>([])
   const [loading, setLoading] = useState(true)
@@ -201,6 +203,10 @@ export default function Likes() {
                     rel="noopener noreferrer"
                     className="btn btn-primary"
                     style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, textDecoration: 'none' }}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      openExternalLink(telegramChatLink(item.user_id, item.user?.username))
+                    }}
                   >
                     ✉️ Написать в Telegram
                   </a>

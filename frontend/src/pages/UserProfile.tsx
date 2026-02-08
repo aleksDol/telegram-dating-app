@@ -33,6 +33,9 @@ export default function UserProfile() {
 
   useEffect(() => {
     if (!userId) return
+    setProfile(null)
+    setError('')
+    setLoading(true)
     const id = parseInt(userId, 10)
     if (Number.isNaN(id)) {
       setLoading(false)
@@ -51,7 +54,6 @@ export default function UserProfile() {
       setLoading(false)
       return
     }
-    setLoading(true)
     setError('')
     api
       .getUserProfile(id)
@@ -159,17 +161,17 @@ export default function UserProfile() {
             <img src={resolvePhotoUrl(profile.photo)} alt="" className="profile-avatar" />
           </button>
         ) : (
-          <div className="profile-avatar-placeholder">{profile.name.slice(0, 1)}</div>
+          <div className="profile-avatar-placeholder">{(profile.name || '?').slice(0, 1)}</div>
         )}
         {photoViewerOpen && profilePhotos.length > 0 && (
           <PhotoViewer photos={profilePhotos} onClose={() => setPhotoViewerOpen(false)} />
         )}
-        <h2 className="profile-name">{profile.name}</h2>
-        <p className="profile-meta">{profile.age} лет · {profile.gender} · {profile.city}</p>
+        <h2 className="profile-name">{profile.name || 'Пользователь'}</h2>
+        <p className="profile-meta">{profile.age ?? '—'} лет · {profile.gender || '—'} · {profile.city || '—'}</p>
         {profile.relationship_status && (
           <p className="profile-meta">{profile.relationship_status}</p>
         )}
-        <p className="profile-purpose">Цель: {profile.purpose}</p>
+        <p className="profile-purpose">Цель: {profile.purpose || '—'}</p>
         {isMyProfile && (
           <>
             <div className="profile-points">🏆 {profile.points ?? 0} очков</div>
