@@ -389,6 +389,84 @@
         setTimeout(searchUser, 100);
     });
 
+    // Рассылка
+    var broadcastPreviewEl = document.getElementById("broadcast-preview");
+    var broadcastErrorEl = document.getElementById("broadcast-error");
+    document.getElementById("broadcast-preview-btn").addEventListener("click", async function () {
+        var textEl = document.getElementById("broadcast-text");
+        var genderEl = document.getElementById("broadcast-gender");
+        var text = textEl ? textEl.value.trim() : "";
+        var gender = genderEl ? genderEl.value : "all";
+        if (broadcastErrorEl) {
+            broadcastErrorEl.classList.add("hidden");
+            broadcastErrorEl.textContent = "";
+        }
+        if (broadcastPreviewEl) {
+            broadcastPreviewEl.classList.add("hidden");
+            broadcastPreviewEl.textContent = "";
+        }
+        try {
+            var data = await api("/broadcast/preview", {
+                method: "POST",
+                body: JSON.stringify({ text: text, gender: gender }),
+            });
+            var label = gender === "all" ? "Все пользователи" : gender === "Мужской" ? "Мужчины" : "Женщины";
+            if (broadcastPreviewEl) {
+                broadcastPreviewEl.textContent = "Сегмент: " + label + ". Получателей: " + (data.count || 0).toLocaleString("ru") + ".";
+                broadcastPreviewEl.classList.remove("hidden");
+            }
+        } catch (err) {
+            if (broadcastErrorEl) {
+                broadcastErrorEl.textContent = err.message || "Ошибка предпросмотра";
+                broadcastErrorEl.classList.remove("hidden");
+            }
+        }
+    });
+    document.getElementById("broadcast-send-btn").addEventListener("click", async function () {
+        var textEl = document.getElementById("broadcast-text");
+        var genderEl = document.getElementById("broadcast-gender");
+        var text = textEl ? textEl.value.trim() : "";
+        var gender = genderEl ? genderEl.value : "all";
+        if (broadcastErrorEl) {
+            broadcastErrorEl.classList.add("hidden");
+            broadcastErrorEl.textContent = "";
+        }
+        if (!text) {
+            if (broadcastErrorEl) {
+                broadcastErrorEl.textContent = "Введите текст сообщения.";
+                broadcastErrorEl.classList.remove("hidden");
+            }
+            return;
+        }
+        if (!confirm("Отправить рассылку выбранному сегменту? Отменить будет нельзя.")) return;
+        var btn = document.getElementById("broadcast-send-btn");
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = "Отправка…";
+        }
+        try {
+            var data = await api("/broadcast/send", {
+                method: "POST",
+                body: JSON.stringify({ text: text, gender: gender }),
+            });
+            if (broadcastPreviewEl) {
+                broadcastPreviewEl.textContent = "Рассылка #" + (data.broadcast_id || "") + " запущена. Получателей: " + (data.total_recipients || 0).toLocaleString("ru") + ". Сообщения отправляются в фоне.";
+                broadcastPreviewEl.classList.remove("hidden");
+            }
+            if (textEl) textEl.value = "";
+        } catch (err) {
+            if (broadcastErrorEl) {
+                broadcastErrorEl.textContent = err.message || "Ошибка отправки";
+                broadcastErrorEl.classList.remove("hidden");
+            }
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = "Отправить рассылку";
+            }
+        }
+    });
+
     function escapeHtml(s) {
         if (s == null) return "";
         const div = document.createElement("div");

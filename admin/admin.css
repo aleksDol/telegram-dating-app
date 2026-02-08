@@ -396,3 +396,71 @@ body {
     color: #9ca3af;
     padding: 2rem;
 }
+
+/* Рассылка */
+.broadcast-form {
+    max-width: 560px;
+}
+
+.broadcast-form label {
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.broadcast-form label span {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.875rem;
+    color: #9ca3af;
+}
+
+.broadcast-form select {
+    width: 100%;
+    max-width: 280px;
+    padding: 0.6rem 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #3b4048;
+    border-radius: 8px;
+    background: #252930;
+    color: #e4e6eb;
+}
+
+.broadcast-form textarea {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #3b4048;
+    border-radius: 8px;
+    background: #252930;
+    color: #e4e6eb;
+    resize: vertical;
+}
+
+.broadcast-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.btn-primary {
+    background: #6366f1;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #5558e3;
+}
+
+.broadcast-preview {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #252930;
+    border-radius: 8px;
+    border: 1px solid #3b4048;
+    font-size: 0.875rem;
+    color: #e4e6eb;
+}
+
+.broadcast-preview.hidden {
+    display: none;
+}

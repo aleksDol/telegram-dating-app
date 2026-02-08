@@ -40,6 +40,7 @@
                 <button type="button" data-tab="stats" class="tab active">Статистика</button>
                 <button type="button" data-tab="users" class="tab">Пользователи</button>
                 <button type="button" data-tab="reports" class="tab">Жалобы</button>
+                <button type="button" data-tab="broadcast" class="tab">Рассылка</button>
             </nav>
 
             <section id="tab-stats" class="tab-panel active">
@@ -65,6 +66,29 @@
                 </div>
                 <div id="reports-loading" class="loading hidden">Загрузка…</div>
                 <div id="reports-list" class="reports-list"></div>
+            </section>
+
+            <section id="tab-broadcast" class="tab-panel">
+                <div class="broadcast-form">
+                    <label>
+                        <span>Сегмент получателей</span>
+                        <select id="broadcast-gender">
+                            <option value="all">Все пользователи</option>
+                            <option value="Мужской">Только мужчины</option>
+                            <option value="Женский">Только женщины</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Текст сообщения</span>
+                        <textarea id="broadcast-text" rows="6" placeholder="Введите текст рассылки..."></textarea>
+                    </label>
+                    <div class="broadcast-actions">
+                        <button type="button" id="broadcast-preview-btn" class="btn">Предпросмотр</button>
+                        <button type="button" id="broadcast-send-btn" class="btn btn-primary">Отправить рассылку</button>
+                    </div>
+                    <div id="broadcast-preview" class="broadcast-preview hidden"></div>
+                    <div id="broadcast-error" class="error-box hidden"></div>
+                </div>
             </section>
         </div>
     </div>

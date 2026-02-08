@@ -61,7 +61,8 @@ class BroadcastService:
             )
 
             if not broadcast:
-                bot.send_message(admin_id, "❌ Рассылка не найдена")
+                if admin_id:
+                    bot.send_message(admin_id, "❌ Рассылка не найдена")
                 return
 
             execute_query(
@@ -75,9 +76,10 @@ class BroadcastService:
             total_users = len(user_ids)
 
             if total_users == 0:
-                bot.send_message(
-                    admin_id, "❌ Нет пользователей, соответствующих фильтрам"
-                )
+                if admin_id:
+                    bot.send_message(
+                        admin_id, "❌ Нет пользователей, соответствующих фильтрам"
+                    )
                 execute_query(
                     "UPDATE admin_broadcasts SET status = 'failed' WHERE id = ?",
                     (broadcast_id,), commit=True
@@ -89,14 +91,15 @@ class BroadcastService:
                 (total_users, broadcast_id), commit=True
             )
 
-            bot.send_message(
-                admin_id,
-                f"🚀 *Начинаем рассылку #{broadcast_id}*\n\n"
-                f"📊 Получателей: {total_users:,}\n"
-                f"⏳ Начало: {datetime.now().strftime('%H:%M:%S')}\n\n"
-                f"📨 Отправка...",
-                parse_mode='Markdown'
-            )
+            if admin_id:
+                bot.send_message(
+                    admin_id,
+                    f"🚀 *Начинаем рассылку #{broadcast_id}*\n\n"
+                    f"📊 Получателей: {total_users:,}\n"
+                    f"⏳ Начало: {datetime.now().strftime('%H:%M:%S')}\n\n"
+                    f"📨 Отправка...",
+                    parse_mode='Markdown'
+                )
 
             sent = 0
             failed = 0
@@ -142,15 +145,16 @@ class BroadcastService:
             import traceback
             traceback.print_exc()
 
-            try:
-                bot.send_message(
-                    admin_id,
-                    f"❌ *Ошибка рассылки #{broadcast_id}*\n\n"
-                    f"Ошибка: {str(e)[:200]}",
-                    parse_mode='Markdown'
-                )
-            except:
-                pass
+            if admin_id:
+                try:
+                    bot.send_message(
+                        admin_id,
+                        f"❌ *Ошибка рассылки #{broadcast_id}*\n\n"
+                        f"Ошибка: {str(e)[:200]}",
+                        parse_mode='Markdown'
+                    )
+                except:
+                    pass
 
     @staticmethod
     def _send_broadcast_progress(broadcast_id, admin_id, total, sent, failed, bot):
@@ -162,7 +166,7 @@ class BroadcastService:
             (sent, failed, broadcast_id), commit=True
         )
 
-        if sent % max(50, total // 10) == 0 or sent == total:
+        if admin_id and (sent % max(50, total // 10) == 0 or sent == total):
             try:
                 bot.send_message(
                     admin_id,
@@ -186,17 +190,18 @@ class BroadcastService:
             commit=True
         )
 
-        try:
-            bot.send_message(
-                admin_id,
-                f"✅ *Рассылка #{broadcast_id} завершена!*\n\n"
-                f"📊 Итоги:\n"
-                f"• Всего получателей: {total}\n"
-                f"• Успешно отправлено: {sent}\n"
-                f"• Ошибок: {failed}\n"
-                f"• Успешность: {sent/total*100:.1f}%\n\n"
-                f"🕐 Время: {datetime.now().strftime('%H:%M:%S')}",
-                parse_mode='Markdown'
-            )
-        except:
-            pass
+        if admin_id:
+            try:
+                bot.send_message(
+                    admin_id,
+                    f"✅ *Рассылка #{broadcast_id} завершена!*\n\n"
+                    f"📊 Итоги:\n"
+                    f"• Всего получателей: {total}\n"
+                    f"• Успешно отправлено: {sent}\n"
+                    f"• Ошибок: {failed}\n"
+                    f"• Успешность: {sent/total*100:.1f}%\n\n"
+                    f"🕐 Время: {datetime.now().strftime('%H:%M:%S')}",
+                    parse_mode='Markdown'
+                )
+            except:
+                pass

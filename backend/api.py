@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import re
+import threading
 from datetime import datetime, timedelta
 from io import BytesIO
 from urllib.parse import parse_qsl
@@ -27,6 +28,7 @@ from services.notifications import NotificationService
 from services.recommendations import RecommendationService
 from services.admin import AdminService
 from services.reports import ReportService
+from services.broadcast import BroadcastService
 
 
 app = FastAPI(title="Dating Mini App API")
@@ -1121,3 +1123,67 @@ def admin_api_user_events(
         fetchall=True,
     )
     return {"events": [dict(r) for r in rows]}
+
+
+# --- Рассылка (сегмент: все / мужчины / женщины) ---
+
+class AdminBroadcastBody(BaseModel):
+    text: str
+    gender: str = "all"  # "all" | "Мужской" | "Женский"
+
+
+@app.post("/admin/api/broadcast/preview")
+def admin_api_broadcast_preview(
+    body: AdminBroadcastBody,
+    _: None = Depends(get_admin_authorization),
+):
+    """Предпросмотр рассылки: количество получателей по сегменту."""
+    filters = {"gender": (body.gender or "all").strip() or "all"}
+    if filters["gender"] not in ("all", "Мужской", "Женский"):
+        filters["gender"] = "all"
+    user_ids = BroadcastService.get_users_by_filters(filters)
+    count = len(user_ids)
+    return {"count": count, "gender": filters["gender"]}
+
+
+@app.post("/admin/api/broadcast/send")
+def admin_api_broadcast_send(
+    body: AdminBroadcastBody,
+    _: None = Depends(get_admin_authorization),
+):
+    """Создать рассылку и запустить отправку (admin_id=0 — без уведомлений в Telegram)."""
+    text = (body.text or "").strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Текст сообщения не может быть пустым")
+    gender = (body.gender or "all").strip() or "all"
+    if gender not in ("all", "Мужской", "Женский"):
+        gender = "all"
+    filters = {"gender": gender}
+    user_ids = BroadcastService.get_users_by_filters(filters)
+    total = len(user_ids)
+    if total == 0:
+        raise HTTPException(status_code=400, detail="Нет получателей по выбранному сегменту")
+
+    broadcast_id = execute_query(
+        """INSERT INTO admin_broadcasts
+           (admin_id, content_type, content, caption, filters, created, status)
+           VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id""",
+        (0, "text", text, "", json.dumps(filters), datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "pending"),
+        commit=True,
+    )
+    if not isinstance(broadcast_id, int):
+        broadcast_id = broadcast_id[0] if isinstance(broadcast_id, (list, tuple)) else int(broadcast_id)
+
+    if config.BOT_TOKEN:
+        import telebot
+        bot = telebot.TeleBot(config.BOT_TOKEN)
+        thread = threading.Thread(
+            target=BroadcastService.process_broadcast,
+            args=(broadcast_id, 0, 0, bot),
+        )
+        thread.daemon = True
+        thread.start()
+    else:
+        raise HTTPException(status_code=503, detail="Бот не настроен (BOT_TOKEN)")
+
+    return {"broadcast_id": broadcast_id, "total_recipients": total}

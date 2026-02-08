@@ -64,7 +64,7 @@ class AdminService:
             "SELECT COUNT(*) as count FROM events WHERE is_hidden = FALSE"
         )
         stats['active_events'] = AdminService._count(
-            "SELECT COUNT(*) as count FROM events WHERE event_date > NOW() AND is_hidden = FALSE"
+            "SELECT COUNT(*) as count FROM events WHERE event_date::timestamp > NOW() AND is_hidden = FALSE"
         )
         stats['hidden_events'] = AdminService._count(
             "SELECT COUNT(*) as count FROM events WHERE is_hidden = TRUE"
