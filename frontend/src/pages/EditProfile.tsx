@@ -6,10 +6,21 @@ import { CITIES, GENDERS, RELATIONSHIP_STATUSES } from '../constants'
 
 const MAX_PHOTOS = 3
 
+/** Каждое фото имеет стабильный id — удаление всегда по id, без путаницы с индексами */
+type PhotoItem = { id: string; url: string }
+
 function photoSrc(url: string): string {
   if (!url) return ''
   if (url.startsWith('data:') || url.startsWith('http')) return url
   return API_BASE + url
+}
+
+function photosFromUser(user: { user_id: number; photos?: string[]; photo?: string }): PhotoItem[] {
+  const list = user.photos?.length ? user.photos : user.photo ? [user.photo] : []
+  return list.map((url, i) => ({
+    id: `u-${user.user_id}-${i}-${String(url).replace(/^.*\//, '').slice(0, 20)}`,
+    url,
+  }))
 }
 
 export default function EditProfile() {
@@ -22,30 +33,26 @@ export default function EditProfile() {
   const [city, setCity] = useState('')
   const [relationshipStatus, setRelationshipStatus] = useState('')
   const [purpose, setPurpose] = useState('')
-  const [photos, setPhotos] = useState<string[]>([])
-  const photosRef = useRef<string[]>([])
+  const [photos, setPhotos] = useState<PhotoItem[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-
-  useEffect(() => {
-    photosRef.current = photos
-  }, [photos])
+  const photosSyncedForUserIdRef = useRef<number | null>(null)
 
   useEffect(() => {
     fetchUser()
   }, [fetchUser])
 
   useEffect(() => {
-    if (user) {
-      setName(user.name || '')
-      setAge(String(user.age ?? ''))
-      setGender(user.gender || '')
-      setCity(user.city || '')
-      setRelationshipStatus(user.relationship_status || '')
-      setPurpose(user.purpose || 'куда-то сходить')
-      setPhotos(
-        user.photos?.length ? user.photos : user.photo ? [user.photo] : []
-      )
+    if (!user) return
+    setName(user.name || '')
+    setAge(String(user.age ?? ''))
+    setGender(user.gender || '')
+    setCity(user.city || '')
+    setRelationshipStatus(user.relationship_status || '')
+    setPurpose(user.purpose || 'куда-то сходить')
+    if (photosSyncedForUserIdRef.current !== user.user_id) {
+      photosSyncedForUserIdRef.current = user.user_id
+      setPhotos(photosFromUser(user))
     }
   }, [user])
 
@@ -68,19 +75,13 @@ export default function EditProfile() {
       r.onerror = reject
       r.readAsDataURL(file)
     })
-    const prev = photosRef.current
-    const newPhotos = [...prev, dataUrl].slice(0, MAX_PHOTOS)
-    photosRef.current = newPhotos
-    setPhotos(newPhotos)
+    const newItem: PhotoItem = { id: `add-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`, url: dataUrl }
+    setPhotos((prev) => [...prev, newItem].slice(0, MAX_PHOTOS))
   }
 
-  const handleRemovePhoto = (photoToRemove: string) => {
-    if (!photoToRemove) return
-    setPhotos((prev) => {
-      const next = prev.filter((p) => p !== photoToRemove)
-      photosRef.current = next
-      return next
-    })
+  const handleRemovePhoto = (id: string) => {
+    if (!id) return
+    setPhotos((prev) => prev.filter((p) => p.id !== id))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,6 +102,7 @@ export default function EditProfile() {
     setSaving(true)
     setError('')
     try {
+      const photoUrls = photos.map((p) => p.url)
       if (isApiConfigured()) {
         const { user: updated } = await api.updateProfile({
           name: name.trim(),
@@ -109,7 +111,7 @@ export default function EditProfile() {
           city,
           relationship_status: relationshipStatus || 'Не в отношениях',
           purpose: purpose.trim() || 'куда-то сходить',
-          photos,
+          photos: photoUrls,
         })
         setUser(updated)
         await fetchUser()
@@ -122,8 +124,8 @@ export default function EditProfile() {
           city,
           relationship_status: relationshipStatus || 'Не в отношениях',
           purpose: purpose.trim() || 'куда-то сходить',
-          photo: photos[0],
-          photos: photos,
+          photo: photoUrls[0],
+          photos: photoUrls,
         })
       }
       navigate('/profile', { replace: true })
@@ -219,38 +221,45 @@ export default function EditProfile() {
           onChange={handleFileChange}
         />
         <div className="profile-photos-grid edit-profile-photos">
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className={`profile-photo-slot ${photos[i] ? '' : 'profile-photo-slot-empty-wrap'}`}
-            >
-              {photos[i] ? (
-                <div className="profile-photo-slot-edit-wrap">
-                  <img src={photoSrc(photos[i])} alt="" className="profile-photo-slot-img" />
+          {[0, 1, 2].map((i) => {
+            const item = photos[i]
+            return (
+              <div
+                key={item ? item.id : `empty-${i}`}
+                className={`profile-photo-slot ${item ? '' : 'profile-photo-slot-empty-wrap'}`}
+              >
+                {item ? (
+                  <div className="profile-photo-slot-edit-wrap">
+                    <img src={photoSrc(item.url)} alt="" className="profile-photo-slot-img" />
+                    <button
+                      type="button"
+                      className="profile-photo-slot-remove"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleRemovePhoto(item.id)
+                      }}
+                      title="Удалить фото"
+                      aria-label={`Удалить фото ${i + 1}`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
                   <button
                     type="button"
-                    className="profile-photo-slot-remove"
-                    onClick={() => handleRemovePhoto(photos[i])}
-                    title="Удалить фото"
-                    aria-label={`Удалить фото ${i + 1}`}
+                    className="profile-photo-slot-empty profile-photo-slot-add"
+                    onClick={handleAddPhoto}
+                    disabled={photos.length >= MAX_PHOTOS}
+                    title="Добавить фото"
+                    aria-label="Добавить фото"
                   >
-                    ×
+                    <span className="profile-photo-slot-emoji">＋</span>
                   </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  className="profile-photo-slot-empty profile-photo-slot-add"
-                  onClick={handleAddPhoto}
-                  disabled={photos.length >= MAX_PHOTOS}
-                  title="Добавить фото"
-                  aria-label="Добавить фото"
-                >
-                  <span className="profile-photo-slot-emoji">＋</span>
-                </button>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            )
+          })}
         </div>
         {photos.length < MAX_PHOTOS && (
           <p className="text-muted profile-photo-hint">

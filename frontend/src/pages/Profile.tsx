@@ -91,7 +91,7 @@ export default function Profile() {
         <h2 className="profile-about-title">Обо мне</h2>
         <div className="profile-about-avatar" aria-hidden>
           {user.photo ? (
-            <img src={user.photo} alt="" className="profile-about-avatar-img" />
+            <img src={photoSrc(user.photo)} alt="" className="profile-about-avatar-img" />
           ) : (
             <div className="profile-about-avatar-placeholder">{user.name.slice(0, 1)}</div>
           )}
