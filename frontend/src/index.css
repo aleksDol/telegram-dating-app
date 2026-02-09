@@ -2752,32 +2752,16 @@ select.input {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(145deg, rgba(30, 20, 50, 0.95) 0%, rgba(20, 10, 35, 0.98) 100%);
-  box-shadow:
-    0 0 0 1px rgba(167, 139, 250, 0.3),
-    0 0 40px rgba(124, 58, 237, 0.35),
-    inset 0 2px 20px rgba(236, 72, 153, 0.15);
-  position: relative;
   overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 24px rgba(255, 255, 255, 0.15);
 }
 
-.home-cosmic-logo-circle::before {
-  content: '';
-  position: absolute;
-  inset: -50%;
-  background: radial-gradient(circle at 30% 30%, rgba(236, 72, 153, 0.2) 0%, transparent 40%),
-    radial-gradient(circle at 70% 70%, rgba(99, 102, 241, 0.2) 0%, transparent 40%);
-  animation: gradient-shift 8s ease-in-out infinite;
-}
-
-.home-cosmic-logo-text {
-  position: relative;
-  z-index: 1;
-  font-family: var(--font-heading);
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 0.02em;
+.home-cosmic-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .home-cosmic-tagline {
@@ -2826,11 +2810,6 @@ select.input {
   color: #fff;
   text-decoration: none;
   border: none;
-  /* Выпуклый вид: лёгкая внутренняя тень + внешняя тень */
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    0 4px 16px rgba(0, 0, 0, 0.25),
-    0 2px 8px rgba(0, 0, 0, 0.15);
   transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
 }
 
@@ -2851,69 +2830,52 @@ select.input {
 .home-quick-btn-icon svg {
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 0 6px currentColor);
 }
 
-/* «Найти встречу»: тёмно-фиолетовый слева → яркий синий справа, иконка с сиренево-синим свечением */
+/* «Найти встречу» — синяя кнопка, полупрозрачная тень */
 .home-quick-btn-find {
-  background: linear-gradient(90deg, #5b21b6 0%, #3b82f6 50%, #0ea5e9 100%);
+  background: #2563eb;
   color: #fff;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 4px 20px rgba(59, 130, 246, 0.35),
-    0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-.home-quick-btn-find .home-quick-btn-icon {
-  filter: drop-shadow(0 0 8px rgba(147, 197, 253, 0.9));
+  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.45), 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .home-quick-btn-find:hover {
   color: #fff;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 6px 24px rgba(59, 130, 246, 0.45),
-    0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 28px rgba(37, 99, 235, 0.5), 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* «Создать встречу»: яркий розовый слева → красный/маджента справа, иконка с розово-красным свечением */
+/* «Создать встречу» — розовая кнопка, полупрозрачная тень */
 .home-quick-btn-create {
-  background: linear-gradient(90deg, #ec4899 0%, #f43f5e 60%, #dc2626 100%);
+  background: #ec4899;
   color: #fff;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 4px 20px rgba(236, 72, 153, 0.35),
-    0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-.home-quick-btn-create .home-quick-btn-icon {
-  filter: drop-shadow(0 0 8px rgba(251, 207, 232, 0.9));
+  box-shadow: 0 6px 24px rgba(236, 72, 153, 0.45), 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .home-quick-btn-create:hover {
   color: #fff;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 6px 24px rgba(236, 72, 153, 0.45),
-    0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 28px rgba(236, 72, 153, 0.5), 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* Карточки статистики — космический стиль */
+/* Карточки статистики — фон как у приложения, выделяются бордерами и тенями */
 .home-stats-cosmic {
   margin-top: 1.5rem;
   padding: 0;
 }
 
 .home-stat-cosmic {
-  background: linear-gradient(180deg, rgba(45, 30, 70, 0.9) 0%, rgba(30, 20, 50, 0.95) 100%);
-  border: 1px solid rgba(167, 139, 250, 0.2);
-  box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(180deg, rgba(26, 15, 46, 0.6) 0%, rgba(18, 10, 31, 0.7) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.25),
+    0 2px 8px rgba(0, 0, 0, 0.15);
   color: #fff;
 }
 
 .home-stat-cosmic:hover {
-  border-color: rgba(167, 139, 250, 0.35);
-  box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.3), 0 6px 24px rgba(124, 58, 237, 0.2);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .home-stat-cosmic .home-stat-num {

@@ -102,7 +102,7 @@ export default function Home() {
       <header className="home-cosmic-hero animate-in stagger-1">
         <div className="home-cosmic-logo-wrap">
           <div className="home-cosmic-logo-circle">
-            <span className="home-cosmic-logo-text">SponTime</span>
+            <img src="/images/Spon.png" alt="SponTime" className="home-cosmic-logo-img" />
           </div>
         </div>
         <p className="home-cosmic-tagline">
@@ -165,25 +165,6 @@ export default function Home() {
             <li data-step="2.">Пригласи людей</li>
             <li data-step="3.">Знакомься!</li>
           </ul>
-        </div>
-      </section>
-
-      {/* Рекомендации — в тёмном стиле */}
-      <section className="home-recommendations home-recommendations-cosmic animate-in stagger-5">
-        <h2 className="home-recommendations-title">Популярные рядом с тобой</h2>
-        <div className="home-recommendations-grid">
-          <Link to="/events/sport" className="home-rec-card home-rec-card-cosmic">
-            <span className="home-rec-emoji">🏀</span>
-            <span className="home-rec-label">Спорт</span>
-          </Link>
-          <Link to="/events/culture" className="home-rec-card home-rec-card-cosmic">
-            <span className="home-rec-emoji">🎭</span>
-            <span className="home-rec-label">Культура</span>
-          </Link>
-          <Link to="/events/party" className="home-rec-card home-rec-card-cosmic">
-            <span className="home-rec-emoji">🍸</span>
-            <span className="home-rec-label">Вечеринки</span>
-          </Link>
         </div>
       </section>
     </div>
