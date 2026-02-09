@@ -122,12 +122,17 @@ body {
   min-height: 100vh;
 }
 
-/* Фон всех страниц: картинка на body, при прокрутке стоит на месте, контент листается поверх */
-.app-bg-body {
-  background-size: cover !important;
-  background-position: center !important;
-  background-repeat: no-repeat !important;
-  background-attachment: fixed;
+/* Фон всех страниц: фиксированный слой (работает и на ПК, и на телефоне — контент листается поверх) */
+.app-bg-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 a {
@@ -2859,8 +2864,8 @@ select.input {
   height: 18px;
 }
 
-/* «Найти встречу» — полупрозрачная синяя кнопка, неон с тенью */
-.home-quick-btn-find {
+/* «Найти встречу» — полупрозрачная синяя, неон с тенью (специфичность выше .home-quick-btn) */
+.home-quick-actions-cosmic .home-quick-btn-find {
   background: rgba(56, 189, 248, 0.35);
   color: #fff;
   border: 1px solid rgba(56, 189, 248, 0.6);
@@ -2870,7 +2875,7 @@ select.input {
     0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
-.home-quick-btn-find:hover {
+.home-quick-actions-cosmic .home-quick-btn-find:hover {
   color: #fff;
   box-shadow:
     0 0 28px rgba(56, 189, 248, 0.6),
@@ -2878,17 +2883,17 @@ select.input {
     0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
-.home-quick-btn-icon-wrap-blue {
+.home-quick-actions-cosmic .home-quick-btn-icon-wrap-blue {
   background: rgba(56, 189, 248, 0.5);
   color: #fff;
 }
 
-.home-quick-btn-icon-wrap-blue svg {
+.home-quick-actions-cosmic .home-quick-btn-icon-wrap-blue svg {
   color: #fff;
 }
 
-/* «Создать встречу» — полупрозрачная розово-фиолетовая кнопка, неон с тенью */
-.home-quick-btn-create {
+/* «Создать встречу» — полупрозрачная розово-фиолетовая, неон с тенью */
+.home-quick-actions-cosmic .home-quick-btn-create {
   background: linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(236, 72, 153, 0.35) 100%);
   color: #fff;
   border: 1px solid rgba(217, 70, 239, 0.6);
@@ -2898,7 +2903,7 @@ select.input {
     0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
-.home-quick-btn-create:hover {
+.home-quick-actions-cosmic .home-quick-btn-create:hover {
   color: #fff;
   box-shadow:
     0 0 28px rgba(168, 85, 247, 0.6),
@@ -2906,12 +2911,12 @@ select.input {
     0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
-.home-quick-btn-icon-wrap-plus {
+.home-quick-actions-cosmic .home-quick-btn-icon-wrap-plus {
   background: rgba(255, 255, 255, 0.2);
   color: #fff;
 }
 
-.home-quick-btn-icon-wrap-plus svg {
+.home-quick-actions-cosmic .home-quick-btn-icon-wrap-plus svg {
   color: #fff;
 }
 
