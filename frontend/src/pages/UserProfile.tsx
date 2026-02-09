@@ -65,6 +65,17 @@ export default function UserProfile() {
       .finally(() => setLoading(false))
   }, [userId, isDemo, useDemoEvents])
 
+  useEffect(() => {
+    if (!userId || isDemo || useDemoEvents || !isApiConfigured()) return
+    const onFocus = () => {
+      const id = parseInt(userId, 10)
+      if (Number.isNaN(id)) return
+      api.getUserProfile(id).then(({ user }) => setProfile(user)).catch(() => {})
+    }
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [userId, isDemo, useDemoEvents])
+
   const profilePhotos = useMemo(() => {
     if (!profile) return []
     const list = profile.photos?.length ? profile.photos : (profile.photo ? [profile.photo] : [])

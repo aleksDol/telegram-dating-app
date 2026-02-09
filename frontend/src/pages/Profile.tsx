@@ -65,6 +65,7 @@ export default function Profile() {
         const { user: updated } = await api.updateProfile({ photos: newPhotos })
         setUser(updated)
         photosRef.current = updated.photos ?? (updated.photo ? [updated.photo] : [])
+        await fetchUser()
       } else {
         setUser({ ...user, photo: dataUrl, photos: newPhotos })
       }
