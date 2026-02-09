@@ -308,7 +308,6 @@ export default function Register() {
             <input
               type="file"
               accept="image/*"
-              capture="user"
               className="register-photo-input"
               onChange={(e) => {
                 const file = e.target.files?.[0]
@@ -336,7 +335,7 @@ export default function Register() {
               <span className="register-photo-placeholder">
                 <span className="register-photo-icon" aria-hidden>📷</span>
                 <span className="register-photo-text">Выбрать фото</span>
-                <span className="register-photo-sub">С телефона откроется камера</span>
+                <span className="register-photo-sub">Камера или галерея</span>
               </span>
             )}
           </label>
