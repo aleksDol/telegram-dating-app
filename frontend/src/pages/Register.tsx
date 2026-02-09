@@ -205,47 +205,45 @@ export default function Register() {
         <>
           <label className="label">Город</label>
           <div className="register-city-wrap" ref={cityWrapRef}>
-            <span className="register-city-input-wrap">
-              <input
-                ref={cityInputRef}
-                className="input register-city-input"
-                type="text"
-                value={city}
-                onChange={(e) => {
-                  setCity(e.target.value)
-                  setCityNotInList(false)
-                  setCityDropdownOpen(true)
-                }}
-                onFocus={() => setCityDropdownOpen(true)}
-                placeholder="Начните вводить город"
-                autoComplete="off"
-                aria-autocomplete="list"
-                aria-expanded={cityDropdownOpen && citySuggestions.length > 0}
-              />
-              <span className="register-city-arrow" aria-hidden="true">▼</span>
-            </span>
-            <ul
-              className="register-city-dropdown"
-              role="listbox"
-              aria-hidden={!cityDropdownOpen || citySuggestions.length === 0}
-              style={{ display: cityDropdownOpen && citySuggestions.length > 0 ? undefined : 'none' }}
-            >
-              {citySuggestions.map((c) => (
-                <li
-                  key={c}
-                  role="option"
-                  className="register-city-option"
-                  onClick={() => {
-                    setCity(c)
-                    setCityNotInList(false)
-                    setCityDropdownOpen(false)
-                    cityInputRef.current?.blur()
-                  }}
-                >
-                  {c}
-                </li>
-              ))}
-            </ul>
+            <input
+              ref={cityInputRef}
+              className="input register-city-input"
+              type="text"
+              value={city}
+              onChange={(e) => {
+                setCity(e.target.value)
+                setCityNotInList(false)
+                setCityDropdownOpen(true)
+              }}
+              onFocus={() => setCityDropdownOpen(true)}
+              placeholder="Начните вводить город"
+              autoComplete="off"
+              aria-autocomplete="list"
+              aria-expanded={cityDropdownOpen && citySuggestions.length > 0}
+            />
+            {cityDropdownOpen && citySuggestions.length > 0 && (
+              <ul
+                className="register-city-dropdown"
+                role="listbox"
+                aria-hidden={false}
+              >
+                {citySuggestions.map((c) => (
+                  <li
+                    key={c}
+                    role="option"
+                    className="register-city-option"
+                    onClick={() => {
+                      setCity(c)
+                      setCityNotInList(false)
+                      setCityDropdownOpen(false)
+                      cityInputRef.current?.blur()
+                    }}
+                  >
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
           {cityNotInList && (
             <p className="register-city-error" role="alert">

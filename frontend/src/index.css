@@ -397,86 +397,49 @@ button {
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-/* Город: автокомплит с выпадающим списком */
+/* Город: автокомплит — список в потоке, под полем */
 .register-city-wrap {
-  position: relative;
   margin-bottom: 16px;
 }
 
-.register-city-input-wrap {
-  display: flex;
-  align-items: center;
-  position: relative;
-  border: 2px solid rgba(108, 99, 255, 0.2);
-  border-radius: var(--radius);
-  background: var(--input-bg, #fff);
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.register-city-input-wrap:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
-}
-
 .register-city-input {
-  flex: 1;
   width: 100%;
-  min-width: 0;
   margin-bottom: 0;
-  border: none;
-  background: transparent;
-  padding: 12px 8px 12px 14px;
+  padding: 12px 14px;
 }
 
-.register-city-input:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-.register-city-arrow {
-  flex-shrink: 0;
-  padding: 0 14px;
-  color: rgba(108, 99, 255, 0.6);
-  font-size: 0.65rem;
-  pointer-events: none;
-}
-
-/* Выпадающий список — отдельная карточка ниже поля, с отступом */
+/* Список городов — отдельный блок под полем, в потоке (не absolute) */
 .register-city-dropdown {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(100% + 8px);
-  margin: 0;
-  padding: 8px 0;
+  margin-top: 12px;
+  margin-bottom: 0;
+  padding: 10px 0;
   list-style: none;
-  background: var(--card-bg, #fff);
-  border: 2px solid rgba(108, 99, 255, 0.2);
+  background: #f8f7fc;
+  border: 2px solid rgba(108, 99, 255, 0.18);
   border-radius: var(--radius);
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.15);
-  max-height: 260px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  max-height: 240px;
   overflow-y: auto;
-  z-index: 25;
 }
 
 .register-city-option {
   padding: 12px 16px;
   cursor: pointer;
   font-size: 1rem;
-  line-height: 1.35;
+  line-height: 1.4;
   transition: background 0.15s;
-  border-radius: 4px;
-  margin: 0 6px;
-}
-
-.register-city-option:hover,
-.register-city-option:focus {
-  background: var(--accent-soft, rgba(108, 99, 255, 0.12));
-  outline: none;
+  margin: 0 8px;
+  border-radius: 6px;
 }
 
 .register-city-option:first-child {
   margin-top: 0;
+}
+
+.register-city-option:hover,
+.register-city-option:focus {
+  background: rgba(108, 99, 255, 0.12);
+  outline: none;
 }
 
 .register-city-error {
