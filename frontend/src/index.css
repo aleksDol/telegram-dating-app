@@ -92,12 +92,21 @@ html {
   text-rendering: optimizeLegibility;
 }
 
-html, body, #root {
+html, #root {
   margin: 0;
   padding: 0;
   min-height: 100%;
   font-family: var(--font) !important;
-  background: #1a1a2e;
+  color: var(--text);
+  overflow-x: hidden;
+  background: transparent;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  font-family: var(--font) !important;
   color: var(--text);
   overflow-x: hidden;
 }
@@ -105,20 +114,20 @@ html, body, #root {
 body {
   padding-bottom: env(safe-area-inset-bottom, 0);
   padding-top: env(safe-area-inset-top, 0);
-  background: transparent;
+  background-color: #1a1a2e;
+  min-height: 100vh;
 }
 
-/* Фон всех страниц: картинка на весь экран, адаптивно, без белых отступов */
-.app-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  z-index: -1;
+#root {
+  min-height: 100vh;
+}
+
+/* Фон всех страниц: картинка на body, адаптивно, без белых отступов (задаётся из main.tsx) */
+.app-bg-body {
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: scroll;
 }
 
 a {
@@ -2703,15 +2712,14 @@ select.input {
   height: 4px;
 }
 
-/* ===== Home: космический стиль (главный экран) ===== */
+/* ===== Home: космический стиль (главный экран), фон — общий bg.jpeg с body ===== */
 .home-cosmic {
   position: relative;
   min-height: 100%;
   margin: 0 calc(-1 * var(--page-padding));
   padding: 0 var(--page-padding);
   padding-bottom: calc(var(--nav-height) + 24px);
-  /* Фон: от тёмно-фиолетового до тёмно-розового */
-  background: linear-gradient(180deg, #1e102e 0%, #1a0d28 25%, #2d1535 50%, #2a1228 75%, #1e102e 100%);
+  background: transparent;
   color: #fff;
 }
 
@@ -2720,12 +2728,8 @@ select.input {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  /* Космические элементы: галактики, туманности */
-  background:
-    radial-gradient(ellipse 100% 60% at 50% -10%, rgba(124, 58, 237, 0.3) 0%, transparent 50%),
-    radial-gradient(ellipse 80% 50% at 80% 50%, rgba(236, 72, 153, 0.2) 0%, transparent 45%),
-    radial-gradient(ellipse 60% 40% at 20% 70%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-    radial-gradient(ellipse 50% 30% at 60% 90%, rgba(167, 139, 250, 0.12) 0%, transparent 35%);
+  /* Лёгкий оверлей, чтобы фон body (bg.jpeg) был виден */
+  background: transparent;
 }
 
 .home-cosmic-bg::before {

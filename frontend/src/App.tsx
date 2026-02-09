@@ -22,7 +22,6 @@ import navMeets from './img/metts.png'
 import navCreate from './img/create.png'
 import navLikes from './img/likes.png'
 import navProfile from './img/user.png'
-import bgImage from './img/bg.jpeg'
 
 function Nav() {
   const location = useLocation()
@@ -65,7 +64,6 @@ export default function App() {
     <AppProvider>
     <ErrorBoundary>
     <BrowserRouter>
-      <div className="app-bg" style={{ backgroundImage: `url(${bgImage})` }} aria-hidden />
       <div className="app">
         <Routes>
           <Route path="/" element={<Home />} />
