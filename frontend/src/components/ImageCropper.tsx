@@ -5,7 +5,6 @@ export interface ImageCropperProps {
   imageSrc: string
   onCrop: (dataUrl: string) => void
   onCancel: () => void
-  aspectRatio?: number
   outputSize?: number
 }
 
@@ -17,7 +16,6 @@ export default function ImageCropper({
   imageSrc,
   onCrop,
   onCancel,
-  aspectRatio = 1,
   outputSize = 800,
 }: ImageCropperProps) {
   const [loaded, setLoaded] = useState(false)
