@@ -16,7 +16,7 @@ function eventPhotoSrc(url: string | undefined): string {
   return API_BASE + url
 }
 const SWIPE_THRESHOLD = 80
-const CARD_EXIT_DURATION_MS = 450
+const CARD_EXIT_DURATION_MS = 580
 
 function FilterSliderIcon() {
   return (
@@ -309,10 +309,10 @@ export default function Events() {
                   key={`exit-${currentEvent?.id}`}
                   style={{
                     transform: exitAnimateToEnd
-                      ? (exitDirection === 'right' ? 'translateX(9999px) rotate(18deg)' : 'translateX(-9999px) rotate(-18deg)')
+                      ? (exitDirection === 'right' ? 'translateX(120vw) rotate(22deg)' : 'translateX(-120vw) rotate(-22deg)')
                       : `translateX(${exitStartOffset}px) rotate(${exitStartOffset * 0.06}deg)`,
                     opacity: exitAnimateToEnd ? 0 : 1,
-                    transition: 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease-out',
+                    transition: `transform 0.55s cubic-bezier(0.32, 0.72, 0.38, 1), opacity 0.5s cubic-bezier(0.33, 0, 0.2, 1)`,
                   }}
                 >
                   {currentEvent && <EventCard event={currentEvent} navigate={navigate} onAvatarClick={setPhotoViewerPhotos} />}
@@ -330,8 +330,8 @@ export default function Events() {
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseLeave}
                 style={{
-                  transform: `translateX(${swipeOffset}px) rotate(${swipeOffset * 0.06}deg)`,
-                  transition: touchStartX === null ? 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none',
+                  transform: `translateX(${swipeOffset}px) rotate(${swipeOffset * 0.07}deg)`,
+                  transition: touchStartX === null ? 'transform 0.35s cubic-bezier(0.34, 1.2, 0.64, 1)' : 'none',
                 }}
               >
                 {swipeOffset > 40 && (
@@ -364,9 +364,6 @@ export default function Events() {
               ❤️
             </button>
           </div>
-          <p className="events-tinder-hint">
-            {currentIndex + 1} из {events.length}
-          </p>
         </div>
       )}
       {photoViewerPhotos && photoViewerPhotos.length > 0 && (

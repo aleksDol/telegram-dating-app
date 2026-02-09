@@ -1806,12 +1806,6 @@ button {
   transform: scale(1.08);
   box-shadow: 0 6px 28px rgba(255, 107, 139, 0.5);
 }
-.events-tinder-hint {
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin: 8px 0 0;
-}
 
 /* ===== Event detail ===== */
 .event-detail-author {
