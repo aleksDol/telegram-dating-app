@@ -6,17 +6,16 @@ export interface ImageCropperProps {
   onCrop: (dataUrl: string) => void
   onCancel: () => void
   outputSize?: number
-  /** Встроенное кадрирование в форме (фото сразу в интерфейсе, без полноэкранного оверлея) */
+  /** Встроенное кадрирование в форме */
   inline?: boolean
 }
 
-const CONTAINER_MIN = 280
-const MIN_CROP_SIZE = 80
-
-type DragMode = 'move' | 'nw' | 'ne' | 'sw' | 'se' | null
+const VIEWPORT_SIZE = 300
+const MIN_ZOOM = 0.5
+const MAX_ZOOM = 4
 
 /**
- * Кадрирование как в Telegram: фото целиком, рамку можно двигать и менять размер (углы).
+ * Фиксированный квадрат кадрирования. Пользователь двигает и масштабирует фото внутри квадрата.
  */
 export default function ImageCropper({
   imageSrc,
@@ -27,44 +26,25 @@ export default function ImageCropper({
 }: ImageCropperProps) {
   const [loaded, setLoaded] = useState(false)
   const [imgSize, setImgSize] = useState({ w: 0, h: 0 })
-  const [containerSize, setContainerSize] = useState({ w: CONTAINER_MIN, h: 360 })
-  const [cropBox, setCropBox] = useState({ x: 0, y: 0, size: 200 })
-  const [dragMode, setDragMode] = useState<DragMode>(null)
-  const dragStartRef = useRef({ clientX: 0, clientY: 0, x: 0, y: 0, size: 0 })
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [viewportSize, setViewportSize] = useState(VIEWPORT_SIZE)
+  const [scale, setScale] = useState(1)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const dragStart = useRef({ clientX: 0, clientY: 0, panX: 0, panY: 0 })
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const panX = pan.x
+  const panY = pan.y
 
-  const scale =
-    imgSize.w && imgSize.h
-      ? Math.min(containerSize.w / imgSize.w, containerSize.h / imgSize.h)
-      : 1
-  const imgDisplayW = imgSize.w * scale
-  const imgDisplayH = imgSize.h * scale
-  const imgLeft = (containerSize.w - imgDisplayW) / 2
-  const imgTop = (containerSize.h - imgDisplayH) / 2
-
-  const clampCrop = useCallback(
-    (x: number, y: number, size: number) => {
-      const maxSize = Math.min(imgDisplayW, imgDisplayH)
-      const s = Math.max(MIN_CROP_SIZE, Math.min(maxSize, size))
-      const rx = Math.max(imgLeft, Math.min(imgLeft + imgDisplayW - s, x))
-      const ry = Math.max(imgTop, Math.min(imgTop + imgDisplayH - s, y))
-      return { x: rx, y: ry, size: s }
-    },
-    [imgLeft, imgTop, imgDisplayW, imgDisplayH]
-  )
-
+  // Блокировка прокрутки страницы только в полноэкранном режиме
   useEffect(() => {
     if (inline) return
     const prevOverflow = document.body.style.overflow
     const prevTouchAction = document.body.style.touchAction
-    const prevOverscrollBehavior = document.body.style.overscrollBehavior
     document.body.style.overflow = 'hidden'
     document.body.style.touchAction = 'none'
-    document.body.style.overscrollBehavior = 'none'
     return () => {
       document.body.style.overflow = prevOverflow
       document.body.style.touchAction = prevTouchAction
-      document.body.style.overscrollBehavior = prevOverscrollBehavior
     }
   }, [inline])
 
@@ -79,117 +59,122 @@ export default function ImageCropper({
   }, [imageSrc])
 
   useEffect(() => {
-    const el = containerRef.current
+    const el = viewportRef.current
     if (!el) return
-    const ro = new ResizeObserver(() => {
-      setContainerSize({ w: el.clientWidth || CONTAINER_MIN, h: el.clientHeight || 360 })
-    })
+    const updateSize = () => {
+      const w = el.clientWidth || 0
+      const h = el.clientHeight || 0
+      const size = Math.max(280, Math.min(w || VIEWPORT_SIZE, h || VIEWPORT_SIZE, VIEWPORT_SIZE))
+      setViewportSize(size)
+    }
+    const ro = new ResizeObserver(updateSize)
     ro.observe(el)
-    setContainerSize({ w: el.clientWidth || CONTAINER_MIN, h: el.clientHeight || 360 })
+    updateSize()
     return () => ro.disconnect()
   }, [loaded])
 
+  // Начальный масштаб: фото заполняет квадрат. Начальная позиция по центру.
   useEffect(() => {
-    if (!loaded || !imgDisplayW || !imgDisplayH) return
-    const maxSize = Math.min(imgDisplayW, imgDisplayH)
-    const size = Math.max(MIN_CROP_SIZE, Math.min(maxSize, maxSize * 0.85))
-    const x = imgLeft + (imgDisplayW - size) / 2
-    const y = imgTop + (imgDisplayH - size) / 2
-    setCropBox(clampCrop(x, y, size))
-  }, [loaded, imgDisplayW, imgDisplayH, imgLeft, imgTop, clampCrop])
+    if (!loaded || !imgSize.w || !imgSize.h || !viewportSize) return
+    const Smin = viewportSize / Math.min(imgSize.w, imgSize.h)
+    setScale(Smin)
+    setPan({ x: 0, y: 0 })
+  }, [loaded, imgSize.w, imgSize.h, viewportSize])
 
-  const handlePointerDown = useCallback(
-    (e: React.PointerEvent, mode: DragMode) => {
-      e.preventDefault()
-      if (mode === null) return
-      setDragMode(mode)
-      dragStartRef.current = {
-        clientX: e.clientX,
-        clientY: e.clientY,
-        x: cropBox.x,
-        y: cropBox.y,
-        size: cropBox.size,
+  const Smin = imgSize.w && imgSize.h && viewportSize
+    ? viewportSize / Math.min(imgSize.w, imgSize.h)
+    : 1
+  const SminClamp = Math.max(Smin * MIN_ZOOM, 0.1)
+  const Smax = Math.max(Smin * MAX_ZOOM, Smin + 0.5)
+
+  const clampPan = useCallback(
+    (s: number, px: number, py: number) => {
+      const half = viewportSize / 2
+      const imgW = imgSize.w * s
+      const imgH = imgSize.h * s
+      const maxPanX = Math.max(0, (imgW - viewportSize) / 2)
+      const maxPanY = Math.max(0, (imgH - viewportSize) / 2)
+      return {
+        panX: Math.max(-maxPanX, Math.min(maxPanX, px)),
+        panY: Math.max(-maxPanY, Math.min(maxPanY, py)),
       }
     },
-    [cropBox]
+    [viewportSize, imgSize.w, imgSize.h]
   )
 
-  const getContainerRect = useCallback(() => {
-    return containerRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 }
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      e.preventDefault()
+      setIsDragging(true)
+      dragStart.current = { clientX: e.clientX, clientY: e.clientY, panX, panY }
+    },
+    [panX, panY]
+  )
+
+  const handlePointerMove = useCallback(
+    (e: PointerEvent) => {
+      if (!isDragging) return
+      const dx = e.clientX - dragStart.current.clientX
+      const dy = e.clientY - dragStart.current.clientY
+      const { panX: panX0, panY: panY0 } = dragStart.current
+      const { panX: px, panY: py } = clampPan(scale, panX0 + dx, panY0 + dy)
+      setPan({ x: px, y: py })
+    },
+    [isDragging, scale, clampPan]
+  )
+
+  const handlePointerUp = useCallback(() => {
+    setIsDragging(false)
   }, [])
 
   useEffect(() => {
-    if (dragMode === null) return
-    const onUp = () => setDragMode(null)
-    const onMove = (e: PointerEvent) => {
-      const rect = getContainerRect()
-      const relX = e.clientX - rect.left
-      const relY = e.clientY - rect.top
-      const { clientX, clientY, x, y, size } = dragStartRef.current
-      const startRelX = clientX - rect.left
-      const startRelY = clientY - rect.top
-      const dx = relX - startRelX
-      const dy = relY - startRelY
-
-      if (dragMode === 'move') {
-        setCropBox((prev) => clampCrop(x + dx, y + dy, prev.size))
-        return
-      }
-      if (dragMode === 'se') {
-        const newSize = Math.max(
-          MIN_CROP_SIZE,
-          Math.min(
-            Math.min(relX - x, relY - y),
-            imgLeft + imgDisplayW - x,
-            imgTop + imgDisplayH - y
-          )
-        )
-        setCropBox(clampCrop(x, y, newSize))
-        return
-      }
-      if (dragMode === 'nw') {
-        const newSize = Math.max(
-          MIN_CROP_SIZE,
-          Math.min(Math.min(x + size - relX, y + size - relY), x - imgLeft + size, y - imgTop + size)
-        )
-        setCropBox(clampCrop(x + size - newSize, y + size - newSize, newSize))
-        return
-      }
-      if (dragMode === 'ne') {
-        const newSize = Math.max(
-          MIN_CROP_SIZE,
-          Math.min(Math.min(relX - x, (y + size) - relY), x + size - imgLeft, imgTop + imgDisplayH - y)
-        )
-        setCropBox(clampCrop(x + size - newSize, y, newSize))
-        return
-      }
-      if (dragMode === 'sw') {
-        const newSize = Math.max(
-          MIN_CROP_SIZE,
-          Math.min(Math.min((x + size) - relX, relY - y), imgLeft + imgDisplayW - x, y + size - imgTop)
-        )
-        setCropBox(clampCrop(x, y + size - newSize, newSize))
-      }
-    }
-    window.addEventListener('pointerup', onUp)
-    window.addEventListener('pointermove', onMove)
+    if (!isDragging) return
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
     return () => {
-      window.removeEventListener('pointerup', onUp)
-      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
     }
-  }, [dragMode, clampCrop, imgLeft, imgTop, imgDisplayW, imgDisplayH, getContainerRect])
+  }, [isDragging, handlePointerMove, handlePointerUp])
 
-  const handlePointerUp = useCallback(() => setDragMode(null), [])
+  const handleWheel = useCallback(
+    (e: React.WheelEvent) => {
+      e.preventDefault()
+      const delta = e.deltaY > 0 ? -0.1 : 0.1
+      setScale((s) => Math.max(SminClamp, Math.min(Smax, s * (1 + delta))))
+    },
+    [SminClamp, Smax]
+  )
+
+  // При изменении scale ограничиваем pan, чтобы не было пустых краёв
+  useEffect(() => {
+    setPan((prev) => {
+      const c = clampPan(scale, prev.x, prev.y)
+      return { x: c.panX, y: c.panY }
+    })
+  }, [scale, clampPan])
+
+  const zoomIn = useCallback(() => {
+    setScale((s) => Math.min(Smax, s * 1.2))
+  }, [Smax])
+
+  const zoomOut = useCallback(() => {
+    setScale((s) => Math.max(SminClamp, s / 1.2))
+  }, [SminClamp])
 
   const handleCrop = useCallback(() => {
-    if (!loaded || !imgSize.w || !imgSize.h) return
-    const sx = (cropBox.x - imgLeft) / scale
-    const sy = (cropBox.y - imgTop) / scale
-    const size = cropBox.size / scale
-    getCroppedImageDataUrl(imageSrc, { x: sx, y: sy, size }, outputSize)
+    if (!loaded || !imgSize.w || !imgSize.h || !viewportSize) return
+    const cropSizePx = viewportSize / scale
+    const cropX = imgSize.w / 2 - viewportSize / (2 * scale) - panX / scale
+    const cropY = imgSize.h / 2 - viewportSize / (2 * scale) - panY / scale
+    const x = Math.max(0, Math.min(imgSize.w - cropSizePx, cropX))
+    const y = Math.max(0, Math.min(imgSize.h - cropSizePx, cropY))
+    const size = Math.min(cropSizePx, imgSize.w - x, imgSize.h - y)
+    if (size <= 0) return
+    getCroppedImageDataUrl(imageSrc, { x, y, size }, outputSize)
       .then(onCrop)
       .catch(() => {})
-  }, [imageSrc, loaded, imgSize.w, imgSize.h, cropBox, imgLeft, imgTop, scale, outputSize, onCrop])
+  }, [imageSrc, loaded, imgSize, viewportSize, scale, panX, panY, outputSize, onCrop])
 
   const stopScroll = useCallback((e: React.PointerEvent | React.TouchEvent) => {
     e.preventDefault()
@@ -197,7 +182,7 @@ export default function ImageCropper({
 
   if (!loaded && imgSize.w === 0) {
     return (
-      <div className="image-cropper-overlay" role="dialog" aria-modal="true" aria-label="Кадрирование">
+      <div className={`image-cropper-overlay ${inline ? 'image-cropper-inline' : ''}`} role="dialog" aria-label="Кадрирование">
         <div className="image-cropper-loading">Загрузка…</div>
         <button type="button" className="btn btn-ghost image-cropper-cancel" onClick={onCancel}>
           Отмена
@@ -205,6 +190,11 @@ export default function ImageCropper({
       </div>
     )
   }
+
+  const imgW = imgSize.w * scale
+  const imgH = imgSize.h * scale
+  const left = viewportSize / 2 - imgW / 2 + panX
+  const top = viewportSize / 2 - imgH / 2 + panY
 
   return (
     <div
@@ -223,60 +213,44 @@ export default function ImageCropper({
         </button>
       </div>
       <div
-        ref={containerRef}
-        className="image-cropper-viewport image-cropper-viewport-contain"
-        style={{ minHeight: 320 }}
-        onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerUp}
+        ref={viewportRef}
+        className="image-cropper-viewport image-cropper-viewport-fixed"
+        style={{
+          width: '100%',
+          maxWidth: VIEWPORT_SIZE,
+          aspectRatio: '1',
+          height: 'auto',
+        }}
+        onPointerDown={handlePointerDown}
+        onWheel={handleWheel}
       >
-        <img
-          src={imageSrc}
-          alt=""
-          draggable={false}
-          className="image-cropper-image image-cropper-image-contain"
-        />
         <div
-          className="image-cropper-frame"
+          className="image-cropper-image-wrap"
           style={{
-            left: cropBox.x,
-            top: cropBox.y,
-            width: cropBox.size,
-            height: cropBox.size,
+            width: imgW,
+            height: imgH,
+            left,
+            top,
           }}
-          onPointerDown={(e) => handlePointerDown(e, 'move')}
-          aria-hidden
         >
-          <span
-            className="image-cropper-handle image-cropper-handle-nw"
-            onPointerDown={(e) => {
-              e.stopPropagation()
-              handlePointerDown(e, 'nw')
-            }}
-          />
-          <span
-            className="image-cropper-handle image-cropper-handle-ne"
-            onPointerDown={(e) => {
-              e.stopPropagation()
-              handlePointerDown(e, 'ne')
-            }}
-          />
-          <span
-            className="image-cropper-handle image-cropper-handle-sw"
-            onPointerDown={(e) => {
-              e.stopPropagation()
-              handlePointerDown(e, 'sw')
-            }}
-          />
-          <span
-            className="image-cropper-handle image-cropper-handle-se"
-            onPointerDown={(e) => {
-              e.stopPropagation()
-              handlePointerDown(e, 'se')
-            }}
+          <img
+            src={imageSrc}
+            alt=""
+            draggable={false}
+            className="image-cropper-image"
+            style={{ width: imgW, height: imgH }}
           />
         </div>
       </div>
-      <p className="image-cropper-hint">Сдвиньте рамку или потяните за углы</p>
+      <div className="image-cropper-zoom-row">
+        <button type="button" className="btn btn-ghost image-cropper-zoom-btn" onClick={zoomOut} aria-label="Уменьшить">
+          −
+        </button>
+        <span className="image-cropper-hint">Двигайте фото и масштабируйте</span>
+        <button type="button" className="btn btn-ghost image-cropper-zoom-btn" onClick={zoomIn} aria-label="Увеличить">
+          +
+        </button>
+      </div>
       <div className="image-cropper-actions">
         <button type="button" className="btn btn-ghost" onClick={onCancel}>
           Отмена
