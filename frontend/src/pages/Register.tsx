@@ -205,7 +205,7 @@ export default function Register() {
         <>
           <label className="label">Город</label>
           <div className="register-city-wrap" ref={cityWrapRef}>
-            <span className={`register-city-input-wrap ${cityDropdownOpen && citySuggestions.length > 0 ? 'register-city-input-wrap-open' : ''}`}>
+            <span className="register-city-input-wrap">
               <input
                 ref={cityInputRef}
                 className="input register-city-input"
