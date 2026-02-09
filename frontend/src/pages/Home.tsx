@@ -20,14 +20,6 @@ const MOCK_USER: User = {
   referrals_count: 0,
 }
 
-function WaveSvg() {
-  return (
-    <svg className="home-hero-wave" viewBox="0 0 400 32" preserveAspectRatio="none" aria-hidden>
-      <path d="M0 32V0h400v32c-66.5-8-133-8-200 0S66.5 32 0 32z" />
-    </svg>
-  )
-}
-
 export default function Home() {
   const navigate = useNavigate()
   const { user, loading, fetchUser, setUser } = useApp()
