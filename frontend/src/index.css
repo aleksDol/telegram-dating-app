@@ -397,6 +397,95 @@ button {
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
+/* Город: автокомплит с выпадающим списком */
+.register-city-wrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.register-city-input-wrap {
+  display: flex;
+  align-items: center;
+  position: relative;
+  border: 2px solid rgba(108, 99, 255, 0.2);
+  border-radius: var(--radius);
+  background: var(--input-bg, #fff);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.register-city-input-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.register-city-input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 0;
+  border: none;
+  background: transparent;
+}
+
+.register-city-input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.register-city-arrow {
+  flex-shrink: 0;
+  padding: 0 12px;
+  color: rgba(108, 99, 255, 0.6);
+  font-size: 0.7rem;
+  pointer-events: none;
+}
+
+.register-city-input-wrap-open {
+  border-bottom-color: transparent;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.register-city-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+  background: var(--card-bg, #fff);
+  border: 2px solid rgba(108, 99, 255, 0.25);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 20;
+}
+
+.register-city-option {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.15s;
+}
+
+.register-city-option:hover,
+.register-city-option:focus {
+  background: var(--accent-soft, rgba(108, 99, 255, 0.12));
+  outline: none;
+}
+
+.register-city-error {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  background: rgba(220, 53, 69, 0.12);
+  border: 1px solid rgba(220, 53, 69, 0.35);
+  border-radius: var(--radius-sm);
+  color: var(--error, #dc3545);
+  font-size: 14px;
+}
+
 /* Фото-пикер на странице регистрации — акцент в стиле главной */
 .register-page .register-photo-picker {
   border-color: rgba(124, 58, 237, 0.35);

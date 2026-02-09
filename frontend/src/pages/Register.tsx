@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { useTelegram } from '../hooks/useTelegram'
@@ -7,6 +7,7 @@ import { isApiConfigured, api } from '../api/client'
 import type { User } from '../types'
 
 const STEPS = ['name', 'age', 'gender', 'city', 'relationship', 'purpose', 'photo'] as const
+const MAX_SUGGESTIONS = 12
 
 export default function Register() {
   const navigate = useNavigate()
@@ -24,8 +25,40 @@ export default function Register() {
   const [photo, setPhoto] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [cityNotInList, setCityNotInList] = useState(false)
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false)
+  const cityWrapRef = useRef<HTMLDivElement>(null)
+  const cityInputRef = useRef<HTMLInputElement>(null)
+
+  const citySuggestions = useMemo(() => {
+    const q = city.trim().toLowerCase()
+    if (!q) return CITIES.slice(0, MAX_SUGGESTIONS)
+    return CITIES.filter((c) => c.toLowerCase().includes(q)).slice(0, MAX_SUGGESTIONS)
+  }, [city])
+
+  useEffect(() => {
+    if (step !== 'city') return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (cityWrapRef.current && !cityWrapRef.current.contains(e.target as Node)) {
+        setCityDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [step])
 
   const next = () => setStepIndex((i) => Math.min(i + 1, STEPS.length - 1))
+
+  const handleCityNext = () => {
+    const trimmed = city.trim()
+    if (!trimmed) return
+    if (!CITIES.includes(trimmed)) {
+      setCityNotInList(true)
+      return
+    }
+    setCityNotInList(false)
+    next()
+  }
 
   const enterDemoWithForm = () => {
     const ageNum = parseInt(age, 10) || 25
@@ -171,27 +204,63 @@ export default function Register() {
       {step === 'city' && (
         <>
           <label className="label">Город</label>
-          <input
-            className="input"
-            list="cities"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="Начните вводить город"
-          />
-          <datalist id="cities">
-            {CITIES.map((c) => (
-              <option key={c} value={c} />
-            ))}
-          </datalist>
-          {city && !CITIES.includes(city) && (
+          <div className="register-city-wrap" ref={cityWrapRef}>
+            <span className={`register-city-input-wrap ${cityDropdownOpen && citySuggestions.length > 0 ? 'register-city-input-wrap-open' : ''}`}>
+              <input
+                ref={cityInputRef}
+                className="input register-city-input"
+                type="text"
+                value={city}
+                onChange={(e) => {
+                  setCity(e.target.value)
+                  setCityNotInList(false)
+                  setCityDropdownOpen(true)
+                }}
+                onFocus={() => setCityDropdownOpen(true)}
+                placeholder="Начните вводить город"
+                autoComplete="off"
+                aria-autocomplete="list"
+                aria-expanded={cityDropdownOpen && citySuggestions.length > 0}
+              />
+              <span className="register-city-arrow" aria-hidden="true">▼</span>
+            </span>
+            <ul
+              className="register-city-dropdown"
+              role="listbox"
+              aria-hidden={!cityDropdownOpen || citySuggestions.length === 0}
+              style={{ display: cityDropdownOpen && citySuggestions.length > 0 ? undefined : 'none' }}
+            >
+              {citySuggestions.map((c) => (
+                <li
+                  key={c}
+                  role="option"
+                  className="register-city-option"
+                  onClick={() => {
+                    setCity(c)
+                    setCityNotInList(false)
+                    setCityDropdownOpen(false)
+                    cityInputRef.current?.blur()
+                  }}
+                >
+                  {c}
+                </li>
+              ))}
+            </ul>
+          </div>
+          {cityNotInList && (
+            <p className="register-city-error" role="alert">
+              К сожалению, данного города нет в списке. Выберите город из вариантов ниже.
+            </p>
+          )}
+          {city && !CITIES.includes(city.trim()) && !cityNotInList && (
             <p className="text-muted" style={{ marginBottom: 8 }}>
-              Выберите город из выпадающего списка при вводе
+              Выберите город из списка ниже или введите другой
             </p>
           )}
           <button
             className="btn btn-primary"
-            onClick={next}
-            disabled={!CITIES.includes(city)}
+            onClick={handleCityNext}
+            disabled={!city.trim()}
           >
             Далее
           </button>
