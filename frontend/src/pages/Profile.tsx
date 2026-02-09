@@ -17,6 +17,7 @@ export default function Profile() {
   const { user, loading, fetchUser, setUser } = useApp()
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const photosRef = useRef<string[]>([])
 
   useEffect(() => {
     fetchUser()
@@ -31,9 +32,10 @@ export default function Profile() {
     : user?.photo
       ? [user.photo]
       : []
+  photosRef.current = photos
 
   const handleAddPhoto = () => {
-    if (photos.length >= MAX_PHOTOS) return
+    if (photos.length >= MAX_PHOTOS || uploading) return
     fileInputRef.current?.click()
   }
 
@@ -41,24 +43,33 @@ export default function Profile() {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file || !user || !file.type.startsWith('image/')) return
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-      const r = new FileReader()
-      r.onload = () => resolve(r.result as string)
-      r.onerror = reject
-      r.readAsDataURL(file)
-    })
-    const newPhotos = [...photos, dataUrl].slice(0, MAX_PHOTOS)
+    if (uploading) return
     setUploading(true)
+    let dataUrl: string
+    try {
+      dataUrl = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader()
+        r.onload = () => resolve(r.result as string)
+        r.onerror = reject
+        r.readAsDataURL(file)
+      })
+    } catch {
+      setUploading(false)
+      return
+    }
+    const currentPhotos = photosRef.current
+    const newPhotos = [...currentPhotos, dataUrl].slice(0, MAX_PHOTOS)
+    photosRef.current = newPhotos
     try {
       if (isApiConfigured()) {
         const { user: updated } = await api.updateProfile({ photos: newPhotos })
         setUser(updated)
-        await fetchUser()
+        photosRef.current = updated.photos ?? (updated.photo ? [updated.photo] : [])
       } else {
-        setUser({ ...user, photo: dataUrl, photos: [dataUrl] })
+        setUser({ ...user, photo: dataUrl, photos: newPhotos })
       }
     } catch {
-      // ignore
+      photosRef.current = currentPhotos
     } finally {
       setUploading(false)
     }

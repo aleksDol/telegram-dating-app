@@ -23,8 +23,13 @@ export default function EditProfile() {
   const [relationshipStatus, setRelationshipStatus] = useState('')
   const [purpose, setPurpose] = useState('')
   const [photos, setPhotos] = useState<string[]>([])
+  const photosRef = useRef<string[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    photosRef.current = photos
+  }, [photos])
 
   useEffect(() => {
     fetchUser()
@@ -63,11 +68,20 @@ export default function EditProfile() {
       r.onerror = reject
       r.readAsDataURL(file)
     })
-    setPhotos((prev) => [...prev, dataUrl].slice(0, MAX_PHOTOS))
+    const prev = photosRef.current
+    const newPhotos = [...prev, dataUrl].slice(0, MAX_PHOTOS)
+    photosRef.current = newPhotos
+    setPhotos(newPhotos)
   }
 
-  const handleRemovePhoto = (index: number) => {
-    setPhotos((prev) => prev.filter((_, i) => i !== index))
+  const handleRemovePhoto = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const index = Number((e.currentTarget as HTMLButtonElement).dataset.index)
+    if (Number.isNaN(index) || index < 0 || index >= MAX_PHOTOS) return
+    setPhotos((prev) => {
+      const next = prev.filter((_, i) => i !== index)
+      photosRef.current = next
+      return next
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -217,9 +231,10 @@ export default function EditProfile() {
                   <button
                     type="button"
                     className="profile-photo-slot-remove"
-                    onClick={() => handleRemovePhoto(i)}
+                    data-index={i}
+                    onClick={handleRemovePhoto}
                     title="Удалить фото"
-                    aria-label="Удалить фото"
+                    aria-label={`Удалить фото ${i + 1}`}
                   >
                     ×
                   </button>
