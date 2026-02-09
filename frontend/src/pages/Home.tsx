@@ -103,52 +103,69 @@ export default function Home() {
   }
 
   return (
-    <>
+    <div className="home-cosmic">
       <DemoBanner />
-      {/* Градиентный хедер с волной */}
-      <header className="home-hero">
-        <WaveSvg />
-        <div className="home-hero-inner">
-          <Logo size="md" showText link />
+      <div className="home-cosmic-bg" aria-hidden />
+      {/* Логотип и слоган */}
+      <header className="home-cosmic-hero animate-in stagger-1">
+        <div className="home-cosmic-logo-wrap">
+          <div className="home-cosmic-logo-circle">
+            <span className="home-cosmic-logo-text">SponTime</span>
+          </div>
         </div>
+        <p className="home-cosmic-tagline">
+          <span className="home-cosmic-tagline-line home-cosmic-tagline-line-left" aria-hidden />
+          Знакомься по-новому
+          <span className="home-cosmic-tagline-line home-cosmic-tagline-line-right" aria-hidden />
+        </p>
       </header>
 
-      {/* Быстрые действия — 2 кнопки */}
-      <div className="home-quick-actions animate-in stagger-1">
-        <Link to="/events" className="home-quick-btn">
-          <span>🔍</span>
+      {/* Две кнопки с градиентами */}
+      <div className="home-quick-actions home-quick-actions-cosmic animate-in stagger-2">
+        <Link to="/events" className="home-quick-btn home-quick-btn-find">
+          <span className="home-quick-btn-icon" aria-hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </span>
           <span>Найти встречу</span>
         </Link>
-        <Link to="/create" className="home-quick-btn home-quick-btn-secondary">
-          <span>🎯</span>
+        <Link to="/create" className="home-quick-btn home-quick-btn-create">
+          <span className="home-quick-btn-icon" aria-hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          </span>
           <span>Создать встречу</span>
         </Link>
       </div>
 
-      {/* Статистика — 3 колонки с подписями */}
-      <div className="home-stats-cols animate-in stagger-2">
-        <Link to="/my-events" className="home-stat-col">
+      {/* Статистика — 3 карточки в космическом стиле */}
+      <div className="home-stats-cols home-stats-cosmic animate-in stagger-3">
+        <Link to="/my-events" className="home-stat-col home-stat-cosmic">
           <span className="home-stat-num">{myEventsCount}</span>
-          <span className="home-stat-emoji">💫</span>
+          <span className="home-stat-icon home-stat-icon-meetings" aria-hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>
+          </span>
           <span className="home-stat-label">Мои встречи</span>
         </Link>
-        <div className="home-stat-col">
+        <div className="home-stat-col home-stat-cosmic">
           <span className="home-stat-num">{user.points}</span>
-          <span className="home-stat-emoji">⭐</span>
+          <span className="home-stat-icon home-stat-icon-rating" aria-hidden>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </span>
           <span className="home-stat-label">Рейтинг</span>
         </div>
-        <Link to="/referral" className="home-stat-col">
+        <Link to="/referral" className="home-stat-col home-stat-cosmic">
           <span className="home-stat-num">{user.referrals_count}</span>
-          <span className="home-stat-emoji">👥</span>
+          <span className="home-stat-icon home-stat-icon-referrals" aria-hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </span>
           <span className="home-stat-label">Рефералов</span>
         </Link>
       </div>
 
-      {/* Призыв к действию с иллюстрацией */}
-      <section className="home-cta animate-in stagger-3">
-        <div className="home-cta-card">
-          <h2 className="home-cta-title">🎯 Не знаешь, с чего начать?</h2>
-          <div className="home-cta-illus">
+      {/* Призыв к действию — в тёмном стиле */}
+      <section className="home-cta home-cta-cosmic animate-in stagger-4">
+        <div className="home-cta-card home-cta-card-cosmic">
+          <h2 className="home-cta-title">Не знаешь, с чего начать?</h2>
+          <div className="home-cta-illus home-cta-illus-cosmic">
             <img src={heroPageImg} alt="" className="home-cta-illus-img" />
           </div>
           <ul className="home-cta-steps">
@@ -159,25 +176,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Рекомендации */}
-      <section className="home-recommendations animate-in stagger-4">
-        <h2 className="home-recommendations-title">🔥 Популярные рядом с тобой</h2>
+      {/* Рекомендации — в тёмном стиле */}
+      <section className="home-recommendations home-recommendations-cosmic animate-in stagger-5">
+        <h2 className="home-recommendations-title">Популярные рядом с тобой</h2>
         <div className="home-recommendations-grid">
-          <Link to="/events/sport" className="home-rec-card">
+          <Link to="/events/sport" className="home-rec-card home-rec-card-cosmic">
             <span className="home-rec-emoji">🏀</span>
             <span className="home-rec-label">Спорт</span>
           </Link>
-          <Link to="/events/culture" className="home-rec-card">
+          <Link to="/events/culture" className="home-rec-card home-rec-card-cosmic">
             <span className="home-rec-emoji">🎭</span>
             <span className="home-rec-label">Культура</span>
           </Link>
-          <Link to="/events/party" className="home-rec-card">
+          <Link to="/events/party" className="home-rec-card home-rec-card-cosmic">
             <span className="home-rec-emoji">🍸</span>
             <span className="home-rec-label">Вечеринки</span>
           </Link>
         </div>
       </section>
-    </>
+    </div>
   )
 }
 

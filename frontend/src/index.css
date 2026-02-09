@@ -2690,6 +2690,296 @@ select.input {
   height: 4px;
 }
 
+/* ===== Home: космический стиль (главный экран) ===== */
+.home-cosmic {
+  position: relative;
+  min-height: 100%;
+  margin: 0 calc(-1 * var(--page-padding));
+  padding: 0 var(--page-padding);
+  padding-bottom: calc(var(--nav-height) + 24px);
+  background: linear-gradient(180deg, #1a0f2e 0%, #0d0618 35%, #120a1f 70%, #1a0f2e 100%);
+  color: #fff;
+}
+
+.home-cosmic-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124, 58, 237, 0.25) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 60%, rgba(236, 72, 153, 0.15) 0%, transparent 45%),
+    radial-gradient(ellipse 50% 30% at 20% 80%, rgba(99, 102, 241, 0.12) 0%, transparent 40%);
+}
+
+.home-cosmic-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(1.5px 1.5px at 20px 30px, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1.5px 1.5px at 40px 70px, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.35), transparent),
+    radial-gradient(1.5px 1.5px at 130px 80px, rgba(255,255,255,0.25), transparent),
+    radial-gradient(1px 1px at 160px 120px, rgba(255,255,255,0.3), transparent);
+  background-size: 200px 200px;
+  opacity: 0.8;
+}
+
+.home-cosmic-hero,
+.home-quick-actions-cosmic,
+.home-stats-cosmic,
+.home-cta-cosmic,
+.home-recommendations-cosmic {
+  position: relative;
+  z-index: 1;
+}
+
+.home-cosmic-hero {
+  padding: 1.5rem 0 1.25rem;
+  text-align: center;
+}
+
+.home-cosmic-logo-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.home-cosmic-logo-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, rgba(30, 20, 50, 0.95) 0%, rgba(20, 10, 35, 0.98) 100%);
+  box-shadow:
+    0 0 0 1px rgba(167, 139, 250, 0.3),
+    0 0 40px rgba(124, 58, 237, 0.35),
+    inset 0 2px 20px rgba(236, 72, 153, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.home-cosmic-logo-circle::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: radial-gradient(circle at 30% 30%, rgba(236, 72, 153, 0.2) 0%, transparent 40%),
+    radial-gradient(circle at 70% 70%, rgba(99, 102, 241, 0.2) 0%, transparent 40%);
+  animation: gradient-shift 8s ease-in-out infinite;
+}
+
+.home-cosmic-logo-text {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+.home-cosmic-tagline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.home-cosmic-tagline-line {
+  display: inline-block;
+  width: 24px;
+  height: 1px;
+}
+
+.home-cosmic-tagline-line-left {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5));
+}
+
+.home-cosmic-tagline-line-right {
+  background: linear-gradient(90deg, rgba(255,255,255,0.5), transparent);
+}
+
+/* Кнопки главного экрана — космический стиль */
+.home-quick-actions-cosmic {
+  margin-top: 1.25rem;
+  padding: 0;
+}
+
+.home-quick-actions-cosmic .home-quick-btn {
+  padding: 14px 16px;
+  border-radius: var(--radius-xl);
+  font-size: 0.9rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0,0,0,0.2);
+  border: none;
+}
+
+.home-quick-btn-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-quick-btn-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.home-quick-btn-find {
+  background: linear-gradient(135deg, #5b21b6 0%, #2563eb 100%);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4), 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.home-quick-btn-find:hover {
+  color: #fff;
+  box-shadow: 0 6px 28px rgba(37, 99, 235, 0.5), 0 4px 12px rgba(0,0,0,0.25);
+}
+
+.home-quick-btn-create {
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(236, 72, 153, 0.4), 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.home-quick-btn-create:hover {
+  color: #fff;
+  box-shadow: 0 6px 28px rgba(236, 72, 153, 0.5), 0 4px 12px rgba(0,0,0,0.25);
+}
+
+/* Карточки статистики — космический стиль */
+.home-stats-cosmic {
+  margin-top: 1.5rem;
+  padding: 0;
+}
+
+.home-stat-cosmic {
+  background: linear-gradient(180deg, rgba(45, 30, 70, 0.9) 0%, rgba(30, 20, 50, 0.95) 100%);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2);
+  color: #fff;
+}
+
+.home-stat-cosmic:hover {
+  border-color: rgba(167, 139, 250, 0.35);
+  box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.3), 0 6px 24px rgba(124, 58, 237, 0.2);
+}
+
+.home-stat-cosmic .home-stat-num {
+  color: #fff;
+  font-size: 1.5rem;
+  margin-bottom: 6px;
+}
+
+.home-stat-cosmic .home-stat-label {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
+.home-stat-cosmic .home-stat-emoji {
+  display: none;
+}
+
+.home-stat-cosmic .home-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 6px;
+}
+
+.home-stat-cosmic .home-stat-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.home-stat-icon-meetings {
+  color: #f59e0b;
+  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5));
+}
+
+.home-stat-icon-rating {
+  color: #eab308;
+  filter: drop-shadow(0 0 8px rgba(234, 179, 8, 0.5));
+}
+
+.home-stat-icon-referrals {
+  color: #ec4899;
+  filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.4));
+}
+
+/* CTA и рекомендации в космическом стиле */
+.home-cta-cosmic {
+  margin-top: 1.5rem;
+  padding: 0;
+}
+
+.home-cta-card-cosmic {
+  background: linear-gradient(180deg, rgba(45, 30, 70, 0.85) 0%, rgba(30, 20, 50, 0.9) 100%);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.25), 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.home-cta-card-cosmic .home-cta-title {
+  color: #fff;
+}
+
+.home-cta-card-cosmic .home-cta-steps li {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.home-cta-card-cosmic .home-cta-steps li::before {
+  color: #c4b5fd;
+}
+
+.home-cta-illus-cosmic {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(236, 72, 153, 0.15) 100%);
+  border-radius: var(--radius);
+}
+
+.home-recommendations-cosmic {
+  margin-top: 1.5rem;
+  margin-bottom: calc(var(--nav-height) + 24px);
+  padding: 0;
+}
+
+.home-recommendations-cosmic .home-recommendations-title {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.home-rec-card-cosmic {
+  background: linear-gradient(180deg, rgba(45, 30, 70, 0.85) 0%, rgba(30, 20, 50, 0.9) 100%);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.15);
+  color: #fff;
+}
+
+.home-rec-card-cosmic:hover {
+  border-color: rgba(167, 139, 250, 0.35);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2), 0 6px 24px rgba(124, 58, 237, 0.15);
+}
+
+.home-rec-card-cosmic .home-rec-label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Демо-баннер на космическом фоне */
+.home-cosmic .demo-banner {
+  margin-left: calc(-1 * var(--page-padding));
+  margin-right: calc(-1 * var(--page-padding));
+  background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 50%, #ec4899 100%);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
 /* ===== Home: градиент как в логотипе (фиолетовый), волна ===== */
 .home-hero {
   position: relative;
