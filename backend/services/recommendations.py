@@ -36,7 +36,7 @@ class RecommendationService:
         preferred_categories = list(set(liked_categories + user_categories))
 
         if not preferred_categories:
-            # Если нет предпочтений, показываем случайные события
+            # Если нет предпочтений, показываем случайные события (исключаем пропущенные)
             recommendations = execute_query(
                 '''SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.photo AS event_photo, e.created, e.is_hidden,
                           u.name, u.age, u.gender, u.photo AS user_photo
@@ -44,14 +44,15 @@ class RecommendationService:
                     JOIN users u ON e.user_id = u.user_id 
                     WHERE (e.event_date::timestamp) > NOW()
                     AND e.user_id != ?
+                    AND e.id NOT IN (SELECT event_id FROM event_skips WHERE user_id = ?)
                     AND e.is_hidden = FALSE
                     AND u.is_banned = FALSE
                     ORDER BY RANDOM() 
                     LIMIT ?''',
-                (user_id, limit), fetchall=True
+                (user_id, user_id, limit), fetchall=True
             )
         else:
-            # Показываем события из предпочитаемых категорий
+            # Показываем события из предпочитаемых категорий (исключаем пропущенные)
             placeholders = ','.join(['?'] * len(preferred_categories))
             query = f'''SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.photo AS event_photo, e.created, e.is_hidden,
                           u.name, u.age, u.gender, u.photo AS user_photo
@@ -59,13 +60,14 @@ class RecommendationService:
                     JOIN users u ON e.user_id = u.user_id 
                     WHERE (e.event_date::timestamp) > NOW()
                     AND e.user_id != ?
+                    AND e.id NOT IN (SELECT event_id FROM event_skips WHERE user_id = ?)
                     AND e.category IN ({placeholders})
                     AND e.is_hidden = FALSE
                     AND u.is_banned = FALSE
                     ORDER BY e.created DESC 
                     LIMIT ?'''
 
-            params = [user_id] + preferred_categories + [limit]
+            params = [user_id, user_id] + preferred_categories + [limit]
             recommendations = execute_query(query, params, fetchall=True)
 
         return recommendations
@@ -91,11 +93,12 @@ class RecommendationService:
             WHERE (e.event_date::timestamp) > NOW()
             AND e.user_id != ?
             AND e.id NOT IN (SELECT event_id FROM likes WHERE from_user = ?)
+            AND e.id NOT IN (SELECT event_id FROM event_skips WHERE user_id = ?)
             AND e.is_hidden = FALSE
             AND u.is_banned = FALSE
         '''
 
-        params = [user_id, user_id]
+        params = [user_id, user_id, user_id]
 
         if filter_type == 'today':
             query = base_query + " AND (e.event_date::date) = CURRENT_DATE "
@@ -107,9 +110,11 @@ class RecommendationService:
                 AND (e.target_gender = 'Все' OR 
                      (e.target_gender = 'Мужчины' AND ? = 'Мужской') OR
                      (e.target_gender = 'Женщины' AND ? = 'Женский'))
-                AND e.city = ?
             '''
-            params.extend([current_gender, current_gender, current_city])
+            params.extend([current_gender, current_gender])
+            if current_city and str(current_city).strip():
+                query += " AND e.city = ? "
+                params.append((current_city or "").strip())
         elif filter_type == 'popular':
             query = '''
                 SELECT e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.photo AS event_photo, e.created, e.is_hidden,
@@ -121,14 +126,18 @@ class RecommendationService:
                 WHERE (e.event_date::timestamp) > NOW()
                 AND e.user_id != ?
                 AND e.id NOT IN (SELECT event_id FROM likes WHERE from_user = ?)
+                AND e.id NOT IN (SELECT event_id FROM event_skips WHERE user_id = ?)
                 AND e.is_hidden = FALSE
                 AND u.is_banned = FALSE
                 GROUP BY e.id, e.user_id, e.title, e.description, e.event_date, e.target_gender, e.city, e.category, e.photo, e.created, e.is_hidden, u.name, u.age, u.gender, u.relationship_status, u.photo, u.purpose
                 ORDER BY likes_count DESC
             '''
+            params = [user_id, user_id, user_id]
         elif filter_type == 'nearby':
-            query = base_query + " AND e.city = ? "
-            params.append(current_city)
+            query = base_query
+            if current_city and str(current_city).strip():
+                query += " AND e.city = ? "
+                params.append((current_city or "").strip())
         elif filter_type == 'new':
             query = base_query
         elif filter_type == 'random':

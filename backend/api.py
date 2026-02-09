@@ -583,6 +583,12 @@ def api_update_profile(body: UpdateProfileBody, user_id: int = Depends(get_user_
     return {"user": _row_to_user(row)}
 
 
+# Допустимые значения фильтра событий (должны совпадать с фронтом: FILTERS в Events.tsx)
+EVENTS_FILTER_VALUES = frozenset(
+    ("interest", "new", "popular", "nearby", "today", "tomorrow", "for_me", "random")
+)
+
+
 @app.get("/api/events")
 def api_get_events(
     filter: str = "new",
@@ -592,6 +598,9 @@ def api_get_events(
     user = execute_query("SELECT * FROM users WHERE user_id = ?", (user_id,), fetchone=True)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    filter = (filter or "").strip().lower()
+    if filter not in EVENTS_FILTER_VALUES:
+        filter = "new"
     if filter == "interest":
         events = RecommendationService.get_recommendations(user_id, limit=limit)
     else:
@@ -795,6 +804,17 @@ def api_like_event(event_id: int, user_id: int = Depends(get_user_id)):
 
 @app.post("/api/events/{event_id:int}/skip")
 def api_skip_event(event_id: int, user_id: int = Depends(get_user_id)):
+    """Сохраняем пропуск события, чтобы не показывать его снова в ленте."""
+    try:
+        execute_query(
+            """INSERT INTO event_skips (user_id, event_id, created)
+               VALUES (?, ?, ?)
+               ON CONFLICT (user_id, event_id) DO NOTHING""",
+            (user_id, event_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+            commit=True,
+        )
+    except Exception:
+        pass
     return {"ok": True}
 
 

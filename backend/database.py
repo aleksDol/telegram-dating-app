@@ -197,6 +197,15 @@ class Database:
                 """)
 
                 cursor.execute("""
+                CREATE TABLE IF NOT EXISTS event_skips (
+                    user_id BIGINT REFERENCES users(user_id),
+                    event_id INTEGER REFERENCES events(id),
+                    created TEXT,
+                    PRIMARY KEY (user_id, event_id)
+                )
+                """)
+
+                cursor.execute("""
                 CREATE TABLE IF NOT EXISTS bot_starts (
                     user_id BIGINT PRIMARY KEY,
                     username TEXT,
