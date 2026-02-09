@@ -74,11 +74,10 @@ export default function EditProfile() {
     setPhotos(newPhotos)
   }
 
-  const handleRemovePhoto = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const index = Number((e.currentTarget as HTMLButtonElement).dataset.index)
-    if (Number.isNaN(index) || index < 0 || index >= MAX_PHOTOS) return
+  const handleRemovePhoto = (photoToRemove: string) => {
+    if (!photoToRemove) return
     setPhotos((prev) => {
-      const next = prev.filter((_, i) => i !== index)
+      const next = prev.filter((p) => p !== photoToRemove)
       photosRef.current = next
       return next
     })
@@ -231,8 +230,7 @@ export default function EditProfile() {
                   <button
                     type="button"
                     className="profile-photo-slot-remove"
-                    data-index={i}
-                    onClick={handleRemovePhoto}
+                    onClick={() => handleRemovePhoto(photos[i])}
                     title="Удалить фото"
                     aria-label={`Удалить фото ${i + 1}`}
                   >
