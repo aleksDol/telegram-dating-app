@@ -89,7 +89,6 @@ export default function ImageCropper({
 
   const clampPan = useCallback(
     (s: number, px: number, py: number) => {
-      const half = viewportSize / 2
       const imgW = imgSize.w * s
       const imgH = imgSize.h * s
       const maxPanX = Math.max(0, (imgW - viewportSize) / 2)
