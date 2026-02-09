@@ -191,6 +191,10 @@ export default function ImageCropper({
       .catch(() => {})
   }, [imageSrc, loaded, imgSize.w, imgSize.h, cropBox, imgLeft, imgTop, scale, outputSize, onCrop])
 
+  const stopScroll = useCallback((e: React.PointerEvent | React.TouchEvent) => {
+    e.preventDefault()
+  }, [])
+
   if (!loaded && imgSize.w === 0) {
     return (
       <div className="image-cropper-overlay" role="dialog" aria-modal="true" aria-label="Кадрирование">
@@ -201,10 +205,6 @@ export default function ImageCropper({
       </div>
     )
   }
-
-  const stopScroll = useCallback((e: React.PointerEvent | React.TouchEvent) => {
-    e.preventDefault()
-  }, [])
 
   return (
     <div
