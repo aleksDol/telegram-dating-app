@@ -6,6 +6,8 @@ export interface ImageCropperProps {
   onCrop: (dataUrl: string) => void
   onCancel: () => void
   outputSize?: number
+  /** Встроенное кадрирование в форме (фото сразу в интерфейсе, без полноэкранного оверлея) */
+  inline?: boolean
 }
 
 const CONTAINER_MIN = 280
@@ -21,6 +23,7 @@ export default function ImageCropper({
   onCrop,
   onCancel,
   outputSize = 800,
+  inline = false,
 }: ImageCropperProps) {
   const [loaded, setLoaded] = useState(false)
   const [imgSize, setImgSize] = useState({ w: 0, h: 0 })
@@ -49,6 +52,21 @@ export default function ImageCropper({
     },
     [imgLeft, imgTop, imgDisplayW, imgDisplayH]
   )
+
+  useEffect(() => {
+    if (inline) return
+    const prevOverflow = document.body.style.overflow
+    const prevTouchAction = document.body.style.touchAction
+    const prevOverscrollBehavior = document.body.style.overscrollBehavior
+    document.body.style.overflow = 'hidden'
+    document.body.style.touchAction = 'none'
+    document.body.style.overscrollBehavior = 'none'
+    return () => {
+      document.body.style.overflow = prevOverflow
+      document.body.style.touchAction = prevTouchAction
+      document.body.style.overscrollBehavior = prevOverscrollBehavior
+    }
+  }, [inline])
 
   useEffect(() => {
     const img = new Image()
@@ -184,8 +202,20 @@ export default function ImageCropper({
     )
   }
 
+  const stopScroll = useCallback((e: React.PointerEvent | React.TouchEvent) => {
+    e.preventDefault()
+  }, [])
+
   return (
-    <div className="image-cropper-overlay" role="dialog" aria-modal="true" aria-label="Кадрирование фото">
+    <div
+      className={`image-cropper-overlay ${inline ? 'image-cropper-inline' : ''}`}
+      role="dialog"
+      aria-modal={!inline}
+      aria-label="Кадрирование фото"
+      onPointerDown={inline ? undefined : stopScroll}
+      onTouchStart={inline ? undefined : stopScroll}
+      onTouchMove={inline ? undefined : stopScroll}
+    >
       <div className="image-cropper-header">
         <span className="image-cropper-title">Кадрирование</span>
         <button type="button" className="image-cropper-close" onClick={onCancel} aria-label="Закрыть">

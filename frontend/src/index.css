@@ -466,6 +466,40 @@ button {
   box-sizing: border-box;
 }
 
+/* Встроенное кадрирование в форме: без фиксации, страница не двигается */
+.image-cropper-overlay.image-cropper-inline {
+  position: relative;
+  inset: auto;
+  z-index: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin: 12px 0;
+  max-width: 100%;
+}
+.image-cropper-inline .image-cropper-header {
+  position: relative;
+  padding: 0 0 8px;
+}
+.image-cropper-inline .image-cropper-title,
+.image-cropper-inline .image-cropper-close {
+  color: var(--text);
+}
+.image-cropper-inline .image-cropper-viewport-contain {
+  background: #1a1a1a;
+  border-radius: var(--radius);
+}
+.image-cropper-inline .image-cropper-hint {
+  color: var(--text-muted);
+}
+.image-cropper-inline .image-cropper-actions .btn-ghost {
+  color: var(--text);
+}
+.image-cropper-inline .image-cropper-actions .btn-ghost:hover {
+  background: var(--bg-hover);
+}
+
 .image-cropper-loading {
   color: #fff;
   font-size: 1rem;

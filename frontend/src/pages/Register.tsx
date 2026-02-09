@@ -306,48 +306,62 @@ export default function Register() {
           <p className="text-muted register-photo-hint">
             Загрузите своё фото. Без фото регистрация невозможна.
           </p>
-          <label className="register-photo-picker">
-            <input
-              type="file"
-              accept="image/*"
-              className="register-photo-input"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) {
-                  const reader = new FileReader()
-                  reader.onload = () => {
-                    setPhotoToCrop(reader.result as string)
-                  }
-                  reader.readAsDataURL(file)
-                }
-                e.target.value = ''
+          {photoToCrop ? (
+            <ImageCropper
+              imageSrc={photoToCrop}
+              inline
+              onCrop={(dataUrl) => {
+                setPhoto(dataUrl)
+                setPhotoToCrop(null)
               }}
+              onCancel={() => setPhotoToCrop(null)}
             />
-            {photo ? (
-              <span className="register-photo-preview-wrap">
-                <img
-                  src={photo}
-                  alt="Ваше фото"
-                  className="register-photo-preview"
-                  onError={() => setPhoto('')}
+          ) : (
+            <>
+              <label className="register-photo-picker">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="register-photo-input"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      const reader = new FileReader()
+                      reader.onload = () => {
+                        setPhotoToCrop(reader.result as string)
+                      }
+                      reader.readAsDataURL(file)
+                    }
+                    e.target.value = ''
+                  }}
                 />
-                <span className="register-photo-change">Изменить фото</span>
-              </span>
-            ) : (
-              <span className="register-photo-placeholder">
-                <span className="register-photo-icon" aria-hidden>📷</span>
-                <span className="register-photo-text">Выбрать фото</span>
-                <span className="register-photo-sub">Камера или галерея</span>
-              </span>
-            )}
-          </label>
-          <button
-            className="btn btn-primary btn-lg block-btn"
-            onClick={handleRegister}
-            disabled={loading || !photo.trim()}
-          >
-            {loading ? 'Регистрация...' : 'Готово'}
-          </button>
+                {photo ? (
+                  <span className="register-photo-preview-wrap">
+                    <img
+                      src={photo}
+                      alt="Ваше фото"
+                      className="register-photo-preview"
+                      onError={() => setPhoto('')}
+                    />
+                    <span className="register-photo-change">Изменить фото</span>
+                  </span>
+                ) : (
+                  <span className="register-photo-placeholder">
+                    <span className="register-photo-icon" aria-hidden>📷</span>
+                    <span className="register-photo-text">Выбрать фото</span>
+                    <span className="register-photo-sub">Камера или галерея</span>
+                  </span>
+                )}
+              </label>
+              <button
+                className="btn btn-primary btn-lg block-btn"
+                onClick={handleRegister}
+                disabled={loading || !photo.trim()}
+              >
+                {loading ? 'Регистрация...' : 'Готово'}
+              </button>
+            </>
+          )}
           {error && (
             <div className="card card-error" style={{ marginTop: 12 }}>
               <p className="text-error">{error}</p>
@@ -363,17 +377,6 @@ export default function Register() {
             </div>
           )}
         </>
-      )}
-
-      {photoToCrop && (
-        <ImageCropper
-          imageSrc={photoToCrop}
-          onCrop={(dataUrl) => {
-            setPhoto(dataUrl)
-            setPhotoToCrop(null)
-          }}
-          onCancel={() => setPhotoToCrop(null)}
-        />
       )}
     </div>
   )
