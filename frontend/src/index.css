@@ -2753,7 +2753,7 @@ select.input {
   margin-bottom: 1rem;
 }
 
-/* Логотип: круг с градиентом фиолетовый → розовый, внутри надпись SponTime белым */
+/* Логотип: круг с градиентом фиолетовый → розовый, внутри картинка лого */
 .home-cosmic-logo-circle {
   width: 100px;
   height: 100px;
@@ -2766,16 +2766,11 @@ select.input {
   box-shadow: 0 4px 24px rgba(124, 58, 237, 0.4), 0 2px 12px rgba(236, 72, 153, 0.2);
 }
 
-.home-cosmic-logo-text {
-  position: relative;
-  z-index: 1;
-  font-family: var(--font-heading);
-  font-size: 1rem;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 0.02em;
-  text-align: center;
-  line-height: 1.2;
+.home-cosmic-logo-img {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  display: block;
 }
 
 .home-cosmic-tagline {
@@ -2868,16 +2863,16 @@ select.input {
   color: #fff;
 }
 
-/* «Создать встречу» — розовая кнопка, иконка = круг с белым плюсом */
+/* «Создать встречу» — градиент как у круга SponTime (фиолетовый → розовый) */
 .home-quick-btn-create {
-  background: #ec4899;
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 40%, #ec4899 100%);
   color: #fff;
-  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4), 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35), 0 4px 12px rgba(236, 72, 153, 0.25);
 }
 
 .home-quick-btn-create:hover {
   color: #fff;
-  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.45), 0 6px 16px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4), 0 6px 16px rgba(236, 72, 153, 0.3);
 }
 
 .home-quick-btn-icon-wrap-plus {
@@ -2889,7 +2884,7 @@ select.input {
   color: #fff;
 }
 
-/* Мои встречи, Рейтинг, Рефералов — фиолетовые кнопки с мягкими тенями, цифры белым */
+/* Мои встречи, Рейтинг, Рефералов — чуть темнее фона, красные тонкие бордеры, цифры белые */
 .home-stats-cosmic {
   margin-top: 1.5rem;
   padding: 0;
@@ -2902,9 +2897,9 @@ select.input {
   text-align: center;
   padding: 1rem 0.75rem;
   border-radius: var(--radius);
-  background: #7c3aed;
-  border: none;
-  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
+  background: rgba(20, 12, 35, 0.95);
+  border: 1px solid rgba(220, 38, 38, 0.85);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   color: #fff;
   text-decoration: none;
   transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
@@ -2912,7 +2907,8 @@ select.input {
 
 .home-stat-cosmic:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-color: rgba(220, 38, 38, 0.95);
 }
 
 .home-stat-cosmic .home-stat-num {
@@ -2924,7 +2920,7 @@ select.input {
 }
 
 .home-stat-cosmic .home-stat-label {
-  color: #fff;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 0.75rem;
   font-weight: 500;
   margin-top: 4px;

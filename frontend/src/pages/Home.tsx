@@ -102,7 +102,7 @@ export default function Home() {
       <header className="home-cosmic-hero animate-in stagger-1">
         <div className="home-cosmic-logo-wrap">
           <div className="home-cosmic-logo-circle">
-            <span className="home-cosmic-logo-text">SponTime</span>
+            <img src="/images/Spon.png" alt="SponTime" className="home-cosmic-logo-img" />
           </div>
         </div>
         <p className="home-cosmic-tagline">
