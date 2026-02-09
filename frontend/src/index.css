@@ -122,12 +122,12 @@ body {
   min-height: 100vh;
 }
 
-/* Фон всех страниц: картинка на body, адаптивно, без белых отступов (задаётся из main.tsx) */
+/* Фон всех страниц: картинка на body, при прокрутке стоит на месте, контент листается поверх */
 .app-bg-body {
   background-size: cover !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
-  background-attachment: scroll;
+  background-attachment: fixed;
 }
 
 a {
@@ -2859,20 +2859,27 @@ select.input {
   height: 18px;
 }
 
-/* «Найти встречу» — фиолетовая кнопка, иконка = голубой круг с белым поиском */
+/* «Найти встречу» — полупрозрачная синяя кнопка, неон с тенью */
 .home-quick-btn-find {
-  background: #7c3aed;
+  background: rgba(56, 189, 248, 0.35);
   color: #fff;
-  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4), 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(56, 189, 248, 0.6);
+  box-shadow:
+    0 0 20px rgba(56, 189, 248, 0.5),
+    0 0 40px rgba(56, 189, 248, 0.25),
+    0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .home-quick-btn-find:hover {
   color: #fff;
-  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.45), 0 6px 16px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 0 28px rgba(56, 189, 248, 0.6),
+    0 0 50px rgba(56, 189, 248, 0.3),
+    0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
 .home-quick-btn-icon-wrap-blue {
-  background: #38bdf8;
+  background: rgba(56, 189, 248, 0.5);
   color: #fff;
 }
 
@@ -2880,20 +2887,27 @@ select.input {
   color: #fff;
 }
 
-/* «Создать встречу» — градиент как у круга SponTime (фиолетовый → розовый) */
+/* «Создать встречу» — полупрозрачная розово-фиолетовая кнопка, неон с тенью */
 .home-quick-btn-create {
-  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 40%, #ec4899 100%);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(236, 72, 153, 0.35) 100%);
   color: #fff;
-  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35), 0 4px 12px rgba(236, 72, 153, 0.25);
+  border: 1px solid rgba(217, 70, 239, 0.6);
+  box-shadow:
+    0 0 20px rgba(168, 85, 247, 0.5),
+    0 0 40px rgba(236, 72, 153, 0.25),
+    0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .home-quick-btn-create:hover {
   color: #fff;
-  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4), 0 6px 16px rgba(236, 72, 153, 0.3);
+  box-shadow:
+    0 0 28px rgba(168, 85, 247, 0.6),
+    0 0 50px rgba(236, 72, 153, 0.3),
+    0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
 .home-quick-btn-icon-wrap-plus {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.2);
   color: #fff;
 }
 
@@ -2901,7 +2915,7 @@ select.input {
   color: #fff;
 }
 
-/* Мои встречи, Рейтинг, Рефералов — чуть темнее фона, красные тонкие бордеры, цифры белые */
+/* Мои встречи, Рейтинг, Рефералов — полупрозрачный серый, тонкий красный бордер, цифры белые */
 .home-stats-cosmic {
   margin-top: 1.5rem;
   padding: 0;
@@ -2914,9 +2928,9 @@ select.input {
   text-align: center;
   padding: 1rem 0.75rem;
   border-radius: var(--radius);
-  background: rgba(20, 12, 35, 0.95);
-  border: 1px solid rgba(220, 38, 38, 0.85);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  background: rgba(80, 80, 100, 0.4);
+  border: 1px solid rgba(220, 38, 38, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   color: #fff;
   text-decoration: none;
   transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
@@ -2924,8 +2938,8 @@ select.input {
 
 .home-stat-cosmic:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  border-color: rgba(220, 38, 38, 0.95);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border-color: rgba(220, 38, 38, 1);
 }
 
 .home-stat-cosmic .home-stat-num {
