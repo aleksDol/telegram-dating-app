@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext'
 import { useTelegram } from '../hooks/useTelegram'
 import { CITIES, GENDERS, RELATIONSHIP_STATUSES } from '../constants'
 import { isApiConfigured, api } from '../api/client'
+import ImageCropper from '../components/ImageCropper'
 import type { User } from '../types'
 
 const STEPS = ['name', 'age', 'gender', 'city', 'relationship', 'purpose', 'photo'] as const
@@ -27,6 +28,7 @@ export default function Register() {
   const [error, setError] = useState('')
   const [cityNotInList, setCityNotInList] = useState(false)
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false)
+  const [photoToCrop, setPhotoToCrop] = useState<string | null>(null)
   const cityWrapRef = useRef<HTMLDivElement>(null)
   const cityInputRef = useRef<HTMLInputElement>(null)
 
@@ -314,11 +316,11 @@ export default function Register() {
                 if (file) {
                   const reader = new FileReader()
                   reader.onload = () => {
-                    const dataUrl = reader.result as string
-                    setPhoto(dataUrl)
+                    setPhotoToCrop(reader.result as string)
                   }
                   reader.readAsDataURL(file)
                 }
+                e.target.value = ''
               }}
             />
             {photo ? (
@@ -361,6 +363,17 @@ export default function Register() {
             </div>
           )}
         </>
+      )}
+
+      {photoToCrop && (
+        <ImageCropper
+          imageSrc={photoToCrop}
+          onCrop={(dataUrl) => {
+            setPhoto(dataUrl)
+            setPhotoToCrop(null)
+          }}
+          onCancel={() => setPhotoToCrop(null)}
+        />
       )}
     </div>
   )
