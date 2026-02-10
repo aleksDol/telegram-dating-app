@@ -113,6 +113,25 @@ export default function ImageCropper({
     return () => unlockBodyScroll()
   }, [unlockBodyScroll])
 
+  // Тач: блокируем скролл на viewport нативным touchmove с passive: false, иначе preventDefault не сработает
+  useEffect(() => {
+    const el = viewportRef.current
+    if (!el || !inline) return
+    const onTouchStart = () => lockBodyScroll()
+    const onTouchMove = (e: TouchEvent) => e.preventDefault()
+    const onTouchEnd = () => unlockBodyScroll()
+    el.addEventListener('touchstart', onTouchStart, { passive: true })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('touchend', onTouchEnd, { passive: true })
+    el.addEventListener('touchcancel', onTouchEnd, { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('touchend', onTouchEnd)
+      el.removeEventListener('touchcancel', onTouchEnd)
+    }
+  }, [inline, lockBodyScroll, unlockBodyScroll])
+
   useEffect(() => {
     const img = new Image()
     img.onload = () => {
