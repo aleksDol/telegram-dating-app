@@ -343,7 +343,8 @@ button {
 
 .register-hero {
   padding: 1.25rem var(--page-padding) 1.5rem;
-  margin: 0 calc(-2 * var(--page-padding)) 1.5rem;
+  /* Убираем верхний отступ от контейнера .app */
+  margin: calc(-1 * var(--page-padding)) calc(-2 * var(--page-padding)) 1.5rem;
   box-sizing: border-box;
   background: var(--gradient-logo);
   color: #fff;
@@ -1404,6 +1405,33 @@ button {
 .profile-action-referral:hover .profile-action-icon { filter: drop-shadow(0 0 8px rgba(129, 140, 248, 0.4)); }
 .profile-action-achievements:hover .profile-action-icon { filter: drop-shadow(0 0 8px rgba(232, 121, 249, 0.4)); }
 
+/* ===== Profile: тонкие красные бордеры на кнопках и блоках ===== */
+.profile-page .card,
+.profile-page .profile-about-avatar,
+.profile-page .profile-photo-main,
+.profile-page .profile-photo-slot {
+  border: 1px solid rgba(220, 38, 38, 0.9) !important;
+}
+
+.profile-page .btn {
+  border: 1px solid rgba(220, 38, 38, 0.9) !important;
+}
+
+.profile-page .card:hover,
+.profile-page .btn:hover {
+  border-color: rgba(220, 38, 38, 1) !important;
+}
+
+.profile-page .profile-photo-slot-empty-wrap {
+  border-style: dashed;
+  border-width: 1px;
+  border-color: rgba(220, 38, 38, 0.85);
+}
+
+.profile-page .profile-action-card:hover {
+  border-color: rgba(220, 38, 38, 1) !important;
+}
+
 /* Legacy: круглый аватар (если используется на других страницах) */
 .profile-avatar-btn {
   display: block;
@@ -2266,6 +2294,8 @@ button {
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
+  /* Убираем верхний отступ от контейнера .app */
+  margin-top: calc(-1 * var(--page-padding));
   margin-bottom: 1.5rem;
   padding: 1.5rem 1rem 2rem;
   box-sizing: border-box;
@@ -2334,24 +2364,25 @@ button {
   box-sizing: border-box;
   padding: 14px 16px;
   border-radius: var(--radius-sm);
-  border: 2px solid rgba(45, 55, 72, 0.18);
-  background: #fff;
+  border: 1px solid rgba(220, 38, 38, 0.9);
+  background: rgba(255, 255, 255, 0.12);
   color: var(--text);
   font-size: 1rem;
   font-family: inherit;
   margin-bottom: 4px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-shadow: 0 1px 4px rgba(45, 55, 72, 0.08);
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 .create-event-page .form-create .input::placeholder {
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .create-event-page .form-create .input:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft), 0 2px 8px rgba(45, 55, 72, 0.1);
+  border-color: rgba(220, 38, 38, 1);
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Поле для фото — плейсхолдер «Например фото заведения» */
@@ -2363,16 +2394,16 @@ button {
   min-height: 120px;
   padding: 1rem;
   margin-bottom: 4px;
-  border: 2px dashed rgba(45, 55, 72, 0.25);
+  border: 1px dashed rgba(220, 38, 38, 0.9);
   border-radius: var(--radius-sm);
-  background: rgba(45, 55, 72, 0.04);
+  background: rgba(255, 255, 255, 0.08);
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
 }
 
 .create-event-page .form-create .input-photo-placeholder:hover {
-  border-color: var(--accent);
-  background: var(--accent-soft);
+  border-color: rgba(220, 38, 38, 1);
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .create-event-page .form-create .input-photo-input {
@@ -2392,8 +2423,8 @@ button {
 }
 
 .create-event-page .form-create .input-photo-placeholder:has(.input-photo-input:focus) {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  border-color: rgba(220, 38, 38, 1);
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
 }
 
 .input-photo-preview-wrap {
