@@ -517,6 +517,8 @@ button {
   padding: 12px;
   margin: 12px 0;
   max-width: 100%;
+  touch-action: none;
+  overscroll-behavior: contain;
 }
 .image-cropper-inline .image-cropper-header {
   position: relative;

@@ -42,6 +42,8 @@ export default function ImageCropper({
     prevLeft: string
     prevRight: string
     prevWidth: string
+    prevOverscrollBody: string
+    prevOverscrollHtml: string
   }>({
     active: false,
     scrollY: 0,
@@ -52,6 +54,8 @@ export default function ImageCropper({
     prevLeft: '',
     prevRight: '',
     prevWidth: '',
+    prevOverscrollBody: '',
+    prevOverscrollHtml: '',
   })
   const panX = pan.x
   const panY = pan.y
@@ -73,6 +77,7 @@ export default function ImageCropper({
     const st = scrollLockRef.current
     if (st.active) return
     const scrollY = window.scrollY || document.documentElement.scrollTop || 0
+    const html = document.documentElement
     scrollLockRef.current = {
       active: true,
       scrollY,
@@ -83,6 +88,8 @@ export default function ImageCropper({
       prevLeft: document.body.style.left,
       prevRight: document.body.style.right,
       prevWidth: document.body.style.width,
+      prevOverscrollBody: document.body.style.overscrollBehavior,
+      prevOverscrollHtml: html.style.overscrollBehavior,
     }
     // На iOS overflow:hidden может не блокировать скролл — фиксируем body
     document.body.style.overflow = 'hidden'
@@ -92,6 +99,9 @@ export default function ImageCropper({
     document.body.style.left = '0'
     document.body.style.right = '0'
     document.body.style.width = '100%'
+    // Убираем «резинку» при тяге вниз/вверх
+    document.body.style.overscrollBehavior = 'none'
+    html.style.overscrollBehavior = 'none'
   }, [])
 
   const unlockBodyScroll = useCallback(() => {
@@ -104,6 +114,8 @@ export default function ImageCropper({
     document.body.style.left = st.prevLeft
     document.body.style.right = st.prevRight
     document.body.style.width = st.prevWidth
+    document.body.style.overscrollBehavior = st.prevOverscrollBody
+    document.documentElement.style.overscrollBehavior = st.prevOverscrollHtml
     scrollLockRef.current.active = false
     window.scrollTo(0, st.scrollY)
   }, [])
@@ -192,6 +204,9 @@ export default function ImageCropper({
       if (inline) lockBodyScroll()
       setIsDragging(true)
       dragStart.current = { clientX: e.clientX, clientY: e.clientY, panX, panY }
+      // Захват указателя — все pointermove идут в viewport, браузер не начинает скролл/overscroll
+      const el = e.currentTarget as HTMLElement
+      if (el.setPointerCapture) el.setPointerCapture(e.pointerId)
     },
     [panX, panY, inline, lockBodyScroll]
   )
@@ -208,20 +223,33 @@ export default function ImageCropper({
     [isDragging, scale, clampPan]
   )
 
-  const handlePointerUp = useCallback(() => {
-    setIsDragging(false)
-    if (inline) unlockBodyScroll()
-  }, [inline, unlockBodyScroll])
+  const handlePointerUp = useCallback(
+    (e?: PointerEvent) => {
+      if (viewportRef.current && e && viewportRef.current.releasePointerCapture) {
+        try {
+          viewportRef.current.releasePointerCapture(e.pointerId)
+        } catch (_) {}
+      }
+      setIsDragging(false)
+      if (inline) unlockBodyScroll()
+    },
+    [inline, unlockBodyScroll]
+  )
 
   useEffect(() => {
     if (!isDragging) return
-    window.addEventListener('pointermove', handlePointerMove)
-    window.addEventListener('pointerup', handlePointerUp)
-    window.addEventListener('pointercancel', handlePointerUp)
+    const onPointerUp = (e: PointerEvent) => handlePointerUp(e)
+    const onPointerMove = (e: PointerEvent) => {
+      e.preventDefault()
+      handlePointerMove(e)
+    }
+    window.addEventListener('pointermove', onPointerMove, { passive: false })
+    window.addEventListener('pointerup', onPointerUp)
+    window.addEventListener('pointercancel', onPointerUp)
     return () => {
-      window.removeEventListener('pointermove', handlePointerMove)
-      window.removeEventListener('pointerup', handlePointerUp)
-      window.removeEventListener('pointercancel', handlePointerUp)
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerUp)
+      window.removeEventListener('pointercancel', onPointerUp)
     }
   }, [isDragging, handlePointerMove, handlePointerUp])
 
