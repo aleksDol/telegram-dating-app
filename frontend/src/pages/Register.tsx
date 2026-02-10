@@ -27,7 +27,6 @@ export default function Register() {
   const [error, setError] = useState('')
   const [cityNotInList, setCityNotInList] = useState(false)
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false)
-  const [photoToCrop, setPhotoToCrop] = useState<string | null>(null)
   const cityWrapRef = useRef<HTMLDivElement>(null)
   const cityInputRef = useRef<HTMLInputElement>(null)
 
@@ -303,78 +302,50 @@ export default function Register() {
         <>
           <label className="label">Фото (обязательно)</label>
           <p className="text-muted register-photo-hint">
-            Загрузите своё фото. Без фото регистрация невозможна.
+            Загрузите своё фото и нажмите «Готово». Без фото регистрация невозможна.
           </p>
-          {photoToCrop ? (
-            <div className="register-photo-confirm">
-              <p className="text-muted register-photo-hint" style={{ marginBottom: 12 }}>
-                Проверьте фото и нажмите «Готово»
-              </p>
-              <div className="register-photo-preview-box">
-                <img src={photoToCrop} alt="Предпросмотр" className="register-photo-preview-img" />
-              </div>
-              <div className="register-photo-confirm-actions">
-                <button type="button" className="btn btn-ghost" onClick={() => setPhotoToCrop(null)}>
-                  Изменить фото
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={() => {
-                    setPhoto(photoToCrop)
-                    setPhotoToCrop(null)
-                  }}
-                >
-                  Готово
-                </button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <label className="register-photo-picker">
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="register-photo-input"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) {
-                      const reader = new FileReader()
-                      reader.onload = () => {
-                        setPhotoToCrop(reader.result as string)
-                      }
-                      reader.readAsDataURL(file)
-                    }
-                    e.target.value = ''
-                  }}
+          <label className="register-photo-picker">
+            <input
+              type="file"
+              accept="image/*"
+              className="register-photo-input"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) {
+                  const reader = new FileReader()
+                  reader.onload = () => {
+                    setPhoto(reader.result as string)
+                  }
+                  reader.readAsDataURL(file)
+                }
+                e.target.value = ''
+              }}
+            />
+            {photo ? (
+              <span className="register-photo-preview-wrap">
+                <img
+                  src={photo}
+                  alt="Ваше фото"
+                  className="register-photo-preview"
+                  onError={() => setPhoto('')}
                 />
-                {photo ? (
-                  <span className="register-photo-preview-wrap">
-                    <img
-                      src={photo}
-                      alt="Ваше фото"
-                      className="register-photo-preview"
-                      onError={() => setPhoto('')}
-                    />
-                    <span className="register-photo-change">Изменить фото</span>
-                  </span>
-                ) : (
-                  <span className="register-photo-placeholder">
-                    <span className="register-photo-icon" aria-hidden>📷</span>
-                    <span className="register-photo-text">Выбрать фото</span>
-                    <span className="register-photo-sub">Камера или галерея</span>
-                  </span>
-                )}
-              </label>
-              <button
-                className="btn btn-primary btn-lg block-btn"
-                onClick={handleRegister}
-                disabled={loading || !photo.trim()}
-              >
-                {loading ? 'Регистрация...' : 'Готово'}
-              </button>
-            </>
-          )}
+                <span className="register-photo-change">Изменить фото</span>
+              </span>
+            ) : (
+              <span className="register-photo-placeholder">
+                <span className="register-photo-icon" aria-hidden>📷</span>
+                <span className="register-photo-text">Выбрать фото</span>
+                <span className="register-photo-sub">Камера или галерея</span>
+              </span>
+            )}
+          </label>
+          <button
+            className="btn btn-primary btn-lg block-btn"
+            onClick={handleRegister}
+            disabled={loading || !photo.trim()}
+          >
+            {loading ? 'Регистрация...' : 'Готово'}
+          </button>
           {error && (
             <div className="card card-error" style={{ marginTop: 12 }}>
               <p className="text-error">{error}</p>
