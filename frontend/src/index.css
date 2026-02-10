@@ -116,6 +116,15 @@ body {
   padding-top: env(safe-area-inset-top, 0);
   background-color: #1a1a2e;
   min-height: 100vh;
+
+  /* Единый тёмный стиль поверх фоновой картинки */
+  --bg: transparent;
+  --bg-card: rgba(20, 18, 32, 0.55);
+  --bg-elevated: rgba(20, 18, 32, 0.7);
+  --text: #fff;
+  --text-muted: rgba(255, 255, 255, 0.75);
+  --border: rgba(255, 255, 255, 0.12);
+  --shadow-card: 0 2px 14px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 #root {
@@ -2929,7 +2938,7 @@ select.input {
   padding: 0;
 }
 
-.home-stat-cosmic {
+.home-stat-col.home-stat-cosmic {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2944,7 +2953,7 @@ select.input {
   transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
 }
 
-.home-stat-cosmic:hover {
+.home-stat-col.home-stat-cosmic:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
   border-color: rgba(220, 38, 38, 1);
