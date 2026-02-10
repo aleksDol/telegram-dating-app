@@ -409,7 +409,7 @@ button {
   font-size: 0.95rem;
   text-align: center;
   background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-  color: var(--text);
+  color: #1a1a2e;
   border: 2px solid rgba(108, 99, 255, 0.25);
   box-shadow: 0 4px 16px rgba(45, 55, 72, 0.08), inset 0 1px 0 rgba(255,255,255,0.8);
   transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease, border-color 0.2s;
@@ -420,6 +420,7 @@ button {
   border-color: rgba(108, 99, 255, 0.4);
   box-shadow: 0 6px 22px rgba(45, 55, 72, 0.12), 0 0 0 1px rgba(108, 99, 255, 0.1);
   transform: translateY(-2px);
+  color: #1a1a2e;
 }
 
 .register-page .input {
@@ -467,6 +468,7 @@ button {
   transition: background 0.15s;
   margin: 0 8px;
   border-radius: 6px;
+  color: #1a1a2e;
 }
 
 .register-city-option:first-child {
@@ -477,6 +479,7 @@ button {
 .register-city-option:focus {
   background: rgba(108, 99, 255, 0.12);
   outline: none;
+  color: #1a1a2e;
 }
 
 .register-city-error {
