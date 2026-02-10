@@ -66,6 +66,7 @@ export default function App() {
     <ErrorBoundary>
     <BrowserRouter>
       <div className="app-bg-fixed" style={{ backgroundImage: `url(${bgImage})` }} aria-hidden />
+      <div className="app-bg-overlay" aria-hidden />
       <div className="app">
         <Routes>
           <Route path="/" element={<Home />} />
