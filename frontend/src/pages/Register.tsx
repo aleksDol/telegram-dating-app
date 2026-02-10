@@ -4,7 +4,6 @@ import { useApp } from '../context/AppContext'
 import { useTelegram } from '../hooks/useTelegram'
 import { CITIES, GENDERS, RELATIONSHIP_STATUSES } from '../constants'
 import { isApiConfigured, api } from '../api/client'
-import ImageCropper from '../components/ImageCropper'
 import type { User } from '../types'
 
 const STEPS = ['name', 'age', 'gender', 'city', 'relationship', 'purpose', 'photo'] as const
@@ -307,15 +306,29 @@ export default function Register() {
             Загрузите своё фото. Без фото регистрация невозможна.
           </p>
           {photoToCrop ? (
-            <ImageCropper
-              imageSrc={photoToCrop}
-              inline
-              onCrop={(dataUrl) => {
-                setPhoto(dataUrl)
-                setPhotoToCrop(null)
-              }}
-              onCancel={() => setPhotoToCrop(null)}
-            />
+            <div className="register-photo-confirm">
+              <p className="text-muted register-photo-hint" style={{ marginBottom: 12 }}>
+                Проверьте фото и нажмите «Готово»
+              </p>
+              <div className="register-photo-preview-box">
+                <img src={photoToCrop} alt="Предпросмотр" className="register-photo-preview-img" />
+              </div>
+              <div className="register-photo-confirm-actions">
+                <button type="button" className="btn btn-ghost" onClick={() => setPhotoToCrop(null)}>
+                  Изменить фото
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setPhoto(photoToCrop)
+                    setPhotoToCrop(null)
+                  }}
+                >
+                  Готово
+                </button>
+              </div>
+            </div>
           ) : (
             <>
               <label className="register-photo-picker">

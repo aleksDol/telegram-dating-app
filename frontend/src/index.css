@@ -729,6 +729,34 @@ button {
   font-size: 14px;
 }
 
+/* Предпросмотр фото перед сохранением (без кадрирования) */
+.register-photo-confirm {
+  margin-bottom: 16px;
+}
+.register-photo-preview-box {
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto 16px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #1a1a1a;
+  border: 2px solid rgba(108, 99, 255, 0.25);
+}
+.register-photo-preview-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 320px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+.register-photo-confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
 .register-photo-picker {
   display: block;
   position: relative;
