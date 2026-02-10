@@ -32,6 +32,27 @@ export default function ImageCropper({
   const [isDragging, setIsDragging] = useState(false)
   const dragStart = useRef({ clientX: 0, clientY: 0, panX: 0, panY: 0 })
   const viewportRef = useRef<HTMLDivElement>(null)
+  const scrollLockRef = useRef<{
+    active: boolean
+    scrollY: number
+    prevOverflow: string
+    prevTouchAction: string
+    prevPosition: string
+    prevTop: string
+    prevLeft: string
+    prevRight: string
+    prevWidth: string
+  }>({
+    active: false,
+    scrollY: 0,
+    prevOverflow: '',
+    prevTouchAction: '',
+    prevPosition: '',
+    prevTop: '',
+    prevLeft: '',
+    prevRight: '',
+    prevWidth: '',
+  })
   const panX = pan.x
   const panY = pan.y
 
@@ -47,6 +68,50 @@ export default function ImageCropper({
       document.body.style.touchAction = prevTouchAction
     }
   }, [inline])
+
+  const lockBodyScroll = useCallback(() => {
+    const st = scrollLockRef.current
+    if (st.active) return
+    const scrollY = window.scrollY || document.documentElement.scrollTop || 0
+    scrollLockRef.current = {
+      active: true,
+      scrollY,
+      prevOverflow: document.body.style.overflow,
+      prevTouchAction: document.body.style.touchAction,
+      prevPosition: document.body.style.position,
+      prevTop: document.body.style.top,
+      prevLeft: document.body.style.left,
+      prevRight: document.body.style.right,
+      prevWidth: document.body.style.width,
+    }
+    // На iOS overflow:hidden может не блокировать скролл — фиксируем body
+    document.body.style.overflow = 'hidden'
+    document.body.style.touchAction = 'none'
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.left = '0'
+    document.body.style.right = '0'
+    document.body.style.width = '100%'
+  }, [])
+
+  const unlockBodyScroll = useCallback(() => {
+    const st = scrollLockRef.current
+    if (!st.active) return
+    document.body.style.overflow = st.prevOverflow
+    document.body.style.touchAction = st.prevTouchAction
+    document.body.style.position = st.prevPosition
+    document.body.style.top = st.prevTop
+    document.body.style.left = st.prevLeft
+    document.body.style.right = st.prevRight
+    document.body.style.width = st.prevWidth
+    scrollLockRef.current.active = false
+    window.scrollTo(0, st.scrollY)
+  }, [])
+
+  // На всякий случай снимаем блокировку при размонтировании
+  useEffect(() => {
+    return () => unlockBodyScroll()
+  }, [unlockBodyScroll])
 
   useEffect(() => {
     const img = new Image()
@@ -104,10 +169,12 @@ export default function ImageCropper({
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
       e.preventDefault()
+      e.stopPropagation()
+      if (inline) lockBodyScroll()
       setIsDragging(true)
       dragStart.current = { clientX: e.clientX, clientY: e.clientY, panX, panY }
     },
-    [panX, panY]
+    [panX, panY, inline, lockBodyScroll]
   )
 
   const handlePointerMove = useCallback(
@@ -124,15 +191,18 @@ export default function ImageCropper({
 
   const handlePointerUp = useCallback(() => {
     setIsDragging(false)
-  }, [])
+    if (inline) unlockBodyScroll()
+  }, [inline, unlockBodyScroll])
 
   useEffect(() => {
     if (!isDragging) return
     window.addEventListener('pointermove', handlePointerMove)
     window.addEventListener('pointerup', handlePointerUp)
+    window.addEventListener('pointercancel', handlePointerUp)
     return () => {
       window.removeEventListener('pointermove', handlePointerMove)
       window.removeEventListener('pointerup', handlePointerUp)
+      window.removeEventListener('pointercancel', handlePointerUp)
     }
   }, [isDragging, handlePointerMove, handlePointerUp])
 
@@ -177,6 +247,7 @@ export default function ImageCropper({
 
   const stopScroll = useCallback((e: React.PointerEvent | React.TouchEvent) => {
     e.preventDefault()
+    e.stopPropagation()
   }, [])
 
   if (!loaded && imgSize.w === 0) {
@@ -221,6 +292,8 @@ export default function ImageCropper({
           height: 'auto',
         }}
         onPointerDown={handlePointerDown}
+        onTouchStart={stopScroll}
+        onTouchMove={stopScroll}
         onWheel={handleWheel}
       >
         <div

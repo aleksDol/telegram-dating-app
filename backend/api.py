@@ -585,7 +585,7 @@ def api_update_profile(body: UpdateProfileBody, user_id: int = Depends(get_user_
 
 # Допустимые значения фильтра событий (должны совпадать с фронтом: FILTERS в Events.tsx)
 EVENTS_FILTER_VALUES = frozenset(
-    ("interest", "new", "popular", "nearby", "today", "tomorrow", "for_me", "random")
+    ("interest", "new", "nearby", "today", "tomorrow", "random")
 )
 
 

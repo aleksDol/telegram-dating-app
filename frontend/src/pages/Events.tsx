@@ -8,7 +8,7 @@ import Logo from '../components/Logo'
 import PhotoViewer from '../components/PhotoViewer'
 import type { Event as EventType } from '../types'
 
-const FILTERS = ['new', 'popular', 'nearby', 'today', 'tomorrow', 'for_me', 'random', 'interest'] as const
+const FILTERS = ['new', 'nearby', 'today', 'tomorrow', 'random', 'interest'] as const
 
 function eventPhotoSrc(url: string | undefined): string {
   if (!url) return ''

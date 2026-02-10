@@ -87,23 +87,17 @@ def get_filter_keyboard():
         telebot.types.InlineKeyboardButton(
             "🎯 По интересам", callback_data="filter_interest"),
         telebot.types.InlineKeyboardButton(
-            "🔥 Популярные", callback_data="filter_popular")
+            "📍 Ближайшие", callback_data="filter_nearby")
     )
     markup.add(
         telebot.types.InlineKeyboardButton(
-            "📍 Ближайшие", callback_data="filter_nearby"),
+            "🆕 Новые", callback_data="filter_new"),
         telebot.types.InlineKeyboardButton(
-            "🆕 Новые", callback_data="filter_new")
+            "📅 Сегодня", callback_data="filter_today")
     )
     markup.add(
         telebot.types.InlineKeyboardButton(
-            "📅 Сегодня", callback_data="filter_today"),
-        telebot.types.InlineKeyboardButton(
-            "📅 Завтра", callback_data="filter_tomorrow")
-    )
-    markup.add(
-        telebot.types.InlineKeyboardButton(
-            "👥 Для меня", callback_data="filter_for_me"),
+            "📅 Завтра", callback_data="filter_tomorrow"),
         telebot.types.InlineKeyboardButton(
             "🔀 Случайные", callback_data="filter_random")
     )

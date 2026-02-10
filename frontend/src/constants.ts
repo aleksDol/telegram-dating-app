@@ -63,11 +63,9 @@ export const ACHIEVEMENTS: Record<string, { name: string; description: string; e
 
 export const FILTER_LABELS: Record<string, string> = {
   interest: '🎯 По интересам',
-  popular: '🔥 Популярные',
   nearby: '📍 Ближайшие',
   new: '🆕 Новые',
   today: '📅 Сегодня',
   tomorrow: '📅 Завтра',
-  for_me: '👥 Для меня',
   random: '🔀 Случайные',
 }

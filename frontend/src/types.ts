@@ -55,12 +55,10 @@ export interface Achievement {
 
 export type FilterType =
   | 'interest'
-  | 'popular'
   | 'nearby'
   | 'new'
   | 'today'
   | 'tomorrow'
-  | 'for_me'
   | 'random'
 
 /** Лайк, на который ещё не ответили (вкладка «Лайки»). */
