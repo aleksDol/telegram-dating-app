@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { api, isApiConfigured } from '../api/client'
@@ -17,6 +17,10 @@ export default function CreateEvent() {
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [targetGenderOpen, setTargetGenderOpen] = useState(false)
+  const [categoryOpen, setCategoryOpen] = useState(false)
+  const targetGenderRef = useRef<HTMLDivElement>(null)
+  const categoryRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetchUser()
@@ -29,6 +33,15 @@ export default function CreateEvent() {
   useEffect(() => {
     if (!user) navigate('/', { replace: true })
   }, [user, navigate])
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (targetGenderRef.current && !targetGenderRef.current.contains(e.target as Node)) setTargetGenderOpen(false)
+      if (categoryRef.current && !categoryRef.current.contains(e.target as Node)) setCategoryOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -122,15 +135,34 @@ export default function CreateEvent() {
         </div>
 
         <label className="label">Для кого</label>
-        <select
-          className="input"
-          value={targetGender}
-          onChange={(e) => setTargetGender(e.target.value)}
-        >
-          {TARGET_GENDERS.map((g) => (
-            <option key={g} value={g}>{g}</option>
-          ))}
-        </select>
+        <div className="form-select-wrap" ref={targetGenderRef}>
+          <button
+            type="button"
+            className="form-select-trigger"
+            onClick={() => { setTargetGenderOpen((o) => !o); setCategoryOpen(false); }}
+            aria-expanded={targetGenderOpen}
+            aria-haspopup="listbox"
+          >
+            <span>{targetGender}</span>
+            <span className="form-select-arrow">{targetGenderOpen ? '▲' : '▼'}</span>
+          </button>
+          {targetGenderOpen && (
+            <div className="form-select-panel" role="listbox">
+              {TARGET_GENDERS.map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  role="option"
+                  aria-selected={targetGender === g}
+                  className={`form-select-item ${targetGender === g ? 'form-select-item-active' : ''}`}
+                  onClick={() => { setTargetGender(g); setTargetGenderOpen(false); }}
+                >
+                  {g}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         <label className="label">Город</label>
         <input
@@ -142,16 +174,43 @@ export default function CreateEvent() {
         />
 
         <label className="label">Категория (необязательно)</label>
-        <select
-          className="input"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        >
-          <option value="">—</option>
-          {CATEGORY_KEYS.map((k) => (
-            <option key={k} value={k}>{k}</option>
-          ))}
-        </select>
+        <div className="form-select-wrap" ref={categoryRef}>
+          <button
+            type="button"
+            className="form-select-trigger"
+            onClick={() => { setCategoryOpen((o) => !o); setTargetGenderOpen(false); }}
+            aria-expanded={categoryOpen}
+            aria-haspopup="listbox"
+          >
+            <span>{category || '—'}</span>
+            <span className="form-select-arrow">{categoryOpen ? '▲' : '▼'}</span>
+          </button>
+          {categoryOpen && (
+            <div className="form-select-panel" role="listbox">
+              <button
+                type="button"
+                role="option"
+                aria-selected={!category}
+                className={`form-select-item ${!category ? 'form-select-item-active' : ''}`}
+                onClick={() => { setCategory(''); setCategoryOpen(false); }}
+              >
+                —
+              </button>
+              {CATEGORY_KEYS.map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  role="option"
+                  aria-selected={category === k}
+                  className={`form-select-item ${category === k ? 'form-select-item-active' : ''}`}
+                  onClick={() => { setCategory(k); setCategoryOpen(false); }}
+                >
+                  {k}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {error && <p className="text-error">{error}</p>}
         <button type="submit" className="btn btn-primary btn-lg btn-create-event" disabled={loading}>

@@ -2474,6 +2474,87 @@ button {
   box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
 }
 
+/* Кастомный выпадающий список (тёмный фон и светлый текст — без белого списка браузера) */
+.create-event-page .form-select-wrap {
+  position: relative;
+  margin-bottom: 4px;
+}
+.create-event-page .form-select-trigger {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 40px 14px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(220, 38, 38, 0.9);
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  font-size: 1rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  text-align: left;
+}
+.create-event-page .form-select-trigger:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+.create-event-page .form-select-trigger[aria-expanded="true"] {
+  border-color: rgba(220, 38, 38, 1);
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25), 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+.create-event-page .form-select-arrow {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.create-event-page .form-select-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  background: rgba(26, 20, 37, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  z-index: 50;
+  padding: 6px;
+  animation: form-select-panel-in 0.2s ease-out;
+}
+@keyframes form-select-panel-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.create-event-page .form-select-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #fff;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.create-event-page .form-select-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.create-event-page .form-select-item-active {
+  background: rgba(220, 38, 38, 0.25);
+  color: #fff;
+}
+
 .input-photo-preview-wrap {
   display: flex;
   flex-direction: column;
