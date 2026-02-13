@@ -2382,17 +2382,27 @@ button {
   gap: 14px;
   padding: 1rem 1.25rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, border-color 0.2s;
   margin-bottom: 12px;
-  background: var(--gradient-card) !important;
-  border: 1px solid rgba(232, 121, 249, 0.15);
+  background: rgba(28, 24, 42, 0.78) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 .event-detail-author:hover,
 .event-detail-author:focus {
-  background: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 100%) !important;
+  background: rgba(38, 32, 55, 0.88) !important;
   border-color: rgba(232, 121, 249, 0.3);
   outline: none;
+}
+.event-detail-author-name {
+  color: #fff;
+}
+.event-detail-author-link {
+  color: rgba(196, 181, 253, 0.95);
+}
+.event-detail-author-link:hover {
+  color: #c4b5fd;
 }
 
 .event-detail-author-avatar-wrap {
@@ -2585,10 +2595,9 @@ button {
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
-  /* Убираем верхний отступ от контейнера .app */
   margin-top: calc(-1 * var(--page-padding));
-  margin-bottom: 1.5rem;
-  padding: 1.5rem 1rem 2rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem 1.25rem;
   box-sizing: border-box;
   background: var(--gradient-logo);
   color: #fff;
@@ -2598,9 +2607,9 @@ button {
 
 .create-event-hero-title {
   font-family: var(--font-heading);
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   letter-spacing: -0.02em;
   line-height: 1.2;
   color: #fff;
@@ -2611,8 +2620,8 @@ button {
 }
 
 .create-event-hero-subtitle {
-  font-size: 1.08rem;
-  line-height: 1.5;
+  font-size: 0.9rem;
+  line-height: 1.35;
   color: rgba(255, 255, 255, 0.9);
   margin: 0;
   position: relative;
@@ -2625,7 +2634,7 @@ button {
   left: 0;
   right: 0;
   width: 100%;
-  height: 32px;
+  height: 20px;
   fill: var(--bg);
   pointer-events: none;
 }
@@ -2657,7 +2666,7 @@ button {
   padding: 14px 16px;
   border-radius: var(--radius-sm);
   border: 2px solid transparent;
-  background: linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
   color: var(--text);
@@ -2665,7 +2674,7 @@ button {
   font-family: inherit;
   margin-bottom: 4px;
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 
 .create-event-page .form-create .input::placeholder {
@@ -2674,13 +2683,13 @@ button {
 
 .create-event-page .form-create .input:focus {
   outline: none;
-  background: linear-gradient(rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.14)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
   box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Поле для фото — бордер градиентом как в шапке */
+/* Поле для фото — полупрозрачный фон, бордер градиентом */
 .create-event-page .form-create .input-photo-placeholder {
   position: relative;
   display: flex;
@@ -2690,7 +2699,7 @@ button {
   padding: 1rem;
   margin-bottom: 4px;
   border: 2px solid transparent;
-  background: linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.04)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
   border-radius: var(--radius-sm);
@@ -2699,7 +2708,7 @@ button {
 }
 
 .create-event-page .form-create .input-photo-placeholder:hover {
-  background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
 }
@@ -2738,7 +2747,7 @@ button {
   padding: 14px 40px 14px 16px;
   border-radius: var(--radius-sm);
   border: 2px solid transparent;
-  background: linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
   color: var(--text);
@@ -2746,16 +2755,16 @@ button {
   font-family: inherit;
   cursor: pointer;
   transition: box-shadow 0.2s, background 0.2s;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   text-align: left;
 }
 .create-event-page .form-select-trigger:hover {
-  background: linear-gradient(rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.12)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
 }
 .create-event-page .form-select-trigger[aria-expanded="true"] {
-  background: linear-gradient(rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.14)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
   box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
