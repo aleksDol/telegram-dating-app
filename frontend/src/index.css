@@ -2666,7 +2666,7 @@ button {
   padding: 14px 16px;
   border-radius: var(--radius-sm);
   border: 2px solid transparent;
-  background: linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
   color: var(--text);
@@ -2683,13 +2683,13 @@ button {
 
 .create-event-page .form-create .input:focus {
   outline: none;
-  background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.55)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
   box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Поле для фото — полупрозрачный фон, бордер градиентом */
+/* Поле для фото — фон 50% прозрачности, бордер градиентом */
 .create-event-page .form-create .input-photo-placeholder {
   position: relative;
   display: flex;
@@ -2699,7 +2699,7 @@ button {
   padding: 1rem;
   margin-bottom: 4px;
   border: 2px solid transparent;
-  background: linear-gradient(rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.04)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
   border-radius: var(--radius-sm);
@@ -2708,7 +2708,7 @@ button {
 }
 
 .create-event-page .form-create .input-photo-placeholder:hover {
-  background: linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.55)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
 }
@@ -2747,7 +2747,7 @@ button {
   padding: 14px 40px 14px 16px;
   border-radius: var(--radius-sm);
   border: 2px solid transparent;
-  background: linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
   color: var(--text);
@@ -2759,12 +2759,12 @@ button {
   text-align: left;
 }
 .create-event-page .form-select-trigger:hover {
-  background: linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.55)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
 }
 .create-event-page .form-select-trigger[aria-expanded="true"] {
-  background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.55)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
   box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
