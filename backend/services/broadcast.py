@@ -58,7 +58,19 @@ def _escape_html_for_telegram(text):
 class BroadcastService:
     @staticmethod
     def get_users_by_filters(filters):
-        """Получает пользователей по фильтрам"""
+        """Получает пользователей по фильтрам (пол, воронка и др.)."""
+        funnel = (filters.get('funnel') or '').strip() or 'all'
+
+        # Воронка: нажали Start, но не зарегистрировались — нет в users, пол неизвестен
+        if funnel == 'started_not_registered':
+            query = """SELECT b.user_id FROM bot_starts b
+                       WHERE b.user_id NOT IN (SELECT user_id FROM users)
+                       LIMIT ?"""
+            params = [config.BROADCAST_LIMIT]
+            users = execute_query(query, params, fetchall=True)
+            return [u['user_id'] for u in users]
+
+        # Остальные воронки и "all" — работаем с таблицей users
         query = "SELECT user_id FROM users WHERE 1=1"
         params = []
 
@@ -67,6 +79,14 @@ class BroadcastService:
         if filters.get('gender') and filters['gender'] != 'all':
             query += " AND gender = ?"
             params.append(filters['gender'])
+
+        if funnel == 'registered_no_events':
+            query += " AND NOT EXISTS (SELECT 1 FROM events e WHERE e.user_id = users.user_id AND e.is_hidden = FALSE)"
+        elif funnel == 'created_events':
+            query += " AND EXISTS (SELECT 1 FROM events e WHERE e.user_id = users.user_id AND e.is_hidden = FALSE)"
+        elif funnel == 'has_matching':
+            query += """ AND (EXISTS (SELECT 1 FROM likes l WHERE l.mutual = TRUE AND l.from_user = users.user_id)
+                         OR EXISTS (SELECT 1 FROM likes l WHERE l.mutual = TRUE AND l.to_user = users.user_id))"""
 
         if filters.get('min_age'):
             query += " AND age >= ?"
@@ -82,8 +102,7 @@ class BroadcastService:
             params.extend(filters['cities'])
 
         if filters.get('active_days'):
-            date_limit = (datetime.now(
-            ) - timedelta(days=int(filters['active_days']))).strftime("%Y-%m-%d")
+            date_limit = (datetime.now() - timedelta(days=int(filters['active_days']))).strftime("%Y-%m-%d")
             query += " AND last_active >= ?"
             params.append(date_limit)
 

@@ -113,11 +113,21 @@
             <section id="tab-broadcast" class="tab-panel">
                 <div class="broadcast-form">
                     <label>
-                        <span>Сегмент получателей</span>
+                        <span>Кому отправить (пол)</span>
                         <select id="broadcast-gender">
-                            <option value="all">Все пользователи</option>
-                            <option value="Мужской">Только мужчины</option>
-                            <option value="Женский">Только женщины</option>
+                            <option value="all">Все</option>
+                            <option value="Мужской">Мужчины</option>
+                            <option value="Женский">Женщины</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Воронка</span>
+                        <select id="broadcast-funnel">
+                            <option value="all">Все этапы</option>
+                            <option value="started_not_registered">Нажали Start, не зарегистрировались</option>
+                            <option value="registered_no_events">Зарегистрировались, без событий</option>
+                            <option value="created_events">Создали события</option>
+                            <option value="has_matching">Получили матчинг</option>
                         </select>
                     </label>
                     <label>

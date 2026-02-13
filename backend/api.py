@@ -1298,12 +1298,28 @@ def admin_api_user_events(
     return {"events": [dict(r) for r in rows]}
 
 
-# --- Рассылка (сегмент: все / мужчины / женщины) ---
+# --- Рассылка (сегмент: пол + воронка) ---
+
+VALID_FUNNEL = ("all", "started_not_registered", "registered_no_events", "created_events", "has_matching")
+
 
 class AdminBroadcastBody(BaseModel):
     text: str
     gender: str = "all"  # "all" | "Мужской" | "Женский"
+    funnel: str = "all"  # "all" | "started_not_registered" | "registered_no_events" | "created_events" | "has_matching"
     photo: str | None = None  # опционально: data URL (data:image/...;base64,...) для рассылки с фото
+
+
+def _normalize_broadcast_filters(gender: str, funnel: str):
+    g = (gender or "all").strip() or "all"
+    if g not in ("all", "Мужской", "Женский"):
+        g = "all"
+    f = (funnel or "all").strip() or "all"
+    if f not in VALID_FUNNEL:
+        f = "all"
+    if f == "started_not_registered":
+        g = "all"  # у этой воронки нет пола в БД
+    return {"gender": g, "funnel": f}
 
 
 @app.post("/admin/api/broadcast/preview")
@@ -1311,13 +1327,11 @@ def admin_api_broadcast_preview(
     body: AdminBroadcastBody,
     _: None = Depends(get_admin_authorization),
 ):
-    """Предпросмотр рассылки: количество получателей по сегменту."""
-    filters = {"gender": (body.gender or "all").strip() or "all"}
-    if filters["gender"] not in ("all", "Мужской", "Женский"):
-        filters["gender"] = "all"
+    """Предпросмотр рассылки: количество получателей по сегменту (пол + воронка)."""
+    filters = _normalize_broadcast_filters(body.gender or "", body.funnel or "")
     user_ids = BroadcastService.get_users_by_filters(filters)
     count = len(user_ids)
-    return {"count": count, "gender": filters["gender"]}
+    return {"count": count, "gender": filters["gender"], "funnel": filters["funnel"]}
 
 
 @app.post("/admin/api/broadcast/send")
@@ -1325,14 +1339,11 @@ def admin_api_broadcast_send(
     body: AdminBroadcastBody,
     _: None = Depends(get_admin_authorization),
 ):
-    """Создать рассылку и запустить отправку (admin_id=0 — без уведомлений в Telegram). Поддерживает текст и опционально фото (data URL)."""
+    """Создать рассылку и запустить отправку (admin_id=0 — без уведомлений в Telegram). Сегмент: пол + воронка."""
     text = (body.text or "").strip()
     if not text:
         raise HTTPException(status_code=400, detail="Текст сообщения не может быть пустым")
-    gender = (body.gender or "all").strip() or "all"
-    if gender not in ("all", "Мужской", "Женский"):
-        gender = "all"
-    filters = {"gender": gender}
+    filters = _normalize_broadcast_filters(body.gender or "", body.funnel or "")
     user_ids = BroadcastService.get_users_by_filters(filters)
     total = len(user_ids)
     if total == 0:

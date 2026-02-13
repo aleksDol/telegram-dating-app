@@ -770,17 +770,96 @@ body {
 }
 
 .broadcast-preview {
-    margin-top: 1rem;
-    padding: 1rem 1.25rem;
+    margin-top: 1.25rem;
+    padding: 1.25rem;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius);
     font-size: 0.875rem;
     color: var(--text);
 }
 
 .broadcast-preview.hidden {
     display: none;
+}
+
+.broadcast-preview-caption {
+    margin: 0 0 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+/* Имитация чата Telegram */
+.tg-preview {
+    background: #1a1a2e;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    min-height: 80px;
+}
+
+.tg-bubble {
+    max-width: 320px;
+    background: #2b5278;
+    color: #fff;
+    border-radius: 12px 12px 4px 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.tg-bubble .tg-photo {
+    line-height: 0;
+}
+
+.tg-bubble .tg-photo img {
+    display: block;
+    max-width: 100%;
+    max-height: 240px;
+    width: 100%;
+    object-fit: cover;
+    vertical-align: top;
+}
+
+.tg-bubble .tg-text {
+    padding: 0.5rem 0.75rem 0.6rem;
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.tg-bubble .tg-text:empty,
+.tg-bubble .tg-text.tg-text-empty {
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+}
+
+.tg-bubble .tg-text b {
+    font-weight: 700;
+}
+
+.tg-bubble .tg-text i {
+    font-style: italic;
+}
+
+.tg-bubble .tg-text .tg-link,
+.tg-bubble .tg-text a {
+    color: #6ab2f2;
+    text-decoration: none;
+}
+
+.tg-bubble .tg-text .tg-link:hover,
+.tg-bubble .tg-text a:hover {
+    text-decoration: underline;
+}
+
+.broadcast-preview-meta {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
 }
 
 .broadcast-photo-preview {

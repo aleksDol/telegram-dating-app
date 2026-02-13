@@ -632,27 +632,70 @@
         broadcastWrapTag('<a href="' + url.replace(/"/g, "&quot;") + '">', "</a>");
     });
 
+    function broadcastTextToSafeHtml(text) {
+        if (!text) return "";
+        var div = document.createElement("div");
+        div.textContent = text;
+        var escaped = div.innerHTML;
+        escaped = escaped
+            .replace(/&lt;b&gt;/gi, "<b>")
+            .replace(/&lt;\/b&gt;/gi, "</b>")
+            .replace(/&lt;i&gt;/gi, "<i>")
+            .replace(/&lt;\/i&gt;/gi, "</i>");
+        var linkRegex = /&lt;a\s+href=&quot;(.*?)&quot;&gt;(.*?)&lt;\/a&gt;/gi;
+        escaped = escaped.replace(linkRegex, function (_, href, inner) {
+            var safeHref = (href || "").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+            return '<a href="' + safeHref + '" target="_blank" rel="noopener" class="tg-link">' + inner + "</a>";
+        });
+        return escaped;
+    }
+
+    var funnelLabels = {
+        all: "Все этапы",
+        started_not_registered: "Нажали Start, не зарегистрировались",
+        registered_no_events: "Зарегистрировались, без событий",
+        created_events: "Создали события",
+        has_matching: "Получили матчинг",
+    };
+
     document.getElementById("broadcast-preview-btn").addEventListener("click", async function () {
         var textEl = document.getElementById("broadcast-text");
         var genderEl = document.getElementById("broadcast-gender");
+        var funnelEl = document.getElementById("broadcast-funnel");
         var text = textEl ? textEl.value.trim() : "";
         var gender = genderEl ? genderEl.value : "all";
+        var funnel = funnelEl ? funnelEl.value : "all";
         if (broadcastErrorEl) {
             broadcastErrorEl.classList.add("hidden");
             broadcastErrorEl.textContent = "";
         }
         if (broadcastPreviewEl) {
             broadcastPreviewEl.classList.add("hidden");
-            broadcastPreviewEl.textContent = "";
+            broadcastPreviewEl.innerHTML = "";
         }
         try {
             var data = await api("/broadcast/preview", {
                 method: "POST",
-                body: JSON.stringify({ text: text, gender: gender }),
+                body: JSON.stringify({ text: text, gender: gender, funnel: funnel }),
             });
-            var label = gender === "all" ? "Все пользователи" : gender === "Мужской" ? "Мужчины" : "Женщины";
+            var genderLabel = (data.gender === "all" ? "Все" : data.gender === "Мужской" ? "Мужчины" : "Женщины");
+            var funnelLabel = funnelLabels[data.funnel] || data.funnel || "Все этапы";
+            var countStr = (data.count || 0).toLocaleString("ru");
+            var previewHtml = '<p class="broadcast-preview-caption">Как будет выглядеть в Telegram</p>';
+            previewHtml += '<div class="tg-preview">';
+            previewHtml += '<div class="tg-bubble">';
+            if (broadcastPhotoDataUrl) {
+                previewHtml += '<div class="tg-photo"><img src="' + broadcastPhotoDataUrl.replace(/"/g, "&quot;") + '" alt=""></div>';
+            }
+            if (text) {
+                previewHtml += '<div class="tg-text">' + broadcastTextToSafeHtml(text) + "</div>";
+            } else if (!broadcastPhotoDataUrl) {
+                previewHtml += '<div class="tg-text tg-text-empty">Текст сообщения</div>';
+            }
+            previewHtml += "</div></div>";
+            previewHtml += '<p class="broadcast-preview-meta">Пол: ' + escapeHtml(genderLabel) + " · Воронка: " + escapeHtml(funnelLabel) + " · Получателей: " + escapeHtml(countStr) + "</p>";
             if (broadcastPreviewEl) {
-                broadcastPreviewEl.textContent = "Сегмент: " + label + ". Получателей: " + (data.count || 0).toLocaleString("ru") + ".";
+                broadcastPreviewEl.innerHTML = previewHtml;
                 broadcastPreviewEl.classList.remove("hidden");
             }
         } catch (err) {
@@ -665,8 +708,10 @@
     document.getElementById("broadcast-send-btn").addEventListener("click", async function () {
         var textEl = document.getElementById("broadcast-text");
         var genderEl = document.getElementById("broadcast-gender");
+        var funnelEl = document.getElementById("broadcast-funnel");
         var text = textEl ? textEl.value.trim() : "";
         var gender = genderEl ? genderEl.value : "all";
+        var funnel = funnelEl ? funnelEl.value : "all";
         if (broadcastErrorEl) {
             broadcastErrorEl.classList.add("hidden");
             broadcastErrorEl.textContent = "";
@@ -678,14 +723,14 @@
             }
             return;
         }
-        if (!confirm("Отправить рассылку выбранному сегменту? Отменить будет нельзя.")) return;
+        if (!confirm("Отправить рассылку выбранному сегменту (пол + воронка)? Отменить будет нельзя.")) return;
         var btn = document.getElementById("broadcast-send-btn");
         if (btn) {
             btn.disabled = true;
             btn.textContent = "Отправка…";
         }
         try {
-            var payload = { text: text, gender: gender };
+            var payload = { text: text, gender: gender, funnel: funnel };
             if (broadcastPhotoDataUrl) payload.photo = broadcastPhotoDataUrl;
             var data = await api("/broadcast/send", {
                 method: "POST",
