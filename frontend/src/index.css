@@ -1535,6 +1535,27 @@ button {
   opacity: 1;
 }
 
+/* Страница «Редактировать профиль»: пустые слоты для фото — видимые границы и фон */
+.edit-profile-page .profile-photo-slot-empty-wrap {
+  background: rgba(88, 28, 135, 0.35);
+  border: 2px solid rgba(236, 72, 153, 0.6);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.edit-profile-page .profile-photo-slot-empty {
+  color: #fff;
+  background: transparent;
+}
+.edit-profile-page .profile-photo-slot-emoji {
+  font-size: 2rem;
+  font-weight: 300;
+  opacity: 1;
+}
+.edit-profile-page .profile-photo-slot-add:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
 .profile-photo-slot-edit-wrap {
   position: relative;
   width: 100%;

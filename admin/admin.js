@@ -160,61 +160,89 @@
     }
 
     function renderStats(s) {
-        const sections = [
-            {
-                title: "Пользователи",
-                items: [
-                    { label: "Всего", value: s.total_users },
-                    { label: "Заблокировано", value: s.banned_users },
-                    { label: "Новых сегодня", value: s.new_users_today },
-                    { label: "Активных за 7 дней", value: s.active_users_week },
-                    { label: "Онлайн сейчас", value: s.online_now },
-                ],
-            },
-            {
-                title: "События",
-                items: [
-                    { label: "Всего", value: s.total_events },
-                    { label: "Активных", value: s.active_events },
-                    { label: "Скрытых", value: s.hidden_events },
-                ],
-            },
-            {
-                title: "Лайки",
-                items: [
-                    { label: "Всего лайков", value: s.total_likes },
-                    { label: "Взаимных симпатий", value: s.mutual_likes },
-                ],
-            },
-            {
-                title: "Жалобы",
-                items: [
-                    { label: "Всего", value: s.total_reports },
-                    { label: "Ожидают рассмотрения", value: s.pending_reports },
-                    { label: "Ожидают апелляции", value: s.pending_appeals },
-                ],
-            },
-            {
-                title: "Рефералы",
-                items: [
-                    { label: "Пришли по ссылкам", value: s.referral_users },
-                    { label: "Всего приглашено", value: s.total_referrals },
-                ],
-            },
-            {
-                title: "Баллы",
-                items: [{ label: "В системе", value: s.total_points }],
-            },
-        ];
-        var html = "";
-        sections.forEach(function (sec) {
-            html += "<div class=\"stats-section\"><h3 class=\"stats-section-title\">" + escapeHtml(sec.title) + "</h3><div class=\"stats-section-cards\">";
-            sec.items.forEach(function (i) {
-                var val = i.value != null ? Number(i.value).toLocaleString("ru") : "—";
-                html += "<div class=\"stat-card\"><div class=\"label\">" + escapeHtml(i.label) + "</div><div class=\"value\">" + val + "</div></div>";
+        const num = (v) => (v != null ? Number(v).toLocaleString("ru") : "—");
+        const totalUsers = Number(s.total_users) || 0;
+        const totalLikes = Number(s.total_likes) || 1;
+        const mutualPct = totalLikes > 0 ? Math.round((Number(s.mutual_likes) || 0) / totalLikes * 100) : 0;
+        const activePct = totalUsers > 0 ? Math.round((Number(s.active_users_week) || 0) / totalUsers * 100) : 0;
+        const reportsTotal = Number(s.total_reports) || 1;
+        const pendingPct = reportsTotal > 0 ? Math.round((Number(s.pending_reports) || 0) / reportsTotal * 100) : 0;
+
+        let html = '<div class="dashboard-hero">';
+        html += '<div class="dashboard-kpi kpi-users"><div class="kpi-icon">👥</div><div class="kpi-label">Пользователи</div><div class="kpi-value">' + num(s.total_users) + '</div></div>';
+        html += '<div class="dashboard-kpi kpi-events"><div class="kpi-icon">📅</div><div class="kpi-label">События</div><div class="kpi-value">' + num(s.total_events) + '</div></div>';
+        html += '<div class="dashboard-kpi kpi-likes"><div class="kpi-icon">❤️</div><div class="kpi-label">Взаимные симпатии</div><div class="kpi-value">' + num(s.mutual_likes) + '</div></div>';
+        html += '<div class="dashboard-kpi kpi-reports"><div class="kpi-icon">⚠️</div><div class="kpi-label">Жалобы</div><div class="kpi-value">' + num(s.total_reports) + '</div></div>';
+        html += '<div class="dashboard-kpi kpi-online"><div class="kpi-icon">🟢</div><div class="kpi-label">Онлайн сейчас</div><div class="kpi-value">' + num(s.online_now) + '</div></div>';
+        html += "</div>";
+
+        html += '<div class="dashboard-section">';
+        html += '<h3 class="dashboard-section-title"><span class="section-icon">👥</span> Пользователи</h3>';
+        html += '<div class="dashboard-cards">';
+        html += '<div class="dashboard-card"><div class="card-label">Всего</div><div class="card-value">' + num(s.total_users) + '</div></div>';
+        html += '<div class="dashboard-card"><div class="card-label">Заблокировано</div><div class="card-value">' + num(s.banned_users) + '</div><div class="card-bar-wrap"><div class="card-bar danger" style="width:' + (totalUsers > 0 ? Math.min(100, Math.round((Number(s.banned_users) || 0) / totalUsers * 100)) : 0) + '%"></div></div></div>';
+        html += '<div class="dashboard-card"><div class="card-label">Новых сегодня</div><div class="card-value">' + num(s.new_users_today) + '</div></div>';
+        html += '<div class="dashboard-card"><div class="card-label">Активных за 7 дней</div><div class="card-value">' + num(s.active_users_week) + '</div><div class="card-bar-wrap"><div class="card-bar success" style="width:' + activePct + '%"></div></div></div>';
+        html += "</div></div>";
+
+        html += '<div class="dashboard-section">';
+        html += '<h3 class="dashboard-section-title"><span class="section-icon">📅</span> События</h3>';
+        html += '<div class="dashboard-cards">';
+        const totalEvents = Number(s.total_events) || 1;
+        const activeEvents = Number(s.active_events) || 0;
+        const activeEventsPct = totalEvents > 0 ? Math.round(activeEvents / totalEvents * 100) : 0;
+        html += '<div class="dashboard-card"><div class="card-label">Всего</div><div class="card-value">' + num(s.total_events) + '</div></div>';
+        html += '<div class="dashboard-card"><div class="card-label">Активных (будущих)</div><div class="card-value">' + num(s.active_events) + '</div><div class="card-bar-wrap"><div class="card-bar accent" style="width:' + activeEventsPct + '%"></div></div></div>';
+        html += '<div class="dashboard-card"><div class="card-label">Скрытых</div><div class="card-value">' + num(s.hidden_events) + '</div></div>';
+        html += "</div></div>";
+
+        html += '<div class="dashboard-section">';
+        html += '<h3 class="dashboard-section-title"><span class="section-icon">❤️</span> Лайки</h3>';
+        html += '<div class="dashboard-cards">';
+        html += '<div class="dashboard-card"><div class="card-label">Всего лайков</div><div class="card-value">' + num(s.total_likes) + '</div></div>';
+        html += '<div class="dashboard-card"><div class="card-label">Взаимных симпатий</div><div class="card-value">' + num(s.mutual_likes) + '</div><div class="card-bar-wrap"><div class="card-bar success" style="width:' + mutualPct + '%"></div></div></div>';
+        html += "</div></div>";
+
+        html += '<div class="dashboard-section">';
+        html += '<h3 class="dashboard-section-title"><span class="section-icon">⚠️</span> Жалобы</h3>';
+        html += '<div class="dashboard-cards">';
+        html += '<div class="dashboard-card"><div class="card-label">Всего</div><div class="card-value">' + num(s.total_reports) + '</div></div>';
+        html += '<div class="dashboard-card"><div class="card-label">Ожидают рассмотрения</div><div class="card-value">' + num(s.pending_reports) + '</div><div class="card-bar-wrap"><div class="card-bar warning" style="width:' + pendingPct + '%"></div></div></div>';
+        html += '<div class="dashboard-card"><div class="card-label">Ожидают апелляции</div><div class="card-value">' + num(s.pending_appeals) + '</div></div>';
+        html += "</div></div>";
+
+        html += '<div class="dashboard-section">';
+        html += '<h3 class="dashboard-section-title"><span class="section-icon">🔗</span> Рефералы и баллы</h3>';
+        html += '<div class="dashboard-cards">';
+        html += '<div class="dashboard-card"><div class="card-label">Пришли по ссылкам</div><div class="card-value">' + num(s.referral_users) + '</div></div>';
+        html += '<div class="dashboard-card"><div class="card-label">Всего приглашено</div><div class="card-value">' + num(s.total_referrals) + '</div></div>';
+        html += '<div class="dashboard-card"><div class="card-label">Баллов в системе</div><div class="card-value">' + num(s.total_points) + '</div></div>';
+        html += "</div></div>";
+
+        if (s.top_cities && s.top_cities.length > 0) {
+            html += '<div class="dashboard-grid-2">';
+            html += '<div class="dashboard-block"><h4 class="dashboard-block-title">🏙 Топ городов</h4><div class="dashboard-block-list">';
+            s.top_cities.forEach(function (row) {
+                html += '<div class="dashboard-block-row"><span class="row-label">' + escapeHtml((row.city || "").trim() || "—") + '</span><span class="row-value">' + num(row.count) + '</span></div>';
             });
             html += "</div></div>";
-        });
+            if (s.top_referrers && s.top_referrers.length > 0) {
+                html += '<div class="dashboard-block"><h4 class="dashboard-block-title">⭐ Топ рефереров</h4><div class="dashboard-block-list">';
+                s.top_referrers.forEach(function (row) {
+                    html += '<div class="dashboard-block-row"><span class="row-label">' + escapeHtml((row.name || "").trim() || "—") + '</span><span class="row-value">' + num(row.referrals_count) + '</span></div>';
+                });
+                html += "</div></div>";
+            }
+            html += "</div>";
+        } else if (s.top_referrers && s.top_referrers.length > 0) {
+            html += '<div class="dashboard-section">';
+            html += '<div class="dashboard-block"><h4 class="dashboard-block-title">⭐ Топ рефереров</h4><div class="dashboard-block-list">';
+            s.top_referrers.forEach(function (row) {
+                html += '<div class="dashboard-block-row"><span class="row-label">' + escapeHtml((row.name || "").trim() || "—") + '</span><span class="row-value">' + num(row.referrals_count) + '</span></div>';
+            });
+            html += "</div></div></div>";
+        }
+
         return html;
     }
 
