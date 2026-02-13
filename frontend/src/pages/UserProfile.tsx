@@ -133,7 +133,7 @@ export default function UserProfile() {
   const isMyProfile = Boolean(currentUser && currentUser.user_id === profile.user_id)
 
   return (
-    <>
+    <div className="user-profile-page">
       <DemoBanner />
       {(fromEventId != null || fromLikes) && (
         <div className="page-header" style={{ marginBottom: 8 }}>
@@ -207,7 +207,7 @@ export default function UserProfile() {
           </Link>
         </section>
       )}
-    </>
+    </div>
   )
 }
 

@@ -1229,6 +1229,21 @@ button {
 }
 
 /* ===== Карточка профиля (аватар, имя, описание, Редактировать) ===== */
+/* Страница профиля (из карточки): тёмный фон, без белого */
+.user-profile-page {
+  background: transparent;
+  min-height: 100%;
+}
+.user-profile-page .card,
+.user-profile-page .profile-card {
+  background: rgba(28, 24, 42, 0.82);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+.user-profile-page .profile-card {
+  background: rgba(45, 35, 65, 0.75);
+}
+
 .profile-card {
   background: rgba(80, 50, 120, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -2241,21 +2256,13 @@ button {
   overflow: hidden;
 }
 
-/* ===== Events Tinder (карточки почти на всю страницу, как в Tinder) ===== */
+/* ===== Events Tinder (карточки чуть больше исходного, без прокрутки) ===== */
 .events-tinder {
   margin-top: 8px;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: calc(100vh - 220px);
 }
 .events-tinder-cards {
   position: relative;
-  flex: 1;
-  min-height: 60vh;
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
+  min-height: 280px;
 }
 .events-tinder-card-wrap {
   position: relative;
@@ -2264,26 +2271,18 @@ button {
   width: 100%;
   max-width: 420px;
   margin: 0 auto;
-  display: flex;
-  align-items: stretch;
 }
 .events-tinder-card-wrap .event-card {
   margin-bottom: 0;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 60vh;
 }
-/* Карточка события в ленте: фото почти на весь экран (портрет как в Tinder) */
+/* Карточка в ленте: чуть больше, чем было (16/10, 200–260px), вся видна без прокрутки */
 .events-tinder .event-card-image-wrap {
-  aspect-ratio: 3 / 4;
-  min-height: 58vh;
-  max-height: 82vh;
-  flex: 1;
+  aspect-ratio: 16 / 10;
+  min-height: 200px;
+  max-height: 260px;
 }
 .events-tinder .event-card-footer {
-  flex-shrink: 0;
   padding: 0.75rem 1rem 1rem;
 }
 /* Вылетающая карточка (трансформ задаётся inline от позиции свайпа) */
@@ -2650,7 +2649,7 @@ button {
   margin-top: 0;
 }
 
-/* Градиент шапки для бордеров (как в create-event-hero) */
+/* Поля полупрозрачные (страница «Создать встречу») */
 .create-event-page .form-create .input {
   width: 100%;
   max-width: 100%;
@@ -2658,7 +2657,7 @@ button {
   padding: 14px 16px;
   border-radius: var(--radius-sm);
   border: 2px solid transparent;
-  background: linear-gradient(rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.12)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
   color: var(--text);
@@ -2670,12 +2669,12 @@ button {
 }
 
 .create-event-page .form-create .input::placeholder {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.55);
 }
 
 .create-event-page .form-create .input:focus {
   outline: none;
-  background: linear-gradient(rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.18)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.14)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
   box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -2695,8 +2694,6 @@ button {
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
   border-radius: var(--radius-sm);
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.08);
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
 }
@@ -2741,7 +2738,7 @@ button {
   padding: 14px 40px 14px 16px;
   border-radius: var(--radius-sm);
   border: 2px solid transparent;
-  background: linear-gradient(rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.12)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
   color: var(--text);
@@ -2753,10 +2750,12 @@ button {
   text-align: left;
 }
 .create-event-page .form-select-trigger:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: linear-gradient(rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.12)) padding-box,
+    linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
+  background-clip: padding-box, border-box;
 }
 .create-event-page .form-select-trigger[aria-expanded="true"] {
-  background: linear-gradient(rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.18)) padding-box,
+  background: linear-gradient(rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.14)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
   box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -2778,7 +2777,7 @@ button {
   max-height: 240px;
   overflow-y: auto;
   border: 2px solid transparent;
-  background: linear-gradient(rgba(26, 20, 37, 0.98), rgba(26, 20, 37, 0.98)) padding-box,
+  background: linear-gradient(rgba(26, 20, 37, 0.88), rgba(26, 20, 37, 0.88)) padding-box,
     linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
   background-clip: padding-box, border-box;
   border-radius: var(--radius-sm);
