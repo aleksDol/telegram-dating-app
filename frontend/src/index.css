@@ -1294,22 +1294,24 @@ button {
 /* ===== Нижний ряд: статистика слева + Мои фото справа ===== */
 .profile-bottom-row {
   display: grid;
-  grid-template-columns: 1fr 1.4fr;
+  grid-template-columns: 100px 1fr;
   gap: 12px;
   margin-bottom: 1.25rem;
-  align-items: start;
+  align-items: stretch;
 }
 
-/* Карточка статистики (Мои встречи, Рейтинг, Рефералы) */
+/* Карточка статистики — уже и выше, цвет как кнопка Редактировать (градиент) */
 .profile-stats-card {
-  background: rgba(88, 28, 135, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, #a855f7 0%, #ec4899 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--radius);
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 0.65rem;
   text-decoration: none;
   color: inherit;
   display: flex;
   flex-direction: column;
+  min-height: 200px;
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.3);
 }
 
 .profile-stats-row {
@@ -1319,26 +1321,30 @@ button {
   padding: 10px 0;
   text-decoration: none;
   color: inherit;
+  flex: 1;
+  justify-content: center;
 }
 
 .profile-stats-num {
   font-family: var(--font-heading);
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #fff;
   line-height: 1.2;
 }
 
 .profile-stats-label {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.95);
   margin-top: 2px;
+  text-align: center;
+  line-height: 1.2;
 }
 
 .profile-stats-divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.25);
-  margin: 0 4px;
+  background: rgba(255, 255, 255, 0.35);
+  margin: 0 2px;
 }
 
 /* Отступ снизу: страница редактирования профиля */
@@ -1464,8 +1470,8 @@ button {
   gap: 12px;
 }
 
-/* Сетка 2 колонки для 6 фото (Мои фото) */
-.profile-photos-grid-six {
+/* Сетка 2 колонки для 4 фото (Мои фото) */
+.profile-photos-grid-four {
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
@@ -1590,9 +1596,10 @@ button {
 
 /* Реферальная программа и Достижения — два блока в ряд */
 .profile-actions-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .profile-action-card {
@@ -1605,6 +1612,25 @@ button {
   color: inherit;
   min-height: 100px;
   position: relative;
+}
+
+/* Компактные кнопки — только эмодзи, меньше размер */
+.profile-action-card-compact {
+  min-height: 0;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.profile-action-card-compact:hover {
+  border-color: rgba(232, 121, 249, 0.4) !important;
+  transform: translateY(-2px);
+}
+
+.profile-action-card-compact .profile-action-icon {
+  font-size: 1.75rem;
+  margin: 0;
 }
 
 .profile-action-card:hover {
@@ -3064,10 +3090,13 @@ select.input {
   position: relative;
   min-height: 100%;
   margin: 0 calc(-1 * var(--page-padding));
+  margin-top: calc(-1 * var(--page-padding));
   padding: 0 var(--page-padding);
   padding-bottom: calc(var(--nav-height) + 24px);
   background: #000;
   color: #fff;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Фон: неоновое фото first-page */
@@ -3089,16 +3118,17 @@ select.input {
   z-index: 1;
 }
 
-/* Шапка с градиентом (вместо сплошного фиолетового) */
+/* Шапка с градиентом (вплотную к верху экрана, без зазора) */
 .home-header-bar {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem var(--page-padding);
+  padding: calc(0.75rem + env(safe-area-inset-top, 0)) var(--page-padding) 0.75rem;
   margin: 0 calc(-1 * var(--page-padding));
   background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 40%, #a855f7 70%, #c084fc 100%);
   border-radius: 0 0 var(--radius) var(--radius);
   box-shadow: 0 4px 20px rgba(91, 33, 182, 0.4);
+  flex-shrink: 0;
 }
 
 .home-header-bar-inner {
@@ -3137,47 +3167,53 @@ select.input {
   letter-spacing: -0.02em;
 }
 
-/* Центральная карточка поверх фона */
+/* Центральная карточка поверх фона — по центру экрана, компактная и чуть прозрачнее */
 .home-main-card-wrap {
-  margin-top: 1.5rem;
-  padding: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0;
+  min-height: 0;
 }
 
 .home-main-card {
-  background: rgba(45, 30, 70, 0.75);
+  width: 100%;
+  max-width: 320px;
+  background: rgba(45, 30, 70, 0.52);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(167, 139, 250, 0.3);
+  border: 1px solid rgba(167, 139, 250, 0.25);
   border-radius: var(--radius-xl);
-  padding: 1.5rem 1.25rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: 1rem 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .home-main-card-title {
-  margin: 0 0 1rem;
-  font-size: 1.35rem;
+  margin: 0 0 0.6rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #fff;
   line-height: 1.3;
 }
 
 .home-main-card-text {
-  margin: 0 0 0.75rem;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  margin: 0 0 0.5rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
   color: rgba(255, 255, 255, 0.95);
 }
 
 .home-main-card-text:last-of-type {
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.9rem;
 }
 
 .home-main-card-btn {
   display: block;
   width: 100%;
-  padding: 14px 20px;
+  padding: 11px 16px;
   border-radius: var(--radius);
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: #fff;
   text-align: center;
@@ -3362,9 +3398,16 @@ select.input {
   color: #fff;
 }
 
-/* Мои встречи, Рейтинг, Рефералов — тёмно-серые полупрозрачные, тонкий красный бордер, небольшая тень */
+/* Мои встречи, Рейтинг, Рефералов — как блок с текстом: бордер, прозрачность, по ширине наравне с карточкой */
+.home-cosmic .home-stats-cols {
+  flex-shrink: 0;
+  max-width: 320px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
 .home-stats-cosmic {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   padding: 0;
 }
 
@@ -3374,10 +3417,12 @@ select.input {
   align-items: center;
   text-align: center;
   padding: 1rem 0.75rem;
-  border-radius: var(--radius);
-  background: rgba(45, 45, 55, 0.5);
-  border: 1px solid rgba(220, 38, 38, 0.9);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-xl);
+  background: rgba(45, 30, 70, 0.52);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   color: #fff;
   text-decoration: none;
   transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
@@ -3385,8 +3430,8 @@ select.input {
 
 .home-stat-col.home-stat-cosmic:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-  border-color: rgba(220, 38, 38, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(167, 139, 250, 0.35);
+  border-color: rgba(167, 139, 250, 0.35);
 }
 
 .home-stat-cosmic .home-stat-num {

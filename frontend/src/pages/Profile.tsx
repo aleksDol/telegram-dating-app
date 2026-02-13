@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { api, isApiConfigured } from '../api/client'
 
-const MAX_PHOTOS = 6
+const MAX_PHOTOS = 4
 const API_BASE = import.meta.env.VITE_API_URL || ''
 
 function photoSrc(url: string): string {
@@ -145,8 +145,8 @@ export default function Profile() {
             aria-hidden
             onChange={handleFileChange}
           />
-          <div className="profile-photos-grid profile-photos-grid-six">
-            {[0, 1, 2, 3, 4, 5].map((i) => (
+          <div className="profile-photos-grid profile-photos-grid-four">
+            {[0, 1, 2, 3].map((i) => (
               <div
                 key={i}
                 className={`profile-photo-slot ${photos[i] ? '' : 'profile-photo-slot-empty-wrap'}`}
@@ -171,19 +171,13 @@ export default function Profile() {
         </section>
       </div>
 
-      {/* Реферальная программа и Достижения */}
+      {/* Реферальная программа и Достижения — только эмодзи */}
       <div className="profile-actions-row animate-in stagger-4">
-        <Link to="/referral" className="card profile-action-card profile-action-referral">
+        <Link to="/referral" className="profile-action-card profile-action-card-compact" aria-label="Реферальная программа">
           <span className="profile-action-icon">👥</span>
-          <span className="profile-action-title">Реферальная программа</span>
-          <span className="profile-action-meta">Приглашай друзей</span>
-          <span className="profile-action-arrow">→</span>
         </Link>
-        <Link to="/achievements" className="card profile-action-card profile-action-achievements">
+        <Link to="/achievements" className="profile-action-card profile-action-card-compact" aria-label="Достижения">
           <span className="profile-action-icon">🏆</span>
-          <span className="profile-action-title">Достижения</span>
-          <span className="profile-action-meta">{user.points} очков</span>
-          <span className="profile-action-arrow">→</span>
         </Link>
       </div>
     </div>

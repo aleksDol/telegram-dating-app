@@ -533,7 +533,7 @@ def api_update_profile(body: UpdateProfileBody, user_id: int = Depends(get_user_
     if body.photos is not None:
         current_list = _user_photos_list(row)
         new_file_ids = []
-        for p in (body.photos or [])[:6]:
+        for p in (body.photos or [])[:4]:
             p = (p or "").strip()
             if not p:
                 continue
