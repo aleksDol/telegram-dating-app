@@ -1181,6 +1181,166 @@ button {
   padding-bottom: 2rem;
 }
 
+/* ===== Верхняя панель профиля (назад + меню) ===== */
+.profile-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px var(--page-padding) 16px;
+  margin: 0 calc(-1 * var(--page-padding)) 0 calc(-1 * var(--page-padding));
+}
+
+.profile-top-bar-btn {
+  padding: 8px;
+  margin: -8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #fff;
+}
+
+.profile-top-bar-icon {
+  display: block;
+  font-size: 1.35rem;
+  line-height: 1;
+  opacity: 0.95;
+}
+
+.profile-top-bar-icon-back {
+  font-weight: 600;
+}
+
+.profile-top-bar-icon-menu {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* ===== Карточка профиля (аватар, имя, описание, Редактировать) ===== */
+.profile-card {
+  background: rgba(80, 50, 120, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.profile-card-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto 14px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.profile-card-avatar-img,
+.profile-card-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.profile-card-avatar-placeholder {
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.profile-card-name {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 8px;
+}
+
+.profile-card-bio {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.45;
+  margin: 0 0 1.25rem;
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.profile-card-edit-btn {
+  display: inline-block;
+  padding: 12px 28px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border: none;
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.profile-card-edit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.45);
+  color: #fff;
+}
+
+/* ===== Нижний ряд: статистика слева + Мои фото справа ===== */
+.profile-bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 12px;
+  margin-bottom: 1.25rem;
+  align-items: start;
+}
+
+/* Карточка статистики (Мои встречи, Рейтинг, Рефералы) */
+.profile-stats-card {
+  background: rgba(88, 28, 135, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-stats-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.profile-stats-num {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.profile-stats-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 2px;
+}
+
+.profile-stats-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.25);
+  margin: 0 4px;
+}
+
 /* Отступ снизу: страница редактирования профиля */
 .edit-profile-page {
   padding-bottom: 2.5rem;
@@ -1244,6 +1404,11 @@ button {
   margin-bottom: 1.25rem;
 }
 
+.profile-bottom-row .profile-photo-block {
+  padding: 0 0 0 0;
+  margin-bottom: 0;
+}
+
 .profile-block-title {
   font-family: var(--font-heading);
   font-size: 0.8rem;
@@ -1252,6 +1417,11 @@ button {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin: 0 0 12px;
+}
+
+.profile-page .profile-block-title {
+  color: #fff;
+  margin-bottom: 10px;
 }
 
 .profile-photo-main {
@@ -1294,6 +1464,12 @@ button {
   gap: 12px;
 }
 
+/* Сетка 2 колонки для 6 фото (Мои фото) */
+.profile-photos-grid-six {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
 .profile-photo-slot {
   width: 100%;
   aspect-ratio: 1 / 1;
@@ -1308,6 +1484,21 @@ button {
   border-style: dashed;
   border-color: rgba(45, 55, 72, 0.16);
   background: rgba(45, 55, 72, 0.02);
+}
+
+/* Пустая рамка со знаком + (как в макете: фиолетовый фон, маджента-бордер) */
+.profile-page .profile-photo-slot-empty-wrap {
+  background: rgba(88, 28, 135, 0.35);
+  border: 1px solid rgba(236, 72, 153, 0.5);
+  border-style: solid;
+}
+.profile-page .profile-photo-slot-empty {
+  color: #fff;
+}
+.profile-page .profile-photo-slot-emoji {
+  font-size: 2rem;
+  font-weight: 300;
+  opacity: 1;
 }
 
 .profile-photo-slot-edit-wrap {
@@ -1452,31 +1643,14 @@ button {
 .profile-action-referral:hover .profile-action-icon { filter: drop-shadow(0 0 8px rgba(129, 140, 248, 0.4)); }
 .profile-action-achievements:hover .profile-action-icon { filter: drop-shadow(0 0 8px rgba(232, 121, 249, 0.4)); }
 
-/* ===== Profile: тонкие красные бордеры на кнопках и блоках ===== */
+/* ===== Profile: карточки действий (Реферальная программа, Достижения) ===== */
 .profile-page .card,
-.profile-page .profile-about-avatar,
-.profile-page .profile-photo-main,
-.profile-page .profile-photo-slot {
-  border: 1px solid rgba(220, 38, 38, 0.9) !important;
-}
-
-.profile-page .btn {
-  border: 1px solid rgba(220, 38, 38, 0.9) !important;
-}
-
-.profile-page .card:hover,
-.profile-page .btn:hover {
-  border-color: rgba(220, 38, 38, 1) !important;
-}
-
-.profile-page .profile-photo-slot-empty-wrap {
-  border-style: dashed;
-  border-width: 1px;
-  border-color: rgba(220, 38, 38, 0.85);
+.profile-page .profile-action-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .profile-page .profile-action-card:hover {
-  border-color: rgba(220, 38, 38, 1) !important;
+  border-color: rgba(232, 121, 249, 0.4) !important;
 }
 
 /* Legacy: круглый аватар (если используется на других страницах) */
@@ -2885,47 +3059,144 @@ select.input {
   height: 4px;
 }
 
-/* ===== Home: космический стиль (главный экран), фон — общий bg.jpeg с body ===== */
+/* ===== Home: главный экран по макету (first-page фон, шапка с градиентом, карточка) ===== */
 .home-cosmic {
   position: relative;
   min-height: 100%;
   margin: 0 calc(-1 * var(--page-padding));
   padding: 0 var(--page-padding);
   padding-bottom: calc(var(--nav-height) + 24px);
-  background: transparent;
+  background: #000;
   color: #fff;
 }
 
-.home-cosmic-bg {
+/* Фон: неоновое фото first-page */
+.home-first-page-bg {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  /* Лёгкий оверлей, чтобы фон body (bg.jpeg) был виден */
-  background: transparent;
+  background-color: #000;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-.home-cosmic-bg::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  /* Звёзды */
-  background-image:
-    radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1.5px 1.5px at 50px 80px, rgba(255,255,255,0.5), transparent),
-    radial-gradient(2px 2px at 90px 20px, rgba(255,255,255,0.55), transparent),
-    radial-gradient(1px 1px at 130px 60px, rgba(255,255,255,0.45), transparent),
-    radial-gradient(1.5px 1.5px at 180px 100px, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1px 1px at 220px 40px, rgba(255,255,255,0.4), transparent),
-    radial-gradient(2px 2px at 260px 130px, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1px 1px at 300px 70px, rgba(255,255,255,0.45), transparent);
-  background-size: 320px 160px;
-  opacity: 0.9;
+.home-header-bar,
+.home-main-card-wrap,
+.home-stats-cosmic {
+  position: relative;
+  z-index: 1;
 }
 
+/* Шапка с градиентом (вместо сплошного фиолетового) */
+.home-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem var(--page-padding);
+  margin: 0 calc(-1 * var(--page-padding));
+  background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 40%, #a855f7 70%, #c084fc 100%);
+  border-radius: 0 0 var(--radius) var(--radius);
+  box-shadow: 0 4px 20px rgba(91, 33, 182, 0.4);
+}
+
+.home-header-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.home-header-logo-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-header-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.home-header-app-name {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+/* Центральная карточка поверх фона */
+.home-main-card-wrap {
+  margin-top: 1.5rem;
+  padding: 0;
+}
+
+.home-main-card {
+  background: rgba(45, 30, 70, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem 1.25rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.home-main-card-title {
+  margin: 0 0 1rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.home-main-card-text {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.home-main-card-text:last-of-type {
+  margin-bottom: 1.25rem;
+}
+
+.home-main-card-btn {
+  display: block;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  border: none;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.45);
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
+}
+
+.home-main-card-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(124, 58, 237, 0.5);
+  color: #fff;
+}
+
+/* Устаревшие классы hero (оставлены для совместимости) */
 .home-cosmic-hero,
 .home-quick-actions-cosmic,
-.home-stats-cosmic,
 .home-cta-cosmic,
 .home-recommendations-cosmic {
   position: relative;

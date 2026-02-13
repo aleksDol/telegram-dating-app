@@ -6,7 +6,7 @@ import { isApiConfigured, api } from '../api/client'
 import Logo from '../components/Logo'
 import type { User } from '../types'
 
-import heroPageImg from '../img/hero-page.jpeg'
+import firstPageImg from '../img/first-page.jpeg'
 
 const MOCK_USER: User = {
   user_id: DEMO_USER_ID,
@@ -97,38 +97,36 @@ export default function Home() {
   return (
     <div className="home-cosmic">
       <DemoBanner />
-      <div className="home-cosmic-bg" aria-hidden />
-      {/* Логотип и слоган */}
-      <header className="home-cosmic-hero animate-in stagger-1">
-        <div className="home-cosmic-logo-wrap">
-          <div className="home-cosmic-logo-circle">
-            <img src="/images/Spon.png" alt="SponTime" className="home-cosmic-logo-img" />
+      {/* Шапка с градиентом: логотип + SponTime */}
+      <header className="home-header-bar animate-in stagger-1">
+        <div className="home-header-bar-inner">
+          <div className="home-header-logo-circle">
+            <img src="/images/Spon.png" alt="" className="home-header-logo-img" />
           </div>
+          <span className="home-header-app-name">SponTime</span>
         </div>
-        <p className="home-cosmic-tagline">
-          <span className="home-cosmic-tagline-line home-cosmic-tagline-line-left" aria-hidden />
-          Знакомься по-новому
-          <span className="home-cosmic-tagline-line home-cosmic-tagline-line-right" aria-hidden />
-        </p>
       </header>
 
-      {/* Кнопки: Найти встречу (фиолетовая, голубой круг + поиск), Создать встречу (розовая, круг + плюс) */}
-      <div className="home-quick-actions home-quick-actions-cosmic animate-in stagger-2">
-        <Link to="/events" className="home-quick-btn home-quick-btn-find">
-          <span className="home-quick-btn-icon-wrap home-quick-btn-icon-wrap-blue" aria-hidden>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          </span>
-          <span>Найти встречу</span>
-        </Link>
-        <Link to="/create" className="home-quick-btn home-quick-btn-create">
-          <span className="home-quick-btn-icon-wrap home-quick-btn-icon-wrap-plus" aria-hidden>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </span>
-          <span>Создать встречу</span>
-        </Link>
-      </div>
+      {/* Фон: неоновое фото first-page */}
+      <div className="home-first-page-bg" style={{ backgroundImage: `url(${firstPageImg})` }} aria-hidden />
 
-      {/* Мои встречи, Рейтинг, Рефералов — фиолетовые кнопки с иконками и цифрами */}
+      {/* Центральная карточка */}
+      <section className="home-main-card-wrap animate-in stagger-2">
+        <div className="home-main-card">
+          <h1 className="home-main-card-title">Знакомься по-новому</h1>
+          <p className="home-main-card-text">
+            Привет, ты можешь создать встречу, например «Пойти в клуб» и те кто захочет составить компанию откликнутся.
+          </p>
+          <p className="home-main-card-text">
+            Или можешь найти встречу, к которой хочешь присоединиться и если тебе ответят симпатией, то встреча состоится.
+          </p>
+          <Link to="/create" className="home-main-card-btn">
+            Создать встречу
+          </Link>
+        </div>
+      </section>
+
+      {/* Нижние блоки: Мои встречи, Рейтинг, Рефералов */}
       <div className="home-stats-cols home-stats-cosmic animate-in stagger-3">
         <Link to="/my-events" className="home-stat-col home-stat-cosmic">
           <span className="home-stat-num">{myEventsCount}</span>
@@ -152,21 +150,6 @@ export default function Home() {
           <span className="home-stat-label">Рефералов</span>
         </Link>
       </div>
-
-      {/* Призыв к действию — в тёмном стиле */}
-      <section className="home-cta home-cta-cosmic animate-in stagger-4">
-        <div className="home-cta-card home-cta-card-cosmic">
-          <h2 className="home-cta-title">Не знаешь, с чего начать?</h2>
-          <div className="home-cta-illus home-cta-illus-cosmic">
-            <img src={heroPageImg} alt="" className="home-cta-illus-img" />
-          </div>
-          <ul className="home-cta-steps">
-            <li data-step="1.">Создай встречу</li>
-            <li data-step="2.">Пригласи людей</li>
-            <li data-step="3.">Знакомься!</li>
-          </ul>
-        </div>
-      </section>
     </div>
   )
 }

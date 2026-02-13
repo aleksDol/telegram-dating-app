@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext'
 import { api, isApiConfigured, API_BASE } from '../api/client'
 import { CITIES, GENDERS, RELATIONSHIP_STATUSES } from '../constants'
 
-const MAX_PHOTOS = 3
+const MAX_PHOTOS = 6
 
 /** Каждое фото имеет стабильный id — удаление всегда по id, без путаницы с индексами */
 type PhotoItem = { id: string; url: string }
@@ -220,8 +220,8 @@ export default function EditProfile() {
           aria-hidden
           onChange={handleFileChange}
         />
-        <div className="profile-photos-grid edit-profile-photos">
-          {[0, 1, 2].map((i) => {
+        <div className="profile-photos-grid profile-photos-grid-six edit-profile-photos">
+          {[0, 1, 2, 3, 4, 5].map((i) => {
             const item = photos[i]
             return (
               <div
