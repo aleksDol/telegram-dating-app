@@ -903,6 +903,19 @@ button {
   margin: 0;
 }
 
+/* Страница «Найти встречу»: компактная шапка без логотипа «Знакомься по-новому» */
+.page-header-events-compact {
+  margin-bottom: 0.75rem;
+}
+.page-title-events {
+  font-size: 1.5rem;
+  margin-bottom: 2px;
+}
+.page-subtitle-events {
+  font-size: 0.88rem;
+  margin-bottom: 0;
+}
+
 .page-badge {
   display: inline-block;
   font-size: 0.75rem;
@@ -2228,21 +2241,50 @@ button {
   overflow: hidden;
 }
 
-/* ===== Events Tinder (одна карточка, свайп) ===== */
+/* ===== Events Tinder (карточки почти на всю страницу, как в Tinder) ===== */
 .events-tinder {
-  margin-top: 12px;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: calc(100vh - 220px);
 }
 .events-tinder-cards {
   position: relative;
-  min-height: 320px;
+  flex: 1;
+  min-height: 60vh;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
 }
 .events-tinder-card-wrap {
   position: relative;
   touch-action: none;
   user-select: none;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  display: flex;
+  align-items: stretch;
 }
 .events-tinder-card-wrap .event-card {
   margin-bottom: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 60vh;
+}
+/* Карточка события в ленте: фото почти на весь экран (портрет как в Tinder) */
+.events-tinder .event-card-image-wrap {
+  aspect-ratio: 3 / 4;
+  min-height: 58vh;
+  max-height: 82vh;
+  flex: 1;
+}
+.events-tinder .event-card-footer {
+  flex-shrink: 0;
+  padding: 0.75rem 1rem 1rem;
 }
 /* Вылетающая карточка (трансформ задаётся inline от позиции свайпа) */
 .events-tinder-card-exit {
@@ -2608,14 +2650,17 @@ button {
   margin-top: 0;
 }
 
+/* Градиент шапки для бордеров (как в create-event-hero) */
 .create-event-page .form-create .input {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
   padding: 14px 16px;
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(220, 38, 38, 0.9);
-  background: rgba(255, 255, 255, 0.12);
+  border: 2px solid transparent;
+  background: linear-gradient(rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.12)) padding-box,
+    linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
+  background-clip: padding-box, border-box;
   color: var(--text);
   font-size: 1rem;
   font-family: inherit;
@@ -2630,12 +2675,13 @@ button {
 
 .create-event-page .form-create .input:focus {
   outline: none;
-  border-color: rgba(220, 38, 38, 1);
-  background: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25), 0 2px 8px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.18)) padding-box,
+    linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Поле для фото — плейсхолдер «Например фото заведения» */
+/* Поле для фото — бордер градиентом как в шапке */
 .create-event-page .form-create .input-photo-placeholder {
   position: relative;
   display: flex;
@@ -2644,7 +2690,11 @@ button {
   min-height: 120px;
   padding: 1rem;
   margin-bottom: 4px;
-  border: 1px dashed rgba(220, 38, 38, 0.9);
+  border: 2px solid transparent;
+  background: linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)) padding-box,
+    linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
+  background-clip: padding-box, border-box;
+  border-radius: var(--radius-sm);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.08);
   cursor: pointer;
@@ -2652,8 +2702,9 @@ button {
 }
 
 .create-event-page .form-create .input-photo-placeholder:hover {
-  border-color: rgba(220, 38, 38, 1);
-  background: rgba(255, 255, 255, 0.14);
+  background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)) padding-box,
+    linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
+  background-clip: padding-box, border-box;
 }
 
 .create-event-page .form-create .input-photo-input {
@@ -2673,8 +2724,7 @@ button {
 }
 
 .create-event-page .form-create .input-photo-placeholder:has(.input-photo-input:focus) {
-  border-color: rgba(220, 38, 38, 1);
-  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.35);
 }
 
 /* Кастомный выпадающий список (тёмный фон и светлый текст — без белого списка браузера) */
@@ -2690,13 +2740,15 @@ button {
   justify-content: space-between;
   padding: 14px 40px 14px 16px;
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(220, 38, 38, 0.9);
-  background: rgba(255, 255, 255, 0.12);
+  border: 2px solid transparent;
+  background: linear-gradient(rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.12)) padding-box,
+    linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
+  background-clip: padding-box, border-box;
   color: var(--text);
   font-size: 1rem;
   font-family: inherit;
   cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  transition: box-shadow 0.2s, background 0.2s;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   text-align: left;
 }
@@ -2704,9 +2756,10 @@ button {
   background: rgba(255, 255, 255, 0.18);
 }
 .create-event-page .form-select-trigger[aria-expanded="true"] {
-  border-color: rgba(220, 38, 38, 1);
-  background: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25), 0 2px 8px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.18)) padding-box,
+    linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 .create-event-page .form-select-arrow {
   position: absolute;
@@ -2724,8 +2777,10 @@ button {
   right: 0;
   max-height: 240px;
   overflow-y: auto;
-  background: rgba(26, 20, 37, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 2px solid transparent;
+  background: linear-gradient(rgba(26, 20, 37, 0.98), rgba(26, 20, 37, 0.98)) padding-box,
+    linear-gradient(135deg, #b83280 0%, #7c3aed 45%, #4f46e5 100%) border-box;
+  background-clip: padding-box, border-box;
   border-radius: var(--radius-sm);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   z-index: 50;
@@ -3180,16 +3235,15 @@ select.input {
   min-height: 0;
 }
 
+/* Почти прозрачный фон, без размытия — неон за блоком остаётся чётко видимым */
 .home-main-card {
   width: 100%;
   max-width: 320px;
-  background: rgba(45, 30, 70, 0.38);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(20, 15, 35, 0.25);
   border: 1px solid rgba(167, 139, 250, 0.25);
   border-radius: var(--radius-xl);
   padding: 1rem 1rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .home-main-card-title {

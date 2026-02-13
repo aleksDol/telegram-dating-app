@@ -4,7 +4,6 @@ import { useApp } from '../context/AppContext'
 import { api, isApiConfigured, API_BASE } from '../api/client'
 import { FILTER_LABELS } from '../constants'
 import { getDemoEventsForFeed } from '../demoData'
-import Logo from '../components/Logo'
 import PhotoViewer from '../components/PhotoViewer'
 import type { Event as EventType } from '../types'
 
@@ -224,10 +223,9 @@ export default function Events() {
   return (
     <>
       <DemoBanner />
-      <div className="page-header page-header-with-logo">
-        <Logo size="sm" showText link />
-        <h1 className="page-title animate-in">Найти встречу</h1>
-        <p className="page-subtitle animate-in stagger-1">Свайп влево — пропустить, вправо — лайк</p>
+      <div className="page-header page-header-events-compact">
+        <h1 className="page-title page-title-events animate-in">Найти встречу</h1>
+        <p className="page-subtitle page-subtitle-events animate-in stagger-1">Свайп влево — пропустить, вправо — лайк</p>
       </div>
       <div className="filter-dropdown-wrap animate-in stagger-2" ref={filterDropdownRef}>
         <button
