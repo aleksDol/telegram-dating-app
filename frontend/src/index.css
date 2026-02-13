@@ -1614,17 +1614,20 @@ button {
   position: relative;
 }
 
-/* Компактные кнопки — только эмодзи, меньше размер */
+/* Компактные кнопки — только эмодзи, бордер и тень для заметности */
 .profile-action-card-compact {
   min-height: 0;
   padding: 0.85rem 1rem;
   border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  transition: transform 0.2s, border-color 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(30, 25, 45, 0.5);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
 .profile-action-card-compact:hover {
-  border-color: rgba(232, 121, 249, 0.4) !important;
+  border-color: rgba(232, 121, 249, 0.5) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), 0 0 12px rgba(168, 85, 247, 0.2);
   transform: translateY(-2px);
 }
 
@@ -3088,7 +3091,7 @@ select.input {
 /* ===== Home: главный экран по макету (first-page фон, шапка с градиентом, карточка) ===== */
 .home-cosmic {
   position: relative;
-  min-height: 100%;
+  min-height: calc(100vh + 1px);
   margin: 0 calc(-1 * var(--page-padding));
   margin-top: calc(-1 * var(--page-padding));
   padding: 0 var(--page-padding);
@@ -3167,7 +3170,7 @@ select.input {
   letter-spacing: -0.02em;
 }
 
-/* Центральная карточка поверх фона — по центру экрана, компактная и чуть прозрачнее */
+/* Центральная карточка — строго по центру экрана (вертикально и по горизонтали), фон более прозрачный */
 .home-main-card-wrap {
   flex: 1;
   display: flex;
@@ -3180,13 +3183,13 @@ select.input {
 .home-main-card {
   width: 100%;
   max-width: 320px;
-  background: rgba(45, 30, 70, 0.52);
+  background: rgba(45, 30, 70, 0.38);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(167, 139, 250, 0.25);
   border-radius: var(--radius-xl);
   padding: 1rem 1rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .home-main-card-title {
