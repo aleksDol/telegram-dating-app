@@ -87,7 +87,9 @@ class DatingBot:
             self.callback_handler.handle(call)
 
     def run(self):
-        """Запуск бота"""
+        """Запуск бота с автоперезапуском polling при сбоях (сеть, Telegram, БД)."""
+        import time
+
         # На Windows консоль часто в cp1251/cp866 и не поддерживает emoji → избегаем их в логах.
         print("=" * 60)
         print("BOT STARTED")
@@ -107,14 +109,14 @@ class DatingBot:
         print("Press Ctrl+C to stop")
         print("=" * 60)
 
-        try:
-            self.bot.polling(none_stop=True, interval=1, timeout=30)
-        except Exception as e:
-            print(f"Ошибка в работе бота: {e}")
-            import traceback
-            traceback.print_exc()
-            import time
-            time.sleep(5)
+        while True:
+            try:
+                self.bot.polling(none_stop=True, interval=1, timeout=30)
+            except KeyboardInterrupt:
+                raise
+            except Exception as e:
+                logger.exception("Bot polling error (restart in 10s): %s", e)
+                time.sleep(10)
 
 
 if __name__ == "__main__":
